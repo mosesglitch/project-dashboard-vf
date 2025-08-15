@@ -1,0 +1,144 @@
+Goal
+Build a responsive, interactive web-based dashboard application for monitoring all projects in an organization.
+
+1) Header
+
+Organization name/logo
+
+Date selector
+
+Global filters: Project Status, Division, Date Range
+
+Dark mode toggle
+
+2) KPI Cards
+
+Total Projects
+
+Active Projects
+
+Completed Projects
+
+Delayed Projects
+
+Total Budget
+
+Actual Spend
+
+Total Amount Received to Date
+
+3) Overall Projects Section (Charts)
+
+Pie — Spending Categories: Within Budget, Under Budget, Overspent, Critical Overspent
+
+Variance% (spend ratio) = ActualSpend / Budget (display as %)
+
+Thresholds:
+
+Under Budget: < 90%
+
+Within Budget: 90%–<110%
+
+Overspent: 110%–<150%
+
+Critical Overspent: ≥ 150%
+
+Pie — Project Status (Performance Index, PI):
+
+Ahead of Schedule: PI ≥ 1.10
+
+On Track: 0.90 ≤ PI < 1.10
+
+Slightly Behind: 0.75 ≤ PI < 0.90
+
+Critical Delay: PI < 0.75
+
+Bar — Projects by Division: Mechanical, Electrical, Instrumentation
+
+4) Project Table (searchable/sortable)
+
+Columns:
+
+Project Code
+
+Project Name
+
+% Completion
+
+Time Completion (days elapsed vs. total and/or % of schedule)
+
+Time% = ElapsedDays / TotalPlannedDays
+
+Budget Variance Category (Within Budget / Under Budget / Overspent / Critical Overspent)
+
+Risk Count
+
+Amount Received Till Date
+
+% Deviation of Profit Margin (actual vs. planned)
+
+PlannedMargin% = (PlannedRevenue - PlannedCost) / PlannedRevenue
+
+ActualMargin% = (ActualRevenue - ActualCost) / ActualRevenue
+
+Deviation% = (ActualMargin% - PlannedMargin%) / PlannedMargin%
+
+Status (Green = On Track, Yellow = At Risk, Red = Delayed, Blue = Completed)
+
+5) Drill-down (on row click)
+
+Show a detailed view with:
+
+Milestones + status
+
+Project Manager
+
+Budget details: Budget (BAC), Actual Spend (AC), Commitments, Forecast, Remaining Budget
+
+Risks and Issues: severity, owner, status, due dates
+
+Upcoming activities: next 14–30 days
+
+Late activities: overdue items
+
+Performance & EV Metrics (with tooltips):
+
+EV (Earned Value) = BAC × %Complete
+
+PV (Planned Value) = BAC × Time%
+
+AC (Actual Cost) = Actual Spend
+
+CPI = EV / AC
+
+SPI = EV / PV
+
+ScPI (Scope PI) = DeliveredScope / PlannedScope
+
+PPI (Project PI) = average of (CPI, SPI, ScPI) unless weights provided
+
+CV (Cost Variance) = EV − AC
+
+SV (Schedule Variance) = EV − PV
+
+EAC (Estimate at Completion) = BAC / CPI (default method)
+
+ETC (Estimate to Complete) = EAC − AC
+
+VAC (Variance at Completion) = BAC − EAC
+
+TCPI (To-Complete Performance Index) = (BAC − EV) / (EAC − AC)
+
+Burn Rate = AC / EV
+
+Cash Flow to Date = AmountReceivedToDate − AC
+
+Time metrics: Start Date, Finish Date, Days Late/Early, Critical Path Float (if available)
+
+Resource metrics: Resource Utilization %, Headcount, Key Roles coverage
+
+Quality & HSE (optional): Defect count, Rework hours, Safety incidents (TRIR)
+
+6) Export
+
+Export table and drill-down data to Excel and PDF.
