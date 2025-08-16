@@ -7,7 +7,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import UI5Dashboard from "@/pages/ui5-dashboard";
 import ProjectDetails from "@/pages/project-details";
 import NotFound from "@/pages/not-found";
-
+import '@ui5/webcomponents-react-charts/styles.css';
 function Router() {
   return (
     <Switch>

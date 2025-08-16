@@ -1,7 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from "recharts";
+// import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from "recharts";
 import type { SpendingData, StatusData, DivisionData } from "@/lib/types";
+// import { PieChart, BarChart } from "@ui5/webcomponents-react";
+import { PieChart } from '@ui5/webcomponents-react-charts';
+import '@ui5/webcomponents-react/dist/Assets.js';
 
 interface ChartsSectionProps {
   spendingData: SpendingData | undefined;
@@ -61,108 +64,94 @@ export function ChartsSection({
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
       {/* Spending Categories Pie Chart */}
       <Card className="bg-white dark:bg-gray-900 border dark:border-gray-700">
-        <CardHeader>
-          <CardTitle 
-            className="text-lg font-semibold text-gray-900 dark:text-white"
-            data-testid="text-spending-chart-title"
-          >
-            Spending Categories
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={spendingChartData}
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                  label={(entry) => `${entry.name}: ${entry.value}`}
-                >
-                  {spendingChartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={SPENDING_COLORS[index % SPENDING_COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-        </CardContent>
+      <CardHeader>
+        <CardTitle 
+        className="text-lg font-semibold text-gray-900 dark:text-white"
+        data-testid="text-spending-chart-title"
+        >
+        Spending Categories
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="h-64 flex items-center justify-center">
+        <PieChart
+          dataset={spendingChartData}
+          dimension={{
+          accessor: "name"
+          }}
+          measure={{
+          accessor: "value",
+          colors: SPENDING_COLORS
+          }}
+          onClick={function cie(){}}
+  onDataPointClick={function cie(){}}
+  onLegendClick={function cie(){}}
+          // noLegend={false}
+          // loading={isLoading}
+        />
+        </div>
+      </CardContent>
       </Card>
 
       {/* Project Status Pie Chart */}
       <Card className="bg-white dark:bg-gray-900 border dark:border-gray-700">
-        <CardHeader>
-          <CardTitle 
-            className="text-lg font-semibold text-gray-900 dark:text-white"
-            data-testid="text-status-chart-title"
-          >
-            Project Status
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={statusChartData}
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                  label={(entry) => `${entry.name}: ${entry.value}`}
-                >
-                  {statusChartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={STATUS_COLORS[index % STATUS_COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-        </CardContent>
+      <CardHeader>
+        <CardTitle 
+        className="text-lg font-semibold text-gray-900 dark:text-white"
+        data-testid="text-status-chart-title"
+        >
+        Project Status
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="h-64 flex items-center justify-center">
+        <PieChart
+          dataset={statusChartData}
+          dimension={{
+          accessor: "name"
+          }}
+          measure={{
+          accessor: "value",
+          colors: STATUS_COLORS
+          }}
+          noLegend={false}
+          loading={isLoading}
+        />
+        </div>
+      </CardContent>
       </Card>
 
       {/* Projects by Division Bar Chart */}
       <Card className="bg-white dark:bg-gray-900 border dark:border-gray-700">
-        <CardHeader>
-          <CardTitle 
-            className="text-lg font-semibold text-gray-900 dark:text-white"
-            data-testid="text-division-chart-title"
-          >
-            Projects by Division
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={divisionChartData}>
-                <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-                <XAxis 
-                  dataKey="name" 
-                  tick={{ fill: 'currentColor' }}
-                  className="text-gray-600 dark:text-gray-400"
-                />
-                <YAxis 
-                  tick={{ fill: 'currentColor' }}
-                  className="text-gray-600 dark:text-gray-400"
-                />
-                <Tooltip 
-                  contentStyle={{
-                    backgroundColor: 'var(--background)',
-                    border: '1px solid var(--border)',
-                    borderRadius: '8px'
-                  }}
-                />
-                <Bar dataKey="value" fill="#3B82F6" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </CardContent>
+      <CardHeader>
+        <CardTitle 
+        className="text-lg font-semibold text-gray-900 dark:text-white"
+        data-testid="text-division-chart-title"
+        >
+        Projects by Division
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="h-64 flex items-center justify-center">
+        <BarChart
+          dataset={divisionChartData}
+          dimensions={[
+          {
+            accessor: "name",
+            formatter: (name: string) => name
+          }
+          ]}
+          measures={[
+          {
+            accessor: "value",
+            label: "Projects",
+            color: "#3B82F6"
+          }
+          ]}
+          loading={isLoading}
+        />
+        </div>
+      </CardContent>
       </Card>
     </div>
   );

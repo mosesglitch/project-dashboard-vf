@@ -25,6 +25,7 @@ import {
   Timeline,
   TimelineItem,
 } from "@ui5/webcomponents-react";
+import { TimelineChart } from '@ui5/webcomponents-react-charts';
 
 // Import required icons
 import "@ui5/webcomponents-icons/dist/arrow-left.js";
@@ -67,6 +68,61 @@ export default function ProjectDetails() {
     enabled: !!project?.projectCode
   });
 
+  function getTimelineChartData(activities: ExcelActivity[]): any[] {
+    // Map activities to TimelineChart dataset format
+    return activities.map((activity, idx) => ({
+      color: `var(--sapChart_OrderedColor_${(idx % 11) + 1})`,
+      label: activity.item,
+      tasks: [
+        {
+          id: activity.id || `ACT-${idx}`,
+          start: activity.startDate ? getDayOffset(activity.startDate, activities) : idx * 2,
+          duration: getDuration(activity.startDate, activity.finishDate),
+          connections: activity.predecessor
+            ? [{ itemId: activity.predecessor, type: 'F2S' }]
+            : [],
+        }
+      ]
+    }));
+  }
+
+  // Helper to calculate start offset (days from earliest start)
+  function getDayOffset(dateStr: string | null, activities: ExcelActivity[]): number {
+    if (!dateStr) return 0;
+    const dates = activities.map(a => a.startDate ? new Date(a.startDate).getTime() : Infinity);
+    const minDate = Math.min(...dates);
+    const date = new Date(dateStr).getTime();
+    return Math.round((date - minDate) / (1000 * 60 * 60 * 24));
+  }
+
+  // Helper to calculate duration in days
+  function getDuration(start: string | null, finish: string | null): number {
+    if (!start || !finish) return 1;
+    const startDate = new Date(start).getTime();
+    const finishDate = new Date(finish).getTime();
+    return Math.max(1, Math.round((finishDate - startDate) / (1000 * 60 * 60 * 24)));
+  }
+
+  // TimelineChart rendering function
+  function renderTimelineChart(activities: ExcelActivity[]) {
+    if (!activities || activities.length === 0) return <Text>No timeline data</Text>;
+    const dataset = getTimelineChartData(activities);
+    const start = 0;
+    const totalDuration = Math.max(...dataset.map(d =>
+      d.tasks?.[0]?.start + d.tasks?.[0]?.duration || 0
+    ), 1);
+
+    return (
+      <TimelineChart
+        dataset={dataset}
+        isDiscrete
+        showConnection
+        start={start}
+        totalDuration={totalDuration}
+        style={{ height: '400px', width: '100%' }}
+      />
+    );
+  }
   const { data: upcomingActivities } = useQuery<ExcelActivity[]>({
     queryKey: ['/api/projects', project?.projectCode, 'upcoming'],
     queryFn: async () => {
@@ -442,6 +498,7 @@ export default function ProjectDetails() {
               }
             >
               <div style={{ padding: '1rem' }}>
+                {renderTimelineChart(upcomingActivities || [])}
                 {upcomingActivities && upcomingActivities.length > 0 ? (
                   <Timeline>
                     {upcomingActivities.map((activity, index) => (
@@ -467,6 +524,7 @@ export default function ProjectDetails() {
                             </div>
                             <div>
                               <Text>Finish: {formatDate(activity.finishDate)}</Text>
+                              <Text>Finish: {activity.predecessor}</Text>
                             </div>
                           </div>
                         </div>
