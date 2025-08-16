@@ -80,6 +80,18 @@ export default function UI5Dashboard() {
     queryKey: ['/api/projects/stats/overview'],
   });
 
+  const { data: performanceStats } = useQuery<any>({
+    queryKey: ['/api/projects/stats/performance'],
+  });
+
+  const { data: spendingStats } = useQuery<any>({
+    queryKey: ['/api/projects/stats/spending'],
+  });
+
+  const { data: divisionStats } = useQuery<any>({
+    queryKey: ['/api/projects/stats/divisions'],
+  });
+
   const { data: projectLocations } = useQuery<any[]>({
     queryKey: ['/api/projects/locations'],
   });
@@ -148,69 +160,10 @@ export default function UI5Dashboard() {
     }
   };
 
-  // Calculate spending categories based on variance ratio
-  const getSpendingCategories = () => {
-    if (!projects) return [];
-    
-    const categories = {
-      'Under Budget': 0,
-      'Within Budget': 0, 
-      'Overspent': 0,
-      'Critical Overspent': 0
-    };
-    
-    projects.forEach(project => {
-      const variance = project.totalAmountSpent / project.budgetAmount;
-      if (variance < 0.9) categories['Under Budget']++;
-      else if (variance < 1.1) categories['Within Budget']++;
-      else if (variance < 1.5) categories['Overspent']++;
-      else categories['Critical Overspent']++;
-    });
-    
-    return Object.entries(categories).map(([category, count]) => ({ category, count }));
-  };
-
-  // Calculate project status based on Performance Index (PI)
-  const getProjectStatus = () => {
-    if (!projects) return [];
-    
-    const statuses = {
-      'Ahead of Schedule': 0,
-      'On Track': 0,
-      'Slightly Behind': 0,
-      'Critical Delay': 0
-    };
-    
-    projects.forEach(project => {
-      const pi = 100 / (project.timeCompletion || 100); // Calculate PI from time completion
-      
-      if (pi >= 1.10) statuses['Ahead of Schedule']++;
-      else if (pi >= 0.90) statuses['On Track']++;
-      else if (pi >= 0.75) statuses['Slightly Behind']++;
-      else statuses['Critical Delay']++;
-    });
-    
-    return Object.entries(statuses).map(([status, count]) => ({ status, count }));
-  };
-
-  // Calculate projects by division
-  const getDivisionData = () => {
-    if (!projects) return [];
-    
-    const divisions = {
-      'Mechanical': 0,
-      'Electrical': 0,
-      'Instrumentation': 0
-    };
-    
-    projects.forEach(project => {
-      const division = project.division.charAt(0).toUpperCase() + project.division.slice(1);
-      if (divisions.hasOwnProperty(division)) {
-        divisions[division as keyof typeof divisions]++;
-      }
-    });
-    
-    return Object.entries(divisions).map(([division, count]) => ({ division, count }));
+  // Helper functions to format chart data from API responses
+  const formatChartData = (data: Record<string, number> | undefined) => {
+    if (!data) return [];
+    return Object.entries(data).map(([key, value]) => ({ name: key, value }));
   };
 
   return (
@@ -218,69 +171,51 @@ export default function UI5Dashboard() {
       <ObjectPage
         headerArea={
           <ObjectPageHeader>
-            {/* KPI Cards in Header Area */}
+            {/* KPI Cards in Header Area - Smaller width and removed active/completed projects */}
             <FlexBox wrap="NoWrap" justifyContent="SpaceAround" style={{ padding: '1rem', overflowX: 'auto' }}>
               <Card
-                style={{ margin: '0.5rem', minWidth: '200px', cursor: 'pointer' }}
+                style={{ margin: '0.5rem', minWidth: '160px', cursor: 'pointer' }}
                 data-testid="tile-total-projects"
               >
-                <div style={{ textAlign: 'center', padding: '1rem' }}>
-                  <Title level="H2">{kpiData?.totalProjects?.toString() || "0"}</Title>
+                <div style={{ textAlign: 'center', padding: '0.75rem' }}>
+                  <Title level="H3">{kpiData?.totalProjects?.toString() || "0"}</Title>
                   <Text>Total Projects</Text>
                 </div>
               </Card>
               <Card
-                style={{ margin: '0.5rem', minWidth: '200px', cursor: 'pointer' }}
-                data-testid="tile-active-projects"
-              >
-                <div style={{ textAlign: 'center', padding: '1rem' }}>
-                  <Title level="H2" style={{color: '#28a745'}}>{kpiData?.activeProjects?.toString() || "0"}</Title>
-                  <Text>Active Projects</Text>
-                </div>
-              </Card>
-              <Card
-                style={{ margin: '0.5rem', minWidth: '200px', cursor: 'pointer' }}
-                data-testid="tile-completed-projects"
-              >
-                <div style={{ textAlign: 'center', padding: '1rem' }}>
-                  <Title level="H2" style={{color: '#007bff'}}>{kpiData?.completedProjects?.toString() || "0"}</Title>
-                  <Text>Completed Projects</Text>
-                </div>
-              </Card>
-              <Card
-                style={{ margin: '0.5rem', minWidth: '200px', cursor: 'pointer' }}
-                data-testid="tile-delayed-projects"
-              >
-                <div style={{ textAlign: 'center', padding: '1rem' }}>
-                  <Title level="H2" style={{color: '#dc3545'}}>{kpiData?.delayedProjects?.toString() || "0"}</Title>
-                  <Text>Delayed Projects</Text>
-                </div>
-              </Card>
-              <Card
-                style={{ margin: '0.5rem', minWidth: '200px', cursor: 'pointer' }}
+                style={{ margin: '0.5rem', minWidth: '160px', cursor: 'pointer' }}
                 data-testid="tile-total-budget"
               >
-                <div style={{ textAlign: 'center', padding: '1rem' }}>
-                  <Title level="H2">{kpiData ? formatCurrency(kpiData.totalBudget) : "$0"}</Title>
+                <div style={{ textAlign: 'center', padding: '0.75rem' }}>
+                  <Title level="H3">{kpiData ? formatCurrency(kpiData.totalBudget) : "$0"}</Title>
                   <Text>Total Budget</Text>
                 </div>
               </Card>
               <Card
-                style={{ margin: '0.5rem', minWidth: '200px', cursor: 'pointer' }}
+                style={{ margin: '0.5rem', minWidth: '160px', cursor: 'pointer' }}
                 data-testid="tile-actual-spend"
               >
-                <div style={{ textAlign: 'center', padding: '1rem' }}>
-                  <Title level="H2" style={{color: '#ffc107'}}>{kpiData ? formatCurrency(kpiData.actualSpend) : "$0"}</Title>
+                <div style={{ textAlign: 'center', padding: '0.75rem' }}>
+                  <Title level="H3" style={{color: '#ffc107'}}>{kpiData ? formatCurrency(kpiData.actualSpend) : "$0"}</Title>
                   <Text>Actual Spend</Text>
                 </div>
               </Card>
               <Card
-                style={{ margin: '0.5rem', minWidth: '200px', cursor: 'pointer' }}
+                style={{ margin: '0.5rem', minWidth: '160px', cursor: 'pointer' }}
                 data-testid="tile-amount-received"
               >
-                <div style={{ textAlign: 'center', padding: '1rem' }}>
-                  <Title level="H2" style={{color: '#17a2b8'}}>{kpiData ? formatCurrency(kpiData.amountReceived) : "$0"}</Title>
+                <div style={{ textAlign: 'center', padding: '0.75rem' }}>
+                  <Title level="H3" style={{color: '#17a2b8'}}>{kpiData ? formatCurrency(kpiData.amountReceived) : "$0"}</Title>
                   <Text>Amount Received</Text>
+                </div>
+              </Card>
+              <Card
+                style={{ margin: '0.5rem', minWidth: '160px', cursor: 'pointer' }}
+                data-testid="tile-total-risks"
+              >
+                <div style={{ textAlign: 'center', padding: '0.75rem' }}>
+                  <Title level="H3" style={{color: '#dc3545'}}>{kpiData?.totalRisks?.toString() || "0"}</Title>
+                  <Text>Total Risks</Text>
                 </div>
               </Card>
             </FlexBox>
@@ -349,30 +284,30 @@ export default function UI5Dashboard() {
                 }
               >
                 <div style={{ padding: '1rem' }}>
-                  {getSpendingCategories().length > 0 ? getSpendingCategories().map((cat, idx) => (
+                  {spendingStats ? formatChartData(spendingStats).map((item, idx) => (
                     <div key={idx} style={{ marginBottom: '0.5rem' }}>
-                      <Text>{cat.category}: {cat.count} projects</Text>
+                      <Text>{item.name}: {item.value} projects</Text>
                     </div>
-                  )) : <Text>No data available</Text>}
+                  )) : <Text>Loading...</Text>}
                 </div>
               </Card>
 
-              {/* Project Status Summary */}
+              {/* Project Status by Performance Category Summary */}
               <Card
                 style={{ minWidth: '350px', maxWidth: '400px', height: '200px' }}
                 header={
                   <CardHeader
-                    titleText="Project Status (Performance Index)"
+                    titleText="Project Status (Performance Category)"
                     data-testid="card-status-chart"
                   />
                 }
               >
                 <div style={{ padding: '1rem' }}>
-                  {getProjectStatus().length > 0 ? getProjectStatus().map((status, idx) => (
+                  {performanceStats ? formatChartData(performanceStats).map((item, idx) => (
                     <div key={idx} style={{ marginBottom: '0.5rem' }}>
-                      <Text>{status.status}: {status.count} projects</Text>
+                      <Text>{item.name}: {item.value} projects</Text>
                     </div>
-                  )) : <Text>No data available</Text>}
+                  )) : <Text>Loading...</Text>}
                 </div>
               </Card>
 
@@ -387,11 +322,11 @@ export default function UI5Dashboard() {
                 }
               >
                 <div style={{ padding: '1rem' }}>
-                  {getDivisionData().length > 0 ? getDivisionData().map((div, idx) => (
+                  {divisionStats ? formatChartData(divisionStats).map((item, idx) => (
                     <div key={idx} style={{ marginBottom: '0.5rem' }}>
-                      <Text>{div.division}: {div.count} projects</Text>
+                      <Text>{item.name}: {item.value} projects</Text>
                     </div>
-                  )) : <Text>No data available</Text>}
+                  )) : <Text>Loading...</Text>}
                 </div>
               </Card>
             </FlexBox>
@@ -426,29 +361,32 @@ export default function UI5Dashboard() {
                 data-testid="table-projects"
                 headerRow={
                   <TableHeaderRow sticky>
-                    <TableHeaderCell minWidth="150px" width="150px">
+                    <TableHeaderCell minWidth="120px" width="120px">
                       <span>Project Code</span>
                     </TableHeaderCell>
-                    <TableHeaderCell minWidth="250px" width="250px">
+                    <TableHeaderCell minWidth="200px" width="200px">
                       <span>Project Name</span>
                     </TableHeaderCell>
-                    <TableHeaderCell minWidth="120px" width="120px">
+                    <TableHeaderCell minWidth="100px" width="100px">
                       <span>% Complete</span>
                     </TableHeaderCell>
-                    <TableHeaderCell minWidth="150px" width="150px">
-                      <span>Time Progress</span>
+                    <TableHeaderCell minWidth="120px" width="120px">
+                      <span>Performance Category</span>
                     </TableHeaderCell>
-                    <TableHeaderCell minWidth="150px" width="150px">
+                    <TableHeaderCell minWidth="120px" width="120px">
                       <span>Budget Status</span>
                     </TableHeaderCell>
                     <TableHeaderCell minWidth="80px" width="80px">
                       <span>Risks</span>
                     </TableHeaderCell>
-                    <TableHeaderCell minWidth="150px" width="150px">
-                      <span>Amount Received</span>
+                    <TableHeaderCell minWidth="130px" width="130px">
+                      <span>Projected Margin %</span>
                     </TableHeaderCell>
                     <TableHeaderCell minWidth="120px" width="120px">
-                      <span>Status</span>
+                      <span>Actual Margin %</span>
+                    </TableHeaderCell>
+                    <TableHeaderCell minWidth="130px" width="130px">
+                      <span>Margin Deviation %</span>
                     </TableHeaderCell>
                   </TableHeaderRow>
                 }
@@ -482,8 +420,15 @@ export default function UI5Dashboard() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Text data-testid={`text-time-completion-${project.id}`}>
-                        {(project.timeCompletion || 0).toFixed(1)}%
+                      <Text 
+                        data-testid={`text-performance-category-${project.id}`}
+                        style={{
+                          color: project.performanceCategory === 'On Track' ? '#28a745' :
+                                 project.performanceCategory === 'Slightly Behind' ? '#ffc107' :
+                                 project.performanceCategory === 'Critical Delay' ? '#dc3545' : '#007bff'
+                        }}
+                      >
+                        {project.performanceCategory || 'On Track'}
                       </Text>
                     </TableCell>
                     <TableCell>
@@ -507,22 +452,23 @@ export default function UI5Dashboard() {
                       </Text>
                     </TableCell>
                     <TableCell>
-                      <Text data-testid={`text-amount-received-${project.id}`}>
-                        {formatCurrency(project.amountReceived || 0)}
+                      <Text data-testid={`text-projected-margin-${project.id}`}>
+                        {((project.projectedGrossMargin || 0) * 100).toFixed(2)}%
+                      </Text>
+                    </TableCell>
+                    <TableCell>
+                      <Text data-testid={`text-actual-margin-${project.id}`}>
+                        {((project.actualGrossMargin || 0) * 100).toFixed(2)}%
                       </Text>
                     </TableCell>
                     <TableCell>
                       <Text 
-                        data-testid={`text-status-${project.id}`}
+                        data-testid={`text-margin-deviation-${project.id}`}
                         style={{
-                          color: project.percentageComplete >= 1 ? '#007bff' :
-                                 project.percentageComplete > 0 ? '#28a745' :
-                                 (project.timeCompletion || 0) > 100 ? '#dc3545' : '#ffc107'
+                          color: (project.deviationProfitMargin || 0) > 0 ? '#28a745' : '#dc3545'
                         }}
                       >
-                        {project.percentageComplete >= 1 ? 'Completed' :
-                         project.percentageComplete > 0 ? 'Active' :
-                         (project.timeCompletion || 0) > 100 ? 'Delayed' : 'Pending'}
+                        {((project.deviationProfitMargin || 0) * 100).toFixed(2)}%
                       </Text>
                     </TableCell>
                   </TableRow>

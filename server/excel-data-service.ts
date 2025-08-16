@@ -23,6 +23,9 @@ const DATA_SOURCE_CONFIG = {
     'Category': 'category',
     'Scope Completion': 'scopeCompletion',
     'Time Completion': 'timeCompletion',
+    'Performance index': 'performanceIndex',
+    'Performance Category': 'performanceCategory',
+    'Priority': 'priority',
     'Issues/Risks': 'issuesRisks',
     'Division': 'division',
     'Budget amount': 'budgetAmount',
@@ -31,7 +34,11 @@ const DATA_SOURCE_CONFIG = {
     'Budget Status': 'budgetStatus',
     'Budget Status Category': 'budgetStatusCategory',
     'Location': 'location',
-    'Amount received': 'amountReceived'
+    'Amount received': 'amountReceived',
+    'CO Amount': 'coAmount',
+    'ProjectedGross Margin (%)': 'projectedGrossMargin',
+    'Actual GrossMargin (%)': 'actualGrossMargin',
+    '% Deviation of the Profit Margin': 'deviationProfitMargin'
   }
 };
 
@@ -47,6 +54,9 @@ const SAMPLE_DATA: ExcelProject[] = [
     category: '',
     scopeCompletion: 0.34,
     timeCompletion: 162.16,
+    performanceIndex: 0.8,
+    performanceCategory: 'Slightly Behind',
+    priority: '',
     issuesRisks: 5,
     division: 'Instrumentation',
     budgetAmount: 1644805.41,
@@ -55,7 +65,11 @@ const SAMPLE_DATA: ExcelProject[] = [
     budgetStatus: 'Within Budget',
     budgetStatusCategory: 'Within Budget',
     location: '[(-3.9389, 39.7419)]',
-    amountReceived: 4874356.137
+    amountReceived: 4874356.137,
+    coAmount: 2088639.00,
+    projectedGrossMargin: 0.212498948,
+    actualGrossMargin: 0.999841279,
+    deviationProfitMargin: 0.787342331
   },
   {
     id: 2,
@@ -67,6 +81,9 @@ const SAMPLE_DATA: ExcelProject[] = [
     category: '',
     scopeCompletion: 0.45,
     timeCompletion: 88.65,
+    performanceIndex: 0.8,
+    performanceCategory: 'Critical Delay',
+    priority: '',
     issuesRisks: 6,
     division: 'Instrumentation',
     budgetAmount: 1308312.456,
@@ -75,18 +92,25 @@ const SAMPLE_DATA: ExcelProject[] = [
     budgetStatus: 'Over Budget',
     budgetStatusCategory: 'Over Budget',
     location: '[(-0.4571, 39.6434), (-3.9389, 39.7419)]',
-    amountReceived: 84899826.76
+    amountReceived: 84899826.76,
+    coAmount: 4922287.47,
+    projectedGrossMargin: 0.734206411,
+    actualGrossMargin: 0.99999737,
+    deviationProfitMargin: 0.26579096
   },
   {
     id: 3,
     projectCode: '51415',
-    description: 'Special Stringing Works At Timau Sand Pro Farm Between Tower T97-T99',
+    description: 'Special Stringing Works At Timau Sand Pro Farm Between Tower T97-T99 (Completion Of Nanyuki - Isiolo 132kv Transmission Line)',
     startDate: '2025-04-15',
     finishDate: '2025-07-31',
     percentageComplete: 0.23,
     category: '',
     scopeCompletion: 0.23,
     timeCompletion: 114.02,
+    performanceIndex: 0.8,
+    performanceCategory: 'Critical Delay',
+    priority: '',
     issuesRisks: 7,
     division: 'Electrical',
     budgetAmount: 3355000,
@@ -95,7 +119,11 @@ const SAMPLE_DATA: ExcelProject[] = [
     budgetStatus: 'Critically Over Budget',
     budgetStatusCategory: 'Critically Over Budget',
     location: '[(-0.0917, 34.7680), (-0.3031, 36.0800)]',
-    amountReceived: 89249.16
+    amountReceived: 89249.16,
+    coAmount: 30201464.00,
+    projectedGrossMargin: 0.88891267,
+    actualGrossMargin: 0.99999996,
+    deviationProfitMargin: 0.11108729
   },
   {
     id: 4,
@@ -107,15 +135,22 @@ const SAMPLE_DATA: ExcelProject[] = [
     category: '',
     scopeCompletion: 0.12,
     timeCompletion: 129.59,
+    performanceIndex: 0.8,
+    performanceCategory: 'Slightly Behind',
+    priority: '',
     issuesRisks: 9,
     division: 'Mechanical',
     budgetAmount: 271617.97,
-    totalAmountSpent: 0,
-    budgetSpent: 0,
+    totalAmountSpent: 17049.16,
+    budgetSpent: 15.93145762,
     budgetStatus: 'Within Budget',
     budgetStatusCategory: 'Within Budget',
     location: '[(-0.3031, 36.0800), (0.5143, 35.2698), (0.0167, 37.0728)]',
-    amountReceived: 916329.5
+    amountReceived: 916329.5,
+    coAmount: 713232.00,
+    projectedGrossMargin: 0.619173046,
+    actualGrossMargin: 0.999977663,
+    deviationProfitMargin: 0.380804617
   },
   {
     id: 5,
@@ -127,6 +162,9 @@ const SAMPLE_DATA: ExcelProject[] = [
     category: '',
     scopeCompletion: 0.45,
     timeCompletion: 97.84,
+    performanceIndex: 0.8,
+    performanceCategory: 'On Track',
+    priority: '',
     issuesRisks: 12,
     division: 'Instrumentation',
     budgetAmount: 15961819.55,
@@ -135,7 +173,11 @@ const SAMPLE_DATA: ExcelProject[] = [
     budgetStatus: 'Critically Over Budget',
     budgetStatusCategory: 'Critically Over Budget',
     location: '',
-    amountReceived: 191166.4
+    amountReceived: 191166.4,
+    coAmount: 0,
+    projectedGrossMargin: 0,
+    actualGrossMargin: 0,
+    deviationProfitMargin: 0
   }
 ];
 
@@ -166,7 +208,7 @@ function readExcelFile(): ExcelProject[] {
         let value = row[excelCol];
         
         // Handle data type conversions
-        if (['percentageComplete', 'scopeCompletion', 'timeCompletion', 'budgetAmount', 'totalAmountSpent', 'budgetSpent', 'amountReceived'].includes(schemaCol)) {
+        if (['percentageComplete', 'scopeCompletion', 'timeCompletion', 'performanceIndex', 'budgetAmount', 'totalAmountSpent', 'budgetSpent', 'amountReceived', 'coAmount', 'projectedGrossMargin', 'actualGrossMargin', 'deviationProfitMargin'].includes(schemaCol)) {
           value = typeof value === 'string' ? parseFloat(value) || 0 : value || 0;
         } else if (schemaCol === 'issuesRisks') {
           value = typeof value === 'string' ? parseInt(value) || 0 : value || 0;
@@ -248,23 +290,68 @@ export class ExcelDataService {
   // Get overview statistics
   getOverviewStats(): any {
     const total = this.data.length;
-    const active = this.data.filter(p => p.percentageComplete < 1 && p.percentageComplete > 0).length;
-    const completed = this.data.filter(p => p.percentageComplete >= 1).length;
-    const delayed = this.data.filter(p => (p.timeCompletion || 0) > 100).length;
-    
     const totalBudget = this.data.reduce((sum, p) => sum + p.budgetAmount, 0);
     const actualSpend = this.data.reduce((sum, p) => sum + p.totalAmountSpent, 0);
     const amountReceived = this.data.reduce((sum, p) => sum + (p.amountReceived || 0), 0);
+    const totalRisks = this.data.reduce((sum, p) => sum + (p.issuesRisks || 0), 0);
     
     return {
       totalProjects: total,
-      activeProjects: active,
-      completedProjects: completed,
-      delayedProjects: delayed,
       totalBudget,
       actualSpend,
-      amountReceived
+      amountReceived,
+      totalRisks
     };
+  }
+  
+  // Get performance category statistics for pie chart
+  getPerformanceCategoryStats(): any {
+    const categories: Record<string, number> = {
+      'On Track': 0,
+      'Slightly Behind': 0,
+      'Critical Delay': 0,
+      'Ahead of Schedule': 0
+    };
+    
+    this.data.forEach(project => {
+      const category = project.performanceCategory || 'On Track';
+      if (category in categories) {
+        categories[category]++;
+      }
+    });
+    
+    return categories;
+  }
+  
+  // Get spending categories data for pie chart
+  getSpendingCategoriesStats(): any {
+    const categories: Record<string, number> = {
+      'Under Budget': 0,
+      'Within Budget': 0,
+      'Over Budget': 0,
+      'Critically Over Budget': 0
+    };
+    
+    this.data.forEach(project => {
+      const category = project.budgetStatusCategory || 'Within Budget';
+      if (category in categories) {
+        categories[category]++;
+      }
+    });
+    
+    return categories;
+  }
+  
+  // Get division data for bar chart
+  getDivisionStats(): any {
+    const divisions: Record<string, number> = {};
+    
+    this.data.forEach(project => {
+      const division = project.division || 'Other';
+      divisions[division] = (divisions[division] || 0) + 1;
+    });
+    
+    return divisions;
   }
   
   // Get all project locations for mapping

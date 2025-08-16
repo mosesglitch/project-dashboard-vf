@@ -13,6 +13,9 @@ export const excelProjects = pgTable("excel_projects", {
   category: text("category"),
   scopeCompletion: real("scope_completion"),
   timeCompletion: real("time_completion"),
+  performanceIndex: real("performance_index"),
+  performanceCategory: text("performance_category"),
+  priority: text("priority"),
   issuesRisks: integer("issues_risks"),
   division: text("division").notNull(),
   budgetAmount: real("budget_amount").notNull(),
@@ -22,6 +25,10 @@ export const excelProjects = pgTable("excel_projects", {
   budgetStatusCategory: text("budget_status_category"),
   location: text("location"), // Will store coordinate arrays as JSON string
   amountReceived: real("amount_received"),
+  coAmount: real("co_amount"),
+  projectedGrossMargin: real("projected_gross_margin"),
+  actualGrossMargin: real("actual_gross_margin"),
+  deviationProfitMargin: real("deviation_profit_margin"),
 });
 
 export const insertExcelProjectSchema = createInsertSchema(excelProjects);

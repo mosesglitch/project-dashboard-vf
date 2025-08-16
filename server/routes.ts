@@ -32,6 +32,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get performance category statistics for pie chart
+  app.get("/api/projects/stats/performance", async (req, res) => {
+    try {
+      const stats = excelDataService.getPerformanceCategoryStats();
+      res.json(stats);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch performance statistics" });
+    }
+  });
+
+  // Get spending categories statistics for pie chart
+  app.get("/api/projects/stats/spending", async (req, res) => {
+    try {
+      const stats = excelDataService.getSpendingCategoriesStats();
+      res.json(stats);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch spending statistics" });
+    }
+  });
+
+  // Get division statistics for bar chart
+  app.get("/api/projects/stats/divisions", async (req, res) => {
+    try {
+      const stats = excelDataService.getDivisionStats();
+      res.json(stats);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch division statistics" });
+    }
+  });
+
   // Get project locations for map (must be before :id route)
   app.get("/api/projects/locations", async (req, res) => {
     try {

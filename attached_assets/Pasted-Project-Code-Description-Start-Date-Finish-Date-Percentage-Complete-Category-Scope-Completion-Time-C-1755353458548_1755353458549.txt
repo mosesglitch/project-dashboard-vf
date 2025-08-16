@@ -1,0 +1,16 @@
+Project Code Description Start Date Finish Date Percentage Complete Category Scope Completion Time Completion Performance index Performance Category Priority Issues/Risks Division Budget amount Total Amount Spent Budget Spent Budget Status Budget Status Category Location Amount received CO Amount ProjectedGross Margin (%) Actual GrossMargin (%) % Deviation of the Profit Margin
+51422 Supply of Pressure Gauges and Pressure Transmitters 17-Apr-25 30-Jun-25 0.34 0.34 162.16% 0.8 Slightly Behind 5 Instrumentation 1644805.41 4961.538462 331.511168 "
+" Within Budget [(-3.9389, 39.7419)] 4874356.137 2,088,639.00 0.212498948 0.999841279 0.787342331
+51419 Supply, Installation and Commissioning of Overfill Protection System 12-Apr-25 31-Aug-25 0.45 0.45 88.65% 0.8 Critical Delay 6 Instrumentation 1308312.456 101075 12.94397681 "
+" Over Budget "[ (-0.4571, 39.6434),
+(-3.9389, 39.7419)]" 84899826.76 4,922,287.47 0.734206411 0.99999737 0.26579096
+51415 Special Stringing Works At Timau Sand Pro Farm Between Tower T97-T99 (Completion Of Nanyuki - Isiolo 132kv Transmission Line) 15-Apr-25 31-Jul-25 0.23 0.23 114.02% 0.8 Critical Delay 7 Electrical 3355000 2805000 1.196078431 "
+" Critically Over Budget "[ (-0.0917, 34.7680),
+(-0.3031, 36.0800),
+]" 89249.16 30,201,464.00 0.88891267 0.99999996 0.11108729
+51414 Supply of ASCO Pilot Repair Kit 10-Apr-25 17-Jul-25 0.12 0.12 129.59% 0.8 Slightly Behind 9 Mechanical 271617.97 17049.16 15.93145762 "
+" Within Budget "[
+(-0.3031, 36.0800),
+(0.5143, 35.2698),
+(0.0167, 37.0728),
+]" 916329.5 713,232.00 0.619173046 0.999977663 0.380804617 This is the new data set add ProjectedGross Margin (%) Actual GrossMargin (%) % Deviation of the Profit Margin to the table and use Performance Category for the project status pie chart also ensure we have pie chart Project Status (Performance Index),Spending Categories and bar chart for the Projects by Division, USe UI% charts, Also make the KPI cards smaller widthand remove active projects and completed projects

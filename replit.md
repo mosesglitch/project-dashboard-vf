@@ -8,6 +8,23 @@ This is a responsive, interactive web-based dashboard application for monitoring
 
 Preferred communication style: Simple, everyday language.
 
+## Recent Changes (August 16, 2025)
+
+### Migration Completed
+- Successfully migrated project from Replit Agent to Replit environment
+- Updated data schema to include new margin fields: ProjectedGross Margin (%), Actual GrossMargin (%), % Deviation of the Profit Margin
+- Modified KPI cards to be smaller width and removed active/completed projects, added total risks counter
+- Updated charts to use Performance Category for project status pie chart instead of calculated performance index
+- Enhanced project table with new margin columns and performance category display
+- All chart data now sourced from dedicated API endpoints for better performance
+
+### New Features Added
+- Performance Category statistics API endpoint
+- Spending Categories statistics API endpoint  
+- Division statistics API endpoint
+- Enhanced project data model with margin calculations
+- Real-time chart updates using proper API data sources
+
 ## System Architecture
 
 ### Frontend Architecture
