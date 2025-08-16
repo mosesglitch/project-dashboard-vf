@@ -1,0 +1,17 @@
+<ObjectPage
+  footerArea={<Bar design="FloatingFooter" endContent={<><Button design="Positive">Accept</Button><Button design="Negative">Reject</Button></>}/>}
+  headerArea={<ObjectPageHeader><FlexBox alignItems="Center" wrap="Wrap"><FlexBox direction="Column"><Link>+33 6 4512 5158</Link><Link href="mailto:ui5-webcomponents-react@sap.com">DeniseSmith@sap.com</Link><Link href="https://github.com/SAP/ui5-webcomponents-react">https://github.com/SAP/ui5-webcomponents-react</Link></FlexBox><FlexBox direction="Column" style={{padding: '10px'}}><Label>San Jose</Label><Label>California, USA</Label></FlexBox></FlexBox></ObjectPageHeader>}
+  image="https://sap.github.io/ui5-webcomponents-react/v2/assets/Person-B7wHqdJw.png"
+  imageShapeCircle
+  mode="Default"
+  onBeforeNavigate={function cie(){}}
+  onPinButtonToggle={function cie(){}}
+  onSelectedSectionChange={function cie(){}}
+  onToggleHeaderArea={function cie(){}}
+  selectedSectionId="goals"
+  style={{
+    height: '700px',
+    maxHeight: '90vh'
+  }}
+  titleArea={<ObjectPageTitle actionsBar={<Toolbar design="Transparent"><ToolbarButton design="Emphasized" text="Primary Action"/><ToolbarButton design="Transparent" text="Action"/></Toolbar>} breadcrumbs={<Breadcrumbs><BreadcrumbsItem>Manager Cockpit</BreadcrumbsItem><BreadcrumbsItem>My Team</BreadcrumbsItem><BreadcrumbsItem>Employee Details</BreadcrumbsItem></Breadcrumbs>} expandedContent={<MessageStrip style={{paddingBlockStart: '0.5rem'}}>Information (only visible if header content is expanded)</MessageStrip>} header={<Title level="H2">Denise Smith</Title>} navigationBar={<Toolbar design="Transparent"><ToolbarButton design="Transparent" icon="full-screen"/><ToolbarButton design="Transparent" icon="exit-full-screen"/><ToolbarButton design="Transparent" icon="decline"/></Toolbar>} snappedContent={<MessageStrip style={{paddingBlockStart: '0.5rem'}}>Information (only visible if header content is collapsed/snapped)</MessageStrip>} snappedHeader={<Title level="H2">Denise Smith (snapped header)</Title>} snappedSubHeader="Senior UI Developer (snapped header)" subHeader="Senior UI Developer"><ObjectStatus state="Positive">employed</ObjectStatus></ObjectPageTitle>}
+>

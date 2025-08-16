@@ -37,6 +37,9 @@ import {
   Text,
 } from "@ui5/webcomponents-react";
 
+// Import required icons
+import "@ui5/webcomponents-icons/dist/download.js";
+
 import type { Project } from "@shared/schema";
 import type { DashboardFilters, KPIData, SpendingData, StatusData, DivisionData } from "@/lib/types";
 
@@ -99,120 +102,117 @@ export default function UI5Dashboard() {
       <ObjectPage
         headerTitle={
           <ObjectPageHeader titleText="TechCorp Engineering Dashboard">
-            <FlexBox wrap="Wrap" justifyContent="SpaceBetween" style={{ padding: '1rem' }}>
-              <FlexBox wrap="Wrap">
-                <DatePicker
-                  value={filters.dateFrom}
-                  onChange={(e: any) => setFilters({...filters, dateFrom: e.target.value as string})}
-                  style={{ marginRight: '1rem' }}
-                  data-testid="input-date-from"
-                />
-                <DatePicker
-                  value={filters.dateTo}
-                  onChange={(e: any) => setFilters({...filters, dateTo: e.target.value as string})}
-                  style={{ marginRight: '1rem' }}
-                  data-testid="input-date-to"
-                />
-                <ComboBox
-                  value={filters.status}
-                  onChange={(e: any) => setFilters({...filters, status: e.target.value as string})}
-                  style={{ marginRight: '1rem', width: '200px' }}
-                  data-testid="select-status-filter"
-                >
-                  <ComboBoxItem text="All Status" />
-                  <ComboBoxItem text="Active" />
-                  <ComboBoxItem text="Completed" />
-                  <ComboBoxItem text="Delayed" />
-                </ComboBox>
-                <ComboBox
-                  value={filters.division}
-                  onChange={(e: any) => setFilters({...filters, division: e.target.value as string})}
-                  style={{ width: '200px' }}
-                  data-testid="select-division-filter"
-                >
-                  <ComboBoxItem text="All Divisions" />
-                  <ComboBoxItem text="Mechanical" />
-                  <ComboBoxItem text="Electrical" />
-                  <ComboBoxItem text="Instrumentation" />
-                </ComboBox>
+            <div style={{ padding: '1rem' }}>
+              {/* Filters */}
+              <FlexBox wrap="Wrap" justifyContent="SpaceBetween" style={{ marginBottom: '2rem' }}>
+                <FlexBox wrap="Wrap">
+                  <DatePicker
+                    value={filters.dateFrom}
+                    onChange={(e: any) => setFilters({...filters, dateFrom: e.target.value as string})}
+                    style={{ marginRight: '1rem' }}
+                    data-testid="input-date-from"
+                  />
+                  <DatePicker
+                    value={filters.dateTo}
+                    onChange={(e: any) => setFilters({...filters, dateTo: e.target.value as string})}
+                    style={{ marginRight: '1rem' }}
+                    data-testid="input-date-to"
+                  />
+                  <ComboBox
+                    value={filters.status}
+                    onChange={(e: any) => setFilters({...filters, status: e.target.value as string})}
+                    style={{ marginRight: '1rem', width: '200px' }}
+                    data-testid="select-status-filter"
+                  >
+                    <ComboBoxItem text="All Status" value="all" />
+                    <ComboBoxItem text="Active" value="active" />
+                    <ComboBoxItem text="Completed" value="completed" />
+                    <ComboBoxItem text="Delayed" value="delayed" />
+                  </ComboBox>
+                  <ComboBox
+                    value={filters.division}
+                    onChange={(e: any) => setFilters({...filters, division: e.target.value as string})}
+                    style={{ width: '200px' }}
+                    data-testid="select-division-filter"
+                  >
+                    <ComboBoxItem text="All Divisions" value="all" />
+                    <ComboBoxItem text="Mechanical" value="mechanical" />
+                    <ComboBoxItem text="Electrical" value="electrical" />
+                    <ComboBoxItem text="Instrumentation" value="instrumentation" />
+                  </ComboBox>
+                </FlexBox>
               </FlexBox>
-            </FlexBox>
+              
+              {/* KPI Cards in Header */}
+              <FlexBox wrap="Wrap" justifyContent="SpaceAround">
+                <Card
+                  style={{ margin: '0.5rem', minWidth: '200px', cursor: 'pointer' }}
+                  data-testid="tile-total-projects"
+                >
+                  <div style={{ textAlign: 'center', padding: '1rem' }}>
+                    <Title level="H2">{kpiData?.totalProjects?.toString() || "0"}</Title>
+                    <Text>Total Projects</Text>
+                  </div>
+                </Card>
+                <Card
+                  style={{ margin: '0.5rem', minWidth: '200px', cursor: 'pointer' }}
+                  data-testid="tile-active-projects"
+                >
+                  <div style={{ textAlign: 'center', padding: '1rem' }}>
+                    <Title level="H2" style={{color: '#28a745'}}>{kpiData?.activeProjects?.toString() || "0"}</Title>
+                    <Text>Active Projects</Text>
+                  </div>
+                </Card>
+                <Card
+                  style={{ margin: '0.5rem', minWidth: '200px', cursor: 'pointer' }}
+                  data-testid="tile-completed-projects"
+                >
+                  <div style={{ textAlign: 'center', padding: '1rem' }}>
+                    <Title level="H2" style={{color: '#007bff'}}>{kpiData?.completedProjects?.toString() || "0"}</Title>
+                    <Text>Completed Projects</Text>
+                  </div>
+                </Card>
+                <Card
+                  style={{ margin: '0.5rem', minWidth: '200px', cursor: 'pointer' }}
+                  data-testid="tile-delayed-projects"
+                >
+                  <div style={{ textAlign: 'center', padding: '1rem' }}>
+                    <Title level="H2" style={{color: '#dc3545'}}>{kpiData?.delayedProjects?.toString() || "0"}</Title>
+                    <Text>Delayed Projects</Text>
+                  </div>
+                </Card>
+                <Card
+                  style={{ margin: '0.5rem', minWidth: '200px', cursor: 'pointer' }}
+                  data-testid="tile-total-budget"
+                >
+                  <div style={{ textAlign: 'center', padding: '1rem' }}>
+                    <Title level="H2">{kpiData ? formatCurrency(kpiData.totalBudget) : "$0"}</Title>
+                    <Text>Total Budget</Text>
+                  </div>
+                </Card>
+                <Card
+                  style={{ margin: '0.5rem', minWidth: '200px', cursor: 'pointer' }}
+                  data-testid="tile-actual-spend"
+                >
+                  <div style={{ textAlign: 'center', padding: '1rem' }}>
+                    <Title level="H2" style={{color: '#ffc107'}}>{kpiData ? formatCurrency(kpiData.actualSpend) : "$0"}</Title>
+                    <Text>Actual Spend</Text>
+                  </div>
+                </Card>
+                <Card
+                  style={{ margin: '0.5rem', minWidth: '200px', cursor: 'pointer' }}
+                  data-testid="tile-amount-received"
+                >
+                  <div style={{ textAlign: 'center', padding: '1rem' }}>
+                    <Title level="H2" style={{color: '#17a2b8'}}>{kpiData ? formatCurrency(kpiData.amountReceived) : "$0"}</Title>
+                    <Text>Amount Received</Text>
+                  </div>
+                </Card>
+              </FlexBox>
+            </div>
           </ObjectPageHeader>
         }
       >
-        {/* KPI Header Section */}
-        <ObjectPageSection 
-          id="kpi-section"
-          titleText="Key Performance Indicators"
-        >
-          <ObjectPageSubSection id="kpi-subsection" titleText="">
-            <FlexBox wrap="Wrap" justifyContent="SpaceAround" style={{ padding: '1rem' }}>
-              <Card
-                style={{ margin: '0.5rem', minWidth: '200px', cursor: 'pointer' }}
-                data-testid="tile-total-projects"
-              >
-                <div style={{ textAlign: 'center', padding: '1rem' }}>
-                  <Title level="H2">{kpiData?.totalProjects?.toString() || "0"}</Title>
-                  <Text>Total Projects</Text>
-                </div>
-              </Card>
-              <Card
-                style={{ margin: '0.5rem', minWidth: '200px', cursor: 'pointer' }}
-                data-testid="tile-active-projects"
-              >
-                <div style={{ textAlign: 'center', padding: '1rem' }}>
-                  <Title level="H2" style={{color: '#28a745'}}>{kpiData?.activeProjects?.toString() || "0"}</Title>
-                  <Text>Active Projects</Text>
-                </div>
-              </Card>
-              <Card
-                style={{ margin: '0.5rem', minWidth: '200px', cursor: 'pointer' }}
-                data-testid="tile-completed-projects"
-              >
-                <div style={{ textAlign: 'center', padding: '1rem' }}>
-                  <Title level="H2" style={{color: '#007bff'}}>{kpiData?.completedProjects?.toString() || "0"}</Title>
-                  <Text>Completed Projects</Text>
-                </div>
-              </Card>
-              <Card
-                style={{ margin: '0.5rem', minWidth: '200px', cursor: 'pointer' }}
-                data-testid="tile-delayed-projects"
-              >
-                <div style={{ textAlign: 'center', padding: '1rem' }}>
-                  <Title level="H2" style={{color: '#dc3545'}}>{kpiData?.delayedProjects?.toString() || "0"}</Title>
-                  <Text>Delayed Projects</Text>
-                </div>
-              </Card>
-              <Card
-                style={{ margin: '0.5rem', minWidth: '200px', cursor: 'pointer' }}
-                data-testid="tile-total-budget"
-              >
-                <div style={{ textAlign: 'center', padding: '1rem' }}>
-                  <Title level="H2">{kpiData ? formatCurrency(kpiData.totalBudget) : "$0"}</Title>
-                  <Text>Total Budget</Text>
-                </div>
-              </Card>
-              <Card
-                style={{ margin: '0.5rem', minWidth: '200px', cursor: 'pointer' }}
-                data-testid="tile-actual-spend"
-              >
-                <div style={{ textAlign: 'center', padding: '1rem' }}>
-                  <Title level="H2" style={{color: '#ffc107'}}>{kpiData ? formatCurrency(kpiData.actualSpend) : "$0"}</Title>
-                  <Text>Actual Spend</Text>
-                </div>
-              </Card>
-              <Card
-                style={{ margin: '0.5rem', minWidth: '200px', cursor: 'pointer' }}
-                data-testid="tile-amount-received"
-              >
-                <div style={{ textAlign: 'center', padding: '1rem' }}>
-                  <Title level="H2" style={{color: '#17a2b8'}}>{kpiData ? formatCurrency(kpiData.amountReceived) : "$0"}</Title>
-                  <Text>Amount Received</Text>
-                </div>
-              </Card>
-            </FlexBox>
-          </ObjectPageSubSection>
-        </ObjectPageSection>
 
         {/* Projects Table Section */}
         <ObjectPageSection 
@@ -240,33 +240,35 @@ export default function UI5Dashboard() {
               <Table
                 onRowClick={handleTableRowClick}
                 data-testid="table-projects"
+                headerRow={
+                  <TableHeaderRow sticky>
+                    <TableHeaderCell minWidth="150px" width="150px">
+                      <span>Project Code</span>
+                    </TableHeaderCell>
+                    <TableHeaderCell minWidth="250px" width="250px">
+                      <span>Project Name</span>
+                    </TableHeaderCell>
+                    <TableHeaderCell minWidth="120px" width="120px">
+                      <span>% Complete</span>
+                    </TableHeaderCell>
+                    <TableHeaderCell minWidth="150px" width="150px">
+                      <span>Time Progress</span>
+                    </TableHeaderCell>
+                    <TableHeaderCell minWidth="150px" width="150px">
+                      <span>Budget Status</span>
+                    </TableHeaderCell>
+                    <TableHeaderCell minWidth="80px" width="80px">
+                      <span>Risks</span>
+                    </TableHeaderCell>
+                    <TableHeaderCell minWidth="150px" width="150px">
+                      <span>Amount Received</span>
+                    </TableHeaderCell>
+                    <TableHeaderCell minWidth="120px" width="120px">
+                      <span>Status</span>
+                    </TableHeaderCell>
+                  </TableHeaderRow>
+                }
               >
-                <TableHeaderRow>
-                  <TableHeaderCell>
-                    <Label>Project Code</Label>
-                  </TableHeaderCell>
-                  <TableHeaderCell>
-                    <Label>Project Name</Label>
-                  </TableHeaderCell>
-                  <TableHeaderCell>
-                    <Label>% Complete</Label>
-                  </TableHeaderCell>
-                  <TableHeaderCell>
-                    <Label>Time Progress</Label>
-                  </TableHeaderCell>
-                  <TableHeaderCell>
-                    <Label>Budget Status</Label>
-                  </TableHeaderCell>
-                  <TableHeaderCell>
-                    <Label>Risks</Label>
-                  </TableHeaderCell>
-                  <TableHeaderCell>
-                    <Label>Amount Received</Label>
-                  </TableHeaderCell>
-                  <TableHeaderCell>
-                    <Label>Status</Label>
-                  </TableHeaderCell>
-                </TableHeaderRow>
                 {projects?.map((project) => (
                   <TableRow
                     key={project.id}
