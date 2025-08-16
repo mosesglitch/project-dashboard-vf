@@ -22,7 +22,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get single project by ID
+  // Get project statistics (must be before :id route)
+  app.get("/api/projects/stats/overview", async (req, res) => {
+    try {
+      const stats = excelDataService.getOverviewStats();
+      res.json(stats);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch project statistics" });
+    }
+  });
+
+  // Get project locations for map (must be before :id route)
+  app.get("/api/projects/locations", async (req, res) => {
+    try {
+      const locations = excelDataService.getAllProjectLocations();
+      res.json(locations);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch project locations" });
+    }
+  });
+
+  // Reload Excel data (must be before :id route)
+  app.post("/api/projects/reload", async (req, res) => {
+    try {
+      excelDataService.reloadData();
+      res.json({ message: "Data reloaded successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to reload data" });
+    }
+  });
+
+  // Get single project by ID (must be after specific routes)
   app.get("/api/projects/:id", async (req, res) => {
     try {
       const project = excelDataService.getProjectById(req.params.id);
@@ -73,35 +103,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get project statistics
-  app.get("/api/projects/stats/overview", async (req, res) => {
-    try {
-      const stats = excelDataService.getOverviewStats();
-      res.json(stats);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to fetch project statistics" });
-    }
-  });
-
-  // Get project locations for map
-  app.get("/api/projects/locations", async (req, res) => {
-    try {
-      const locations = excelDataService.getAllProjectLocations();
-      res.json(locations);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to fetch project locations" });
-    }
-  });
-
-  // Reload Excel data
-  app.post("/api/projects/reload", async (req, res) => {
-    try {
-      excelDataService.reloadData();
-      res.json({ message: "Data reloaded successfully" });
-    } catch (error) {
-      res.status(500).json({ message: "Failed to reload data" });
-    }
-  });
 
   const httpServer = createServer(app);
   return httpServer;

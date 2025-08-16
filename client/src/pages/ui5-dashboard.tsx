@@ -55,8 +55,8 @@ export default function UI5Dashboard() {
   const [filters, setFilters] = useState<DashboardFilters>({
     status: "all",
     division: "all", 
-    dateFrom: "2024-01-01",
-    dateTo: "2024-12-31"
+    dateFrom: "",
+    dateTo: ""
   });
   const [, navigate] = useLocation();
 
@@ -106,7 +106,24 @@ export default function UI5Dashboard() {
 
   // Sample locations for map when API fails
   const getSampleLocations = () => {
-    if (!projects) return [];
+    if (!projects || projects.length === 0) {
+      // Return default sample locations if no projects
+      return [
+        {
+          id: "1",
+          code: "51422",
+          name: "Sample Project 1",
+          locations: [{ lat: 39.7419, lng: -3.9389 }]
+        },
+        {
+          id: "2", 
+          code: "51419",
+          name: "Sample Project 2",
+          locations: [{ lat: 39.6434, lng: -0.4571 }]
+        }
+      ];
+    }
+    
     return projects.slice(0, 3).map((project, index) => {
       const coords = [
         { lat: 39.7419, lng: -3.9389 },
@@ -332,11 +349,11 @@ export default function UI5Dashboard() {
                 }
               >
                 <div style={{ padding: '1rem' }}>
-                  {getSpendingCategories().map((cat, idx) => (
+                  {getSpendingCategories().length > 0 ? getSpendingCategories().map((cat, idx) => (
                     <div key={idx} style={{ marginBottom: '0.5rem' }}>
                       <Text>{cat.category}: {cat.count} projects</Text>
                     </div>
-                  ))}
+                  )) : <Text>No data available</Text>}
                 </div>
               </Card>
 
@@ -351,11 +368,11 @@ export default function UI5Dashboard() {
                 }
               >
                 <div style={{ padding: '1rem' }}>
-                  {getProjectStatus().map((status, idx) => (
+                  {getProjectStatus().length > 0 ? getProjectStatus().map((status, idx) => (
                     <div key={idx} style={{ marginBottom: '0.5rem' }}>
                       <Text>{status.status}: {status.count} projects</Text>
                     </div>
-                  ))}
+                  )) : <Text>No data available</Text>}
                 </div>
               </Card>
 
@@ -370,11 +387,11 @@ export default function UI5Dashboard() {
                 }
               >
                 <div style={{ padding: '1rem' }}>
-                  {getDivisionData().map((div, idx) => (
+                  {getDivisionData().length > 0 ? getDivisionData().map((div, idx) => (
                     <div key={idx} style={{ marginBottom: '0.5rem' }}>
                       <Text>{div.division}: {div.count} projects</Text>
                     </div>
-                  ))}
+                  )) : <Text>No data available</Text>}
                 </div>
               </Card>
             </FlexBox>

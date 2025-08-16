@@ -219,25 +219,24 @@ export class ExcelDataService {
     let filteredData = [...this.data];
     
     if (filters) {
-      if (filters.division && filters.division !== 'all') {
+      if (filters.division && filters.division !== 'all' && filters.division !== '') {
         filteredData = filteredData.filter(p => 
           p.division.toLowerCase() === filters.division!.toLowerCase()
         );
       }
       
-      if (filters.dateFrom) {
+      if (filters.dateFrom && filters.dateFrom !== '') {
         filteredData = filteredData.filter(p => 
           new Date(p.startDate) >= new Date(filters.dateFrom!)
         );
       }
       
-      if (filters.dateTo) {
+      if (filters.dateTo && filters.dateTo !== '') {
         filteredData = filteredData.filter(p => 
           new Date(p.finishDate) <= new Date(filters.dateTo!)
         );
       }
     }
-    
     return filteredData;
   }
   
@@ -270,12 +269,14 @@ export class ExcelDataService {
   
   // Get all project locations for mapping
   getAllProjectLocations(): Array<{id: string, name: string, code: string, locations: Array<{lat: number, lng: number}>}> {
-    return this.data.map(project => ({
+    const result = this.data.map(project => ({
       id: project.id.toString(),
       name: project.description,
       code: project.projectCode,
       locations: parseLocation(project.location || '')
-    })).filter(p => p.locations.length > 0);
+    }));
+    
+    return result;
   }
 }
 
