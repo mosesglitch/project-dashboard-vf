@@ -22,7 +22,14 @@ import {
   Title,
   Label,
   Text,
+  Timeline,
+  TimelineItem,
 } from "@ui5/webcomponents-react";
+
+// Import required icons
+import "@ui5/webcomponents-icons/dist/arrow-left.js";
+import "@ui5/webcomponents-icons/dist/workflow-tasks.js";
+import "@ui5/webcomponents-icons/dist/calendar.js";
 
 import type { ExcelProject, ExcelActivity } from "@shared/excel-schema";
 
@@ -230,32 +237,49 @@ export default function ProjectDetails() {
                   <CardHeader titleText="Budget Details" />
                 }
               >
-                <div style={{ padding: '1rem' }}>
-                  <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'space-between' }}>
-                    <Label>Budget Amount:</Label>
-                    <Text>{formatCurrency(project.budgetAmount)}</Text>
+                <div style={{ padding: '1rem', display: 'flex', gap: '2rem' }}>
+                  {/* Column 1 */}
+                  <div style={{ flex: 1 }}>
+                    <div style={{ marginBottom: '1rem' }}>
+                      <Label>Budget Amount:</Label>
+                      <br />
+                      <Text style={{ fontSize: '1.1em', fontWeight: 'bold' }}>{formatCurrency(project.budgetAmount)}</Text>
+                    </div>
+                    <div style={{ marginBottom: '1rem' }}>
+                      <Label>Budget Spent:</Label>
+                      <br />
+                      <Text style={{ fontSize: '1.1em', fontWeight: 'bold' }}>{formatCurrency(project.totalAmountSpent)}</Text>
+                    </div>
+                    <div style={{ marginBottom: '1rem' }}>
+                      <Label>CO Amount:</Label>
+                      <br />
+                      <Text style={{ fontSize: '1.1em', fontWeight: 'bold' }}>{formatCurrency(project.coAmount || 0)}</Text>
+                    </div>
                   </div>
-                  <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'space-between' }}>
-                    <Label>Budget Spent:</Label>
-                    <Text>{formatCurrency(project.totalAmountSpent)}</Text>
-                  </div>
-                  <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'space-between' }}>
-                    <Label>CO Amount:</Label>
-                    <Text>{formatCurrency(project.coAmount || 0)}</Text>
-                  </div>
-                  <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'space-between' }}>
-                    <Label>Projected Margin:</Label>
-                    <Text>{((project.projectedGrossMargin || 0) * 100).toFixed(2)}%</Text>
-                  </div>
-                  <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'space-between' }}>
-                    <Label>Actual Margin:</Label>
-                    <Text>{((project.actualGrossMargin || 0) * 100).toFixed(2)}%</Text>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <Label>Margin Deviation:</Label>
-                    <Text style={{ color: (project.deviationProfitMargin || 0) > 0 ? '#28a745' : '#dc3545' }}>
-                      {((project.deviationProfitMargin || 0) * 100).toFixed(2)}%
-                    </Text>
+                  
+                  {/* Column 2 */}
+                  <div style={{ flex: 1 }}>
+                    <div style={{ marginBottom: '1rem' }}>
+                      <Label>Projected Margin:</Label>
+                      <br />
+                      <Text style={{ fontSize: '1.1em', fontWeight: 'bold' }}>{((project.projectedGrossMargin || 0) * 100).toFixed(2)}%</Text>
+                    </div>
+                    <div style={{ marginBottom: '1rem' }}>
+                      <Label>Actual Margin:</Label>
+                      <br />
+                      <Text style={{ fontSize: '1.1em', fontWeight: 'bold' }}>{((project.actualGrossMargin || 0) * 100).toFixed(2)}%</Text>
+                    </div>
+                    <div style={{ marginBottom: '1rem' }}>
+                      <Label>Margin Deviation:</Label>
+                      <br />
+                      <Text style={{ 
+                        fontSize: '1.1em', 
+                        fontWeight: 'bold',
+                        color: (project.deviationProfitMargin || 0) > 0 ? '#28a745' : '#dc3545' 
+                      }}>
+                        {((project.deviationProfitMargin || 0) * 100).toFixed(2)}%
+                      </Text>
+                    </div>
                   </div>
                 </div>
               </Card>
@@ -267,32 +291,46 @@ export default function ProjectDetails() {
                   <CardHeader titleText="Time Metrics" />
                 }
               >
-                <div style={{ padding: '1rem' }}>
-                  <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'space-between' }}>
-                    <Label>Start Date:</Label>
-                    <Text>{formatDate(project.startDate)}</Text>
+                <div style={{ padding: '1rem', display: 'flex', gap: '2rem' }}>
+                  {/* Column 1 */}
+                  <div style={{ flex: 1 }}>
+                    <div style={{ marginBottom: '1rem' }}>
+                      <Label>Start Date:</Label>
+                      <br />
+                      <Text style={{ fontSize: '1.1em', fontWeight: 'bold' }}>{formatDate(project.startDate)}</Text>
+                    </div>
+                    <div style={{ marginBottom: '1rem' }}>
+                      <Label>Finish Date:</Label>
+                      <br />
+                      <Text style={{ fontSize: '1.1em', fontWeight: 'bold' }}>{formatDate(project.finishDate)}</Text>
+                    </div>
+                    <div style={{ marginBottom: '1rem' }}>
+                      <Label>Scope Completion:</Label>
+                      <br />
+                      <Text style={{ fontSize: '1.1em', fontWeight: 'bold' }}>{Math.round((project.scopeCompletion || 0) * 100)}%</Text>
+                    </div>
                   </div>
-                  <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'space-between' }}>
-                    <Label>Finish Date:</Label>
-                    <Text>{formatDate(project.finishDate)}</Text>
-                  </div>
-                  <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'space-between' }}>
-                    <Label>Scope Completion:</Label>
-                    <Text>{Math.round((project.scopeCompletion || 0) * 100)}%</Text>
-                  </div>
-                  <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'space-between' }}>
-                    <Label>Time Completion:</Label>
-                    <Text>{(project.timeCompletion || 0).toFixed(1)}%</Text>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <Label>Performance Category:</Label>
-                    <Text style={{
-                      color: project.performanceCategory === 'On Track' ? '#28a745' :
-                             project.performanceCategory === 'Slightly Behind' ? '#ffc107' :
-                             project.performanceCategory === 'Critical Delay' ? '#dc3545' : '#007bff'
-                    }}>
-                      {project.performanceCategory || 'On Track'}
-                    </Text>
+                  
+                  {/* Column 2 */}
+                  <div style={{ flex: 1 }}>
+                    <div style={{ marginBottom: '1rem' }}>
+                      <Label>Time Completion:</Label>
+                      <br />
+                      <Text style={{ fontSize: '1.1em', fontWeight: 'bold' }}>{(project.timeCompletion || 0).toFixed(1)}%</Text>
+                    </div>
+                    <div style={{ marginBottom: '1rem' }}>
+                      <Label>Performance Category:</Label>
+                      <br />
+                      <Text style={{
+                        fontSize: '1.1em',
+                        fontWeight: 'bold',
+                        color: project.performanceCategory === 'On Track' ? '#28a745' :
+                               project.performanceCategory === 'Slightly Behind' ? '#ffc107' :
+                               project.performanceCategory === 'Critical Delay' ? '#dc3545' : '#007bff'
+                      }}>
+                        {project.performanceCategory || 'On Track'}
+                      </Text>
+                    </div>
                   </div>
                 </div>
               </Card>
@@ -308,7 +346,7 @@ export default function ProjectDetails() {
           <ObjectPageSubSection id="milestones-risks-subsection" titleText="">
             <FlexBox wrap="Wrap" justifyContent="SpaceAround" style={{ padding: '1rem', gap: '2rem' }}>
               
-              {/* Milestones Card */}
+              {/* Milestones Card with Timeline */}
               <Card
                 style={{ minWidth: '450px', maxWidth: '600px' }}
                 header={
@@ -317,25 +355,27 @@ export default function ProjectDetails() {
               >
                 <div style={{ padding: '1rem' }}>
                   {milestones && milestones.length > 0 ? (
-                    milestones.map((milestone, index) => (
-                      <div key={index} style={{ marginBottom: '1rem', padding: '0.5rem', border: '1px solid #e0e0e0', borderRadius: '4px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <Text style={{ fontWeight: 'bold' }}>{milestone.item}</Text>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <Timeline>
+                      {milestones.map((milestone, index) => (
+                        <TimelineItem
+                          key={index}
+                          icon="workflow-tasks"
+                          titleText={milestone.item}
+                          subtitleText={`Progress: ${Math.round((milestone.percentageComplete || 0) * 100)}%`}
+                          itemName={milestone.finishDate ? `Target: ${formatDate(milestone.finishDate)}` : ''}
+                        >
+                          <div style={{ padding: '0.5rem' }}>
                             <ProgressIndicator
                               value={Math.round((milestone.percentageComplete || 0) * 100)}
-                              style={{ width: '100px' }}
+                              style={{ width: '200px', marginBottom: '0.5rem' }}
                             />
-                            <Text>{Math.round((milestone.percentageComplete || 0) * 100)}%</Text>
+                            <Text style={{ color: '#666', fontSize: '0.9em' }}>
+                              {milestone.description || 'Workstream milestone'}
+                            </Text>
                           </div>
-                        </div>
-                        {milestone.finishDate && (
-                          <div style={{ marginTop: '0.5rem' }}>
-                            <Text style={{ color: '#666' }}>Target: {formatDate(milestone.finishDate)}</Text>
-                          </div>
-                        )}
-                      </div>
-                    ))
+                        </TimelineItem>
+                      ))}
+                    </Timeline>
                   ) : (
                     <Text>No milestones available</Text>
                   )}
@@ -390,7 +430,7 @@ export default function ProjectDetails() {
           </ObjectPageSubSection>
         </ObjectPageSection>
 
-        {/* Section 3: Upcoming Activities */}
+        {/* Section 3: Upcoming Activities with Timeline */}
         <ObjectPageSection 
           id="upcoming-section"
           titleText="Upcoming Activities"
@@ -398,44 +438,47 @@ export default function ProjectDetails() {
           <ObjectPageSubSection id="upcoming-subsection" titleText="">
             <Card
               header={
-                <CardHeader titleText="Upcoming Activities" />
+                <CardHeader titleText="Upcoming Activities Timeline" />
               }
             >
-              {upcomingActivities && upcomingActivities.length > 0 ? (
-                <Table
-                  headerRow={
-                    <TableHeaderRow sticky>
-                      <TableHeaderCell><span>Item</span></TableHeaderCell>
-                      <TableHeaderCell><span>Start Date</span></TableHeaderCell>
-                      <TableHeaderCell><span>Finish Date</span></TableHeaderCell>
-                      <TableHeaderCell><span>Progress</span></TableHeaderCell>
-                      <TableHeaderCell><span>Predecessor</span></TableHeaderCell>
-                    </TableHeaderRow>
-                  }
-                >
-                  {upcomingActivities.map((activity, index) => (
-                    <TableRow key={index}>
-                      <TableCell><Text>{activity.item}</Text></TableCell>
-                      <TableCell><Text>{formatDate(activity.startDate)}</Text></TableCell>
-                      <TableCell><Text>{formatDate(activity.finishDate)}</Text></TableCell>
-                      <TableCell>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                          <ProgressIndicator
-                            value={Math.round((activity.percentageComplete || 0) * 100)}
-                            style={{ width: '80px' }}
-                          />
-                          <Text>{Math.round((activity.percentageComplete || 0) * 100)}%</Text>
+              <div style={{ padding: '1rem' }}>
+                {upcomingActivities && upcomingActivities.length > 0 ? (
+                  <Timeline>
+                    {upcomingActivities.map((activity, index) => (
+                      <TimelineItem
+                        key={index}
+                        icon="calendar"
+                        titleText={activity.item}
+                        subtitleText={`${formatDate(activity.startDate)} - ${formatDate(activity.finishDate)}`}
+                        itemName={activity.predecessor ? `Depends on: ${activity.predecessor}` : 'No dependencies'}
+                      >
+                        <div style={{ padding: '0.5rem' }}>
+                          <div style={{ marginBottom: '0.5rem' }}>
+                            <Text style={{ fontWeight: 'bold', marginRight: '1rem' }}>Progress:</Text>
+                            <ProgressIndicator
+                              value={Math.round((activity.percentageComplete || 0) * 100)}
+                              style={{ width: '150px', display: 'inline-block', marginRight: '0.5rem' }}
+                            />
+                            <Text>{Math.round((activity.percentageComplete || 0) * 100)}%</Text>
+                          </div>
+                          <div style={{ display: 'flex', gap: '2rem', fontSize: '0.9em', color: '#666' }}>
+                            <div>
+                              <Text>Start: {formatDate(activity.startDate)}</Text>
+                            </div>
+                            <div>
+                              <Text>Finish: {formatDate(activity.finishDate)}</Text>
+                            </div>
+                          </div>
                         </div>
-                      </TableCell>
-                      <TableCell><Text>{activity.predecessor || 'None'}</Text></TableCell>
-                    </TableRow>
-                  ))}
-                </Table>
-              ) : (
-                <div style={{ padding: '2rem', textAlign: 'center' }}>
-                  <Text>No upcoming activities</Text>
-                </div>
-              )}
+                      </TimelineItem>
+                    ))}
+                  </Timeline>
+                ) : (
+                  <div style={{ padding: '2rem', textAlign: 'center' }}>
+                    <Text>No upcoming activities</Text>
+                  </div>
+                )}
+              </div>
             </Card>
           </ObjectPageSubSection>
         </ObjectPageSection>
