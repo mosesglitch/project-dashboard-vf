@@ -38,18 +38,18 @@ import {
   Text,
 } from "@ui5/webcomponents-react";
 
-// UI5 Charts
-import {
-  PieChart,
-  ColumnChart,
-  ResponsiveContainer,
-} from "@ui5/webcomponents-react-charts";
+// UI5 Charts - temporarily disabled due to runtime errors
+// import {
+//   PieChart,
+//   ColumnChart,
+// } from "@ui5/webcomponents-react-charts";
 
 // Import required icons
 import "@ui5/webcomponents-icons/dist/download.js";
 
-import type { Project } from "@shared/schema";
-import type { DashboardFilters, KPIData, SpendingData, StatusData, DivisionData } from "@/lib/types";
+import type { ExcelProject } from "@shared/excel-schema";
+import { parseLocation } from "@shared/excel-schema";
+import type { DashboardFilters } from "@/lib/types";
 
 export default function UI5Dashboard() {
   const [filters, setFilters] = useState<DashboardFilters>({
@@ -60,8 +60,8 @@ export default function UI5Dashboard() {
   });
   const [, navigate] = useLocation();
 
-  // Fetch data using the same queries as before
-  const { data: projects, isLoading: projectsLoading } = useQuery<Project[]>({
+  // Fetch data using Excel data service
+  const { data: projects, isLoading: projectsLoading } = useQuery<ExcelProject[]>({
     queryKey: ['/api/projects', filters],
     queryFn: async () => {
       const params = new URLSearchParams();
@@ -76,8 +76,12 @@ export default function UI5Dashboard() {
     }
   });
 
-  const { data: kpiData } = useQuery<KPIData>({
+  const { data: kpiData } = useQuery<any>({
     queryKey: ['/api/projects/stats/overview'],
+  });
+
+  const { data: projectLocations } = useQuery<any[]>({
+    queryKey: ['/api/projects/locations'],
   });
 
   const formatCurrency = (amount: number) => {
@@ -89,13 +93,35 @@ export default function UI5Dashboard() {
     return `$${amount.toLocaleString()}`;
   };
 
-  // Sample project locations for the map
-  const projectLocations = [
-    { id: "1", name: "Power Plant Modernization", lat: 37.7749, lng: -122.4194 },
-    { id: "2", name: "Control System Upgrade", lat: 40.7128, lng: -74.0060 },
-    { id: "3", name: "Safety Systems Installation", lat: 34.0522, lng: -118.2437 },
-    { id: "4", name: "Turbine Maintenance", lat: 41.8781, lng: -87.6298 },
-  ];
+  // Function to reload Excel data
+  const reloadData = async () => {
+    try {
+      await fetch('/api/projects/reload', { method: 'POST' });
+      // Invalidate all queries to refetch data
+      window.location.reload();
+    } catch (error) {
+      console.error('Failed to reload data:', error);
+    }
+  };
+
+  // Sample locations for map when API fails
+  const getSampleLocations = () => {
+    if (!projects) return [];
+    return projects.slice(0, 3).map((project, index) => {
+      const coords = [
+        { lat: 39.7419, lng: -3.9389 },
+        { lat: 39.6434, lng: -0.4571 },
+        { lat: 34.7680, lng: -0.0917 }
+      ];
+      return {
+        id: project.id.toString(),
+        code: project.projectCode,
+        name: project.description,
+        locations: [coords[index] || coords[0]]
+      };
+    });
+  };
+
 
   const handleTableRowClick = (event: any) => {
     const row = event.detail?.row || event.target.closest('[data-project-id]');
@@ -117,7 +143,7 @@ export default function UI5Dashboard() {
     };
     
     projects.forEach(project => {
-      const variance = parseFloat(project.actualSpend) / parseFloat(project.budget);
+      const variance = project.totalAmountSpent / project.budgetAmount;
       if (variance < 0.9) categories['Under Budget']++;
       else if (variance < 1.1) categories['Within Budget']++;
       else if (variance < 1.5) categories['Overspent']++;
@@ -139,8 +165,7 @@ export default function UI5Dashboard() {
     };
     
     projects.forEach(project => {
-      const performanceMetrics = project.performanceMetrics as any;
-      const pi = performanceMetrics?.spi || 1; // Use SPI as Performance Index
+      const pi = 100 / (project.timeCompletion || 100); // Calculate PI from time completion
       
       if (pi >= 1.10) statuses['Ahead of Schedule']++;
       else if (pi >= 0.90) statuses['On Track']++;
@@ -288,7 +313,7 @@ export default function UI5Dashboard() {
         }
       >
 
-        {/* Charts Section */}
+        {/* Charts Section - temporarily disabled */}
         <ObjectPageSection 
           id="charts-section"
           titleText="Analytics Dashboard"
@@ -296,9 +321,9 @@ export default function UI5Dashboard() {
           <ObjectPageSubSection id="charts-subsection" titleText="">
             <FlexBox wrap="Wrap" justifyContent="SpaceAround" style={{ padding: '1rem', gap: '2rem' }}>
               
-              {/* Spending Categories Pie Chart */}
+              {/* Spending Categories Summary */}
               <Card
-                style={{ minWidth: '350px', maxWidth: '400px', height: '400px' }}
+                style={{ minWidth: '350px', maxWidth: '400px', height: '200px' }}
                 header={
                   <CardHeader
                     titleText="Spending Categories"
@@ -306,19 +331,18 @@ export default function UI5Dashboard() {
                   />
                 }
               >
-                <div style={{ height: '300px', padding: '1rem' }}>
-                  <PieChart
-                    dataset={getSpendingCategories()}
-                    dimension={{ accessor: 'category' }}
-                    measure={{ accessor: 'count' }}
-                    data-testid="chart-spending"
-                  />
+                <div style={{ padding: '1rem' }}>
+                  {getSpendingCategories().map((cat, idx) => (
+                    <div key={idx} style={{ marginBottom: '0.5rem' }}>
+                      <Text>{cat.category}: {cat.count} projects</Text>
+                    </div>
+                  ))}
                 </div>
               </Card>
 
-              {/* Project Status Pie Chart */}
+              {/* Project Status Summary */}
               <Card
-                style={{ minWidth: '350px', maxWidth: '400px', height: '400px' }}
+                style={{ minWidth: '350px', maxWidth: '400px', height: '200px' }}
                 header={
                   <CardHeader
                     titleText="Project Status (Performance Index)"
@@ -326,19 +350,18 @@ export default function UI5Dashboard() {
                   />
                 }
               >
-                <div style={{ height: '300px', padding: '1rem' }}>
-                  <PieChart
-                    dataset={getProjectStatus()}
-                    dimension={{ accessor: 'status' }}
-                    measure={{ accessor: 'count' }}
-                    data-testid="chart-status"
-                  />
+                <div style={{ padding: '1rem' }}>
+                  {getProjectStatus().map((status, idx) => (
+                    <div key={idx} style={{ marginBottom: '0.5rem' }}>
+                      <Text>{status.status}: {status.count} projects</Text>
+                    </div>
+                  ))}
                 </div>
               </Card>
 
-              {/* Projects by Division Bar Chart */}
+              {/* Projects by Division Summary */}
               <Card
-                style={{ minWidth: '350px', maxWidth: '400px', height: '400px' }}
+                style={{ minWidth: '350px', maxWidth: '400px', height: '200px' }}
                 header={
                   <CardHeader
                     titleText="Projects by Division"
@@ -346,13 +369,12 @@ export default function UI5Dashboard() {
                   />
                 }
               >
-                <div style={{ height: '300px', padding: '1rem' }}>
-                  <ColumnChart
-                    dataset={getDivisionData()}
-                    dimensions={[{ accessor: 'division' }]}
-                    measures={[{ accessor: 'count' }]}
-                    data-testid="chart-division"
-                  />
+                <div style={{ padding: '1rem' }}>
+                  {getDivisionData().map((div, idx) => (
+                    <div key={idx} style={{ marginBottom: '0.5rem' }}>
+                      <Text>{div.division}: {div.count} projects</Text>
+                    </div>
+                  ))}
                 </div>
               </Card>
             </FlexBox>
@@ -423,65 +445,67 @@ export default function UI5Dashboard() {
                   >
                     <TableCell>
                       <Text data-testid={`text-project-code-${project.id}`}>
-                        {project.code}
+                        {project.projectCode}
                       </Text>
                     </TableCell>
                     <TableCell>
                       <Text data-testid={`text-project-name-${project.id}`}>
-                        {project.name}
+                        {project.description}
                       </Text>
                     </TableCell>
                     <TableCell>
                       <div>
                         <ProgressIndicator
-                          value={project.percentComplete}
+                          value={Math.round(project.percentageComplete * 100)}
                           style={{ width: '100px', marginBottom: '0.25rem' }}
                         />
                         <Text data-testid={`text-completion-${project.id}`}>
-                          {project.percentComplete}%
+                          {Math.round(project.percentageComplete * 100)}%
                         </Text>
                       </div>
                     </TableCell>
                     <TableCell>
                       <Text data-testid={`text-time-completion-${project.id}`}>
-                        {project.elapsedDays}/{project.totalPlannedDays} days
+                        {(project.timeCompletion || 0).toFixed(1)}%
                       </Text>
                     </TableCell>
                     <TableCell>
                       <Text 
                         data-testid={`text-budget-variance-${project.id}`}
                         style={{
-                          color: project.budgetVarianceCategory === 'under_budget' ? '#28a745' :
-                                 project.budgetVarianceCategory === 'within_budget' ? '#007bff' :
-                                 project.budgetVarianceCategory === 'overspent' ? '#ffc107' : '#dc3545'
+                          color: project.budgetStatusCategory === 'Under Budget' ? '#28a745' :
+                                 project.budgetStatusCategory === 'Within Budget' ? '#007bff' :
+                                 project.budgetStatusCategory === 'Over Budget' ? '#ffc107' : '#dc3545'
                         }}
                       >
-                        {project.budgetVarianceCategory.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                        {project.budgetStatusCategory || project.budgetStatus}
                       </Text>
                     </TableCell>
                     <TableCell>
                       <Text 
                         data-testid={`text-risk-count-${project.id}`}
-                        style={{ color: project.riskCount > 3 ? '#dc3545' : '#28a745' }}
+                        style={{ color: (project.issuesRisks || 0) > 3 ? '#dc3545' : '#28a745' }}
                       >
-                        {project.riskCount}
+                        {project.issuesRisks || 0}
                       </Text>
                     </TableCell>
                     <TableCell>
                       <Text data-testid={`text-amount-received-${project.id}`}>
-                        {formatCurrency(parseFloat(project.amountReceived))}
+                        {formatCurrency(project.amountReceived || 0)}
                       </Text>
                     </TableCell>
                     <TableCell>
                       <Text 
                         data-testid={`text-status-${project.id}`}
                         style={{
-                          color: project.status === 'completed' ? '#007bff' :
-                                 project.status === 'active' ? '#28a745' :
-                                 project.status === 'delayed' ? '#dc3545' : '#ffc107'
+                          color: project.percentageComplete >= 1 ? '#007bff' :
+                                 project.percentageComplete > 0 ? '#28a745' :
+                                 (project.timeCompletion || 0) > 100 ? '#dc3545' : '#ffc107'
                         }}
                       >
-                        {project.status.charAt(0).toUpperCase() + project.status.slice(1)}
+                        {project.percentageComplete >= 1 ? 'Completed' :
+                         project.percentageComplete > 0 ? 'Active' :
+                         (project.timeCompletion || 0) > 100 ? 'Delayed' : 'Pending'}
                       </Text>
                     </TableCell>
                   </TableRow>
@@ -516,23 +540,27 @@ export default function UI5Dashboard() {
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                   />
-                  {projectLocations.map((location) => (
-                    <Marker 
-                      key={location.id} 
-                      position={[location.lat, location.lng]}
-                      eventHandlers={{
-                        click: () => navigate(`/project/${location.id}`)
-                      }}
-                    >
-                      <Popup>
-                        <div>
-                          <strong>{location.name}</strong>
-                          <br />
-                          Click to view project details
-                        </div>
-                      </Popup>
-                    </Marker>
-                  ))}
+                  {(projectLocations || getSampleLocations())?.map((project: any) => 
+                    project.locations?.map((location: any, index: number) => (
+                      <Marker 
+                        key={`${project.id}-${index}`} 
+                        position={[location.lat, location.lng]}
+                        eventHandlers={{
+                          click: () => navigate(`/project/${project.id}`)
+                        }}
+                      >
+                        <Popup>
+                          <div>
+                            <strong>{project.code}</strong>
+                            <br />
+                            {project.name}
+                            <br />
+                            <small>Click to view project details</small>
+                          </div>
+                        </Popup>
+                      </Marker>
+                    ))
+                  )}
                 </MapContainer>
               </div>
             </Card>

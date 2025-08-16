@@ -2,13 +2,15 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertProjectSchema } from "@shared/schema";
+import { excelDataService } from "./excel-data-service";
+import { parseLocation, calculateBudgetStatusCategory, calculatePerformanceStatus } from "@shared/excel-schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Get all projects with optional filters
   app.get("/api/projects", async (req, res) => {
     try {
       const { status, division, dateFrom, dateTo } = req.query;
-      const projects = await storage.getProjects({
+      const projects = excelDataService.getProjects({
         status: status as string,
         division: division as string,
         dateFrom: dateFrom as string,
@@ -23,7 +25,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get single project by ID
   app.get("/api/projects/:id", async (req, res) => {
     try {
-      const project = await storage.getProject(req.params.id);
+      const project = excelDataService.getProjectById(req.params.id);
       if (!project) {
         return res.status(404).json({ message: "Project not found" });
       }
@@ -74,40 +76,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get project statistics
   app.get("/api/projects/stats/overview", async (req, res) => {
     try {
-      const stats = await storage.getProjectStats();
+      const stats = excelDataService.getOverviewStats();
       res.json(stats);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch project statistics" });
     }
   });
 
-  // Get spending categories data for pie chart
-  app.get("/api/projects/charts/spending", async (req, res) => {
+  // Get project locations for map
+  app.get("/api/projects/locations", async (req, res) => {
     try {
-      const data = await storage.getSpendingCategoriesData();
-      res.json(data);
+      const locations = excelDataService.getAllProjectLocations();
+      res.json(locations);
     } catch (error) {
-      res.status(500).json({ message: "Failed to fetch spending data" });
+      res.status(500).json({ message: "Failed to fetch project locations" });
     }
   });
 
-  // Get project status data for pie chart
-  app.get("/api/projects/charts/status", async (req, res) => {
+  // Reload Excel data
+  app.post("/api/projects/reload", async (req, res) => {
     try {
-      const data = await storage.getProjectStatusData();
-      res.json(data);
+      excelDataService.reloadData();
+      res.json({ message: "Data reloaded successfully" });
     } catch (error) {
-      res.status(500).json({ message: "Failed to fetch status data" });
-    }
-  });
-
-  // Get division data for bar chart
-  app.get("/api/projects/charts/divisions", async (req, res) => {
-    try {
-      const data = await storage.getDivisionData();
-      res.json(data);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to fetch division data" });
+      res.status(500).json({ message: "Failed to reload data" });
     }
   });
 
