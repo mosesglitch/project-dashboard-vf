@@ -38,6 +38,13 @@ import {
   Text,
 } from "@ui5/webcomponents-react";
 
+// UI5 Charts
+import {
+  PieChart,
+  ColumnChart,
+  ResponsiveContainer,
+} from "@ui5/webcomponents-react-charts";
+
 // Import required icons
 import "@ui5/webcomponents-icons/dist/download.js";
 
@@ -98,13 +105,79 @@ export default function UI5Dashboard() {
     }
   };
 
+  // Calculate spending categories based on variance ratio
+  const getSpendingCategories = () => {
+    if (!projects) return [];
+    
+    const categories = {
+      'Under Budget': 0,
+      'Within Budget': 0, 
+      'Overspent': 0,
+      'Critical Overspent': 0
+    };
+    
+    projects.forEach(project => {
+      const variance = parseFloat(project.actualSpend) / parseFloat(project.budget);
+      if (variance < 0.9) categories['Under Budget']++;
+      else if (variance < 1.1) categories['Within Budget']++;
+      else if (variance < 1.5) categories['Overspent']++;
+      else categories['Critical Overspent']++;
+    });
+    
+    return Object.entries(categories).map(([category, count]) => ({ category, count }));
+  };
+
+  // Calculate project status based on Performance Index (PI)
+  const getProjectStatus = () => {
+    if (!projects) return [];
+    
+    const statuses = {
+      'Ahead of Schedule': 0,
+      'On Track': 0,
+      'Slightly Behind': 0,
+      'Critical Delay': 0
+    };
+    
+    projects.forEach(project => {
+      const performanceMetrics = project.performanceMetrics as any;
+      const pi = performanceMetrics?.spi || 1; // Use SPI as Performance Index
+      
+      if (pi >= 1.10) statuses['Ahead of Schedule']++;
+      else if (pi >= 0.90) statuses['On Track']++;
+      else if (pi >= 0.75) statuses['Slightly Behind']++;
+      else statuses['Critical Delay']++;
+    });
+    
+    return Object.entries(statuses).map(([status, count]) => ({ status, count }));
+  };
+
+  // Calculate projects by division
+  const getDivisionData = () => {
+    if (!projects) return [];
+    
+    const divisions = {
+      'Mechanical': 0,
+      'Electrical': 0,
+      'Instrumentation': 0
+    };
+    
+    projects.forEach(project => {
+      const division = project.division.charAt(0).toUpperCase() + project.division.slice(1);
+      if (divisions.hasOwnProperty(division)) {
+        divisions[division as keyof typeof divisions]++;
+      }
+    });
+    
+    return Object.entries(divisions).map(([division, count]) => ({ division, count }));
+  };
+
   return (
     <div style={{ minHeight: '100vh' }}>
       <ObjectPage
         headerArea={
           <ObjectPageHeader>
             {/* KPI Cards in Header Area */}
-            <FlexBox wrap="Wrap" justifyContent="SpaceAround" style={{ padding: '1rem' }}>
+            <FlexBox wrap="NoWrap" justifyContent="SpaceAround" style={{ padding: '1rem', overflowX: 'auto' }}>
               <Card
                 style={{ margin: '0.5rem', minWidth: '200px', cursor: 'pointer' }}
                 data-testid="tile-total-projects"
@@ -172,9 +245,10 @@ export default function UI5Dashboard() {
           </ObjectPageHeader>
         }
         titleArea={
-          <ObjectPageTitle titleText="TechCorp Engineering Dashboard">
+          <ObjectPageTitle>
+            <Title level="H1">TechCorp Engineering Dashboard</Title>
             {/* Filters in Title Area */}
-            <FlexBox wrap="Wrap" justifyContent="FlexStart" style={{ padding: '1rem' }}>
+            <FlexBox wrap="Wrap" justifyContent="Start" style={{ padding: '1rem' }}>
               <DatePicker
                 value={filters.dateFrom}
                 onChange={(e: any) => setFilters({...filters, dateFrom: e.target.value as string})}
@@ -193,10 +267,10 @@ export default function UI5Dashboard() {
                 style={{ marginRight: '1rem', width: '200px' }}
                 data-testid="select-status-filter"
               >
-                <ComboBoxItem text="All Status" value="all" />
-                <ComboBoxItem text="Active" value="active" />
-                <ComboBoxItem text="Completed" value="completed" />
-                <ComboBoxItem text="Delayed" value="delayed" />
+                <ComboBoxItem text="All Status" />
+                <ComboBoxItem text="Active" />
+                <ComboBoxItem text="Completed" />
+                <ComboBoxItem text="Delayed" />
               </ComboBox>
               <ComboBox
                 value={filters.division}
@@ -204,15 +278,86 @@ export default function UI5Dashboard() {
                 style={{ width: '200px' }}
                 data-testid="select-division-filter"
               >
-                <ComboBoxItem text="All Divisions" value="all" />
-                <ComboBoxItem text="Mechanical" value="mechanical" />
-                <ComboBoxItem text="Electrical" value="electrical" />
-                <ComboBoxItem text="Instrumentation" value="instrumentation" />
+                <ComboBoxItem text="All Divisions" />
+                <ComboBoxItem text="Mechanical" />
+                <ComboBoxItem text="Electrical" />
+                <ComboBoxItem text="Instrumentation" />
               </ComboBox>
             </FlexBox>
           </ObjectPageTitle>
         }
       >
+
+        {/* Charts Section */}
+        <ObjectPageSection 
+          id="charts-section"
+          titleText="Analytics Dashboard"
+        >
+          <ObjectPageSubSection id="charts-subsection" titleText="">
+            <FlexBox wrap="Wrap" justifyContent="SpaceAround" style={{ padding: '1rem', gap: '2rem' }}>
+              
+              {/* Spending Categories Pie Chart */}
+              <Card
+                style={{ minWidth: '350px', maxWidth: '400px', height: '400px' }}
+                header={
+                  <CardHeader
+                    titleText="Spending Categories"
+                    data-testid="card-spending-chart"
+                  />
+                }
+              >
+                <div style={{ height: '300px', padding: '1rem' }}>
+                  <PieChart
+                    dataset={getSpendingCategories()}
+                    dimension={{ accessor: 'category' }}
+                    measure={{ accessor: 'count' }}
+                    data-testid="chart-spending"
+                  />
+                </div>
+              </Card>
+
+              {/* Project Status Pie Chart */}
+              <Card
+                style={{ minWidth: '350px', maxWidth: '400px', height: '400px' }}
+                header={
+                  <CardHeader
+                    titleText="Project Status (Performance Index)"
+                    data-testid="card-status-chart"
+                  />
+                }
+              >
+                <div style={{ height: '300px', padding: '1rem' }}>
+                  <PieChart
+                    dataset={getProjectStatus()}
+                    dimension={{ accessor: 'status' }}
+                    measure={{ accessor: 'count' }}
+                    data-testid="chart-status"
+                  />
+                </div>
+              </Card>
+
+              {/* Projects by Division Bar Chart */}
+              <Card
+                style={{ minWidth: '350px', maxWidth: '400px', height: '400px' }}
+                header={
+                  <CardHeader
+                    titleText="Projects by Division"
+                    data-testid="card-division-chart"
+                  />
+                }
+              >
+                <div style={{ height: '300px', padding: '1rem' }}>
+                  <ColumnChart
+                    dataset={getDivisionData()}
+                    dimensions={[{ accessor: 'division' }]}
+                    measures={[{ accessor: 'count' }]}
+                    data-testid="chart-division"
+                  />
+                </div>
+              </Card>
+            </FlexBox>
+          </ObjectPageSubSection>
+        </ObjectPageSection>
 
         {/* Projects Table Section */}
         <ObjectPageSection 
