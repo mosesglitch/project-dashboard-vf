@@ -37,6 +37,27 @@ export const selectExcelProjectSchema = createSelectSchema(excelProjects);
 export type ExcelProject = typeof excelProjects.$inferSelect;
 export type InsertExcelProject = z.infer<typeof insertExcelProjectSchema>;
 
+// Schema for the second Excel file containing activities, milestones, and risks
+export const excelActivities = pgTable("excel_activities", {
+  id: serial("id").primaryKey(),
+  projectCode: text("project_code").notNull(),
+  item: text("item"),
+  description: text("description"),
+  owner: text("owner"),
+  startDate: date("start_date"),
+  finishDate: date("finish_date"),
+  percentageComplete: real("percentage_complete"),
+  category: text("category").notNull(), // Upcoming, Late, Workstream, Risk, Project Info
+  predecessor: text("predecessor"),
+  status: text("status"), // For risks: Open, Closed
+});
+
+export const insertExcelActivitySchema = createInsertSchema(excelActivities);
+export const selectExcelActivitySchema = createSelectSchema(excelActivities);
+
+export type ExcelActivity = typeof excelActivities.$inferSelect;
+export type InsertExcelActivity = z.infer<typeof insertExcelActivitySchema>;
+
 // Helper function to parse location coordinates
 export function parseLocation(locationStr: string): Array<{lat: number, lng: number}> {
   if (!locationStr) return [];

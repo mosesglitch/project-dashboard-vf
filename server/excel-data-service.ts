@@ -1,7 +1,7 @@
 import * as XLSX from 'xlsx';
 import fs from 'fs';
 import path from 'path';
-import type { ExcelProject } from '@shared/excel-schema';
+import type { ExcelProject, ExcelActivity } from '@shared/excel-schema';
 import { parseLocation, calculateBudgetStatusCategory, calculatePerformanceStatus } from '@shared/excel-schema';
 
 // ==== DATA SOURCE CONFIGURATION ====
@@ -41,6 +41,140 @@ const DATA_SOURCE_CONFIG = {
     '% Deviation of the Profit Margin': 'deviationProfitMargin'
   }
 };
+
+// Sample activities data for the second Excel file
+const SAMPLE_ACTIVITIES_DATA: ExcelActivity[] = [
+  {
+    id: 1,
+    projectCode: '51422',
+    item: 'Completion of Nairobi Site',
+    description: '',
+    owner: '',
+    startDate: '2025-08-14',
+    finishDate: '2025-08-14',
+    percentageComplete: 1.0,
+    category: 'Upcoming',
+    predecessor: '',
+    status: ''
+  },
+  {
+    id: 2,
+    projectCode: '51422',
+    item: 'ELDORET',
+    description: '',
+    owner: '',
+    startDate: '2025-08-19',
+    finishDate: '2025-09-15',
+    percentageComplete: 0.0,
+    category: 'Upcoming',
+    predecessor: 'Completion of Nairobi Site',
+    status: ''
+  },
+  {
+    id: 3,
+    projectCode: '51422',
+    item: 'Mobilization',
+    description: '',
+    owner: '',
+    startDate: '2025-08-19',
+    finishDate: '2025-08-19',
+    percentageComplete: 0.0,
+    category: 'Upcoming',
+    predecessor: 'ELDORET',
+    status: ''
+  },
+  {
+    id: 4,
+    projectCode: '51422',
+    item: 'MOMBASA',
+    description: '',
+    owner: '',
+    startDate: '2025-06-03',
+    finishDate: '2025-07-22',
+    percentageComplete: 0.18,
+    category: 'Late',
+    predecessor: '',
+    status: ''
+  },
+  {
+    id: 5,
+    projectCode: '51422',
+    item: 'Installation works',
+    description: '',
+    owner: '',
+    startDate: '2025-07-15',
+    finishDate: '2025-07-18',
+    percentageComplete: 0.0,
+    category: 'Late',
+    predecessor: '',
+    status: ''
+  },
+  {
+    id: 6,
+    projectCode: '51422',
+    item: 'Construction',
+    description: '',
+    owner: '',
+    startDate: null,
+    finishDate: null,
+    percentageComplete: 0.77,
+    category: 'Workstream',
+    predecessor: '',
+    status: ''
+  },
+  {
+    id: 7,
+    projectCode: '51422',
+    item: 'Commissioning',
+    description: '',
+    owner: '',
+    startDate: null,
+    finishDate: null,
+    percentageComplete: 0.0,
+    category: 'Workstream',
+    predecessor: '',
+    status: ''
+  },
+  {
+    id: 8,
+    projectCode: '51422',
+    item: 'Procurement',
+    description: '',
+    owner: '',
+    startDate: null,
+    finishDate: null,
+    percentageComplete: 1.0,
+    category: 'Workstream',
+    predecessor: '',
+    status: ''
+  },
+  {
+    id: 9,
+    projectCode: '51422',
+    item: 'Material delivery delay',
+    description: 'High',
+    owner: 'Procurement',
+    startDate: '2025-08-20',
+    finishDate: null,
+    percentageComplete: null,
+    category: 'Risk',
+    predecessor: '',
+    status: 'Open'
+  },
+  {
+    id: 10,
+    projectCode: '51422',
+    item: 'Safety inspection concerns',
+    description: 'Medium',
+    owner: 'Safety',
+    startDate: '2025-08-21',
+    finishDate: null,
+    percentageComplete: null,
+    category: 'Risk',
+    predecessor: '',
+    status: 'Closed'
+  }
+];
 
 // Sample data for when Excel file is not available
 const SAMPLE_DATA: ExcelProject[] = [
@@ -236,19 +370,28 @@ function readExcelFile(): ExcelProject[] {
 // Data service class
 export class ExcelDataService {
   private data: ExcelProject[] = [];
+  private activitiesData: ExcelActivity[] = [];
   
   constructor() {
     this.loadData();
+    this.loadActivitiesData();
   }
   
   private loadData() {
     this.data = readExcelFile();
     console.log(`Loaded ${this.data.length} projects from data source`);
   }
+
+  private loadActivitiesData() {
+    // For now, use sample data. Later this can be configured to read from a second Excel file
+    this.activitiesData = SAMPLE_ACTIVITIES_DATA;
+    console.log(`Loaded ${this.activitiesData.length} activities from data source`);
+  }
   
   // Reload data (useful for when Excel file is updated)
   reloadData() {
     this.loadData();
+    this.loadActivitiesData();
   }
   
   // Get all projects with optional filters
@@ -364,6 +507,38 @@ export class ExcelDataService {
     }));
     
     return result;
+  }
+
+  // Get activities by project code
+  getActivitiesByProjectCode(projectCode: string): ExcelActivity[] {
+    return this.activitiesData.filter(activity => activity.projectCode === projectCode);
+  }
+
+  // Get activities by project code and category
+  getActivitiesByCategory(projectCode: string, category: string): ExcelActivity[] {
+    return this.activitiesData.filter(activity => 
+      activity.projectCode === projectCode && activity.category === category
+    );
+  }
+
+  // Get milestones (Workstream category)
+  getMilestonesByProjectCode(projectCode: string): ExcelActivity[] {
+    return this.getActivitiesByCategory(projectCode, 'Workstream');
+  }
+
+  // Get risks (Risk category)
+  getRisksByProjectCode(projectCode: string): ExcelActivity[] {
+    return this.getActivitiesByCategory(projectCode, 'Risk');
+  }
+
+  // Get upcoming activities (Upcoming category)
+  getUpcomingActivitiesByProjectCode(projectCode: string): ExcelActivity[] {
+    return this.getActivitiesByCategory(projectCode, 'Upcoming');
+  }
+
+  // Get late activities (Late category)
+  getLateActivitiesByProjectCode(projectCode: string): ExcelActivity[] {
+    return this.getActivitiesByCategory(projectCode, 'Late');
   }
 }
 

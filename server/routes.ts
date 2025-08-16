@@ -82,6 +82,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get activities by project code
+  app.get("/api/projects/:projectCode/activities", async (req, res) => {
+    try {
+      const activities = excelDataService.getActivitiesByProjectCode(req.params.projectCode);
+      res.json(activities);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch project activities" });
+    }
+  });
+
+  // Get milestones by project code  
+  app.get("/api/projects/:projectCode/milestones", async (req, res) => {
+    try {
+      const milestones = excelDataService.getMilestonesByProjectCode(req.params.projectCode);
+      res.json(milestones);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch project milestones" });
+    }
+  });
+
+  // Get risks by project code
+  app.get("/api/projects/:projectCode/risks", async (req, res) => {
+    try {
+      const risks = excelDataService.getRisksByProjectCode(req.params.projectCode);
+      res.json(risks);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch project risks" });
+    }
+  });
+
+  // Get upcoming activities by project code
+  app.get("/api/projects/:projectCode/upcoming", async (req, res) => {
+    try {
+      const upcoming = excelDataService.getUpcomingActivitiesByProjectCode(req.params.projectCode);
+      res.json(upcoming);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch upcoming activities" });
+    }
+  });
+
+  // Get late activities by project code
+  app.get("/api/projects/:projectCode/late", async (req, res) => {
+    try {
+      const late = excelDataService.getLateActivitiesByProjectCode(req.params.projectCode);
+      res.json(late);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch late activities" });
+    }
+  });
+
   // Get single project by ID (must be after specific routes)
   app.get("/api/projects/:id", async (req, res) => {
     try {
