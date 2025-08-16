@@ -46,7 +46,7 @@ const DATA_SOURCE_CONFIG = {
 const SAMPLE_ACTIVITIES_DATA: ExcelActivity[] = [
   {
     id: 1,
-    projectCode: '51422',
+    projectCode: '51397',
     item: 'Completion of Nairobi Site',
     description: '',
     owner: '',
@@ -59,7 +59,7 @@ const SAMPLE_ACTIVITIES_DATA: ExcelActivity[] = [
   },
   {
     id: 2,
-    projectCode: '51422',
+    projectCode: '51397',
     item: 'ELDORET',
     description: '',
     owner: '',
@@ -72,7 +72,7 @@ const SAMPLE_ACTIVITIES_DATA: ExcelActivity[] = [
   },
   {
     id: 3,
-    projectCode: '51422',
+    projectCode: '51397',
     item: 'Mobilization',
     description: '',
     owner: '',
@@ -85,7 +85,7 @@ const SAMPLE_ACTIVITIES_DATA: ExcelActivity[] = [
   },
   {
     id: 4,
-    projectCode: '51422',
+    projectCode: '51397',
     item: 'MOMBASA',
     description: '',
     owner: '',
@@ -98,7 +98,7 @@ const SAMPLE_ACTIVITIES_DATA: ExcelActivity[] = [
   },
   {
     id: 5,
-    projectCode: '51422',
+    projectCode: '51397',
     item: 'Installation works',
     description: '',
     owner: '',
@@ -111,7 +111,7 @@ const SAMPLE_ACTIVITIES_DATA: ExcelActivity[] = [
   },
   {
     id: 6,
-    projectCode: '51422',
+    projectCode: '51397',
     item: 'Construction',
     description: '',
     owner: '',
@@ -124,7 +124,7 @@ const SAMPLE_ACTIVITIES_DATA: ExcelActivity[] = [
   },
   {
     id: 7,
-    projectCode: '51422',
+    projectCode: '51397',
     item: 'Commissioning',
     description: '',
     owner: '',
@@ -137,7 +137,7 @@ const SAMPLE_ACTIVITIES_DATA: ExcelActivity[] = [
   },
   {
     id: 8,
-    projectCode: '51422',
+    projectCode: '51397',
     item: 'Procurement',
     description: '',
     owner: '',
@@ -150,7 +150,7 @@ const SAMPLE_ACTIVITIES_DATA: ExcelActivity[] = [
   },
   {
     id: 9,
-    projectCode: '51422',
+    projectCode: '51397',
     item: 'Material delivery delay',
     description: 'High',
     owner: 'Procurement',
@@ -163,7 +163,7 @@ const SAMPLE_ACTIVITIES_DATA: ExcelActivity[] = [
   },
   {
     id: 10,
-    projectCode: '51422',
+    projectCode: '51397',
     item: 'Safety inspection concerns',
     description: 'Medium',
     owner: 'Safety',
@@ -180,7 +180,7 @@ const SAMPLE_ACTIVITIES_DATA: ExcelActivity[] = [
 const SAMPLE_DATA: ExcelProject[] = [
   {
     id: 1,
-    projectCode: '51422',
+    projectCode: '51397',
     description: 'Supply of Pressure Gauges and Pressure Transmitters',
     startDate: '2025-04-17',
     finishDate: '2025-06-30',
