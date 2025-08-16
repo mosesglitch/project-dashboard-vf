@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -11,16 +12,16 @@ import type { Project } from "@shared/schema";
 interface ProjectTableProps {
   projects: Project[] | undefined;
   isLoading: boolean;
-  onProjectSelect: (project: Project) => void;
 }
 
 type SortField = 'code' | 'name' | 'percentComplete' | 'status' | 'budgetVarianceCategory';
 type SortOrder = 'asc' | 'desc';
 
-export function ProjectTable({ projects, isLoading, onProjectSelect }: ProjectTableProps) {
+export function ProjectTable({ projects, isLoading }: ProjectTableProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortField, setSortField] = useState<SortField>('code');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
+  const [, navigate] = useLocation();
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -245,7 +246,7 @@ export function ProjectTable({ projects, isLoading, onProjectSelect }: ProjectTa
                 <tr
                   key={project.id}
                   className="hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors"
-                  onClick={() => onProjectSelect(project)}
+                  onClick={() => navigate(`/project/${project.id}`)}
                   data-testid={`row-project-${project.id}`}
                 >
                   <td 

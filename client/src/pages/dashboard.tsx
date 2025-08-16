@@ -4,7 +4,6 @@ import { DashboardHeader } from "@/components/dashboard/header";
 import { KPICards } from "@/components/dashboard/kpi-cards";
 import { ChartsSection } from "@/components/dashboard/charts-section";
 import { ProjectTable } from "@/components/dashboard/project-table";
-import { ProjectModal } from "@/components/dashboard/project-modal";
 import type { Project } from "@shared/schema";
 import type { DashboardFilters, KPIData, SpendingData, StatusData, DivisionData } from "@/lib/types";
 
@@ -15,9 +14,6 @@ export default function Dashboard() {
     dateFrom: "2024-01-01",
     dateTo: "2024-12-31"
   });
-
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Fetch projects with filters
   const { data: projects, isLoading: projectsLoading } = useQuery<Project[]>({
@@ -53,15 +49,6 @@ export default function Dashboard() {
     queryKey: ['/api/projects/charts/divisions'],
   });
 
-  const handleProjectSelect = (project: Project) => {
-    setSelectedProject(project);
-    setIsModalOpen(true);
-  };
-
-  const handleModalClose = () => {
-    setIsModalOpen(false);
-    setSelectedProject(null);
-  };
 
   const chartsLoading = spendingLoading || statusLoading || divisionLoading;
 
@@ -82,15 +69,9 @@ export default function Dashboard() {
         <ProjectTable
           projects={projects}
           isLoading={projectsLoading}
-          onProjectSelect={handleProjectSelect}
         />
       </main>
 
-      <ProjectModal
-        project={selectedProject}
-        isOpen={isModalOpen}
-        onClose={handleModalClose}
-      />
     </div>
   );
 }
