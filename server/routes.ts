@@ -116,6 +116,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/projects/:projectCode/upcoming", async (req, res) => {
     try {
       const upcoming = excelDataService.getUpcomingActivitiesByProjectCode(req.params.projectCode);
+      console.log("Upcoming activities:", upcoming);
       res.json(upcoming);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch upcoming activities" });
@@ -136,8 +137,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/projects/:id", async (req, res) => {
     try {
       const project = excelDataService.getProjectById(req.params.id);
+      console.log("Fetching project with ID:", req.params.id,"project",project);
       if (!project) {
-        return res.status(404).json({ message: "Project not found" });
+        return res.status(404).json({ message: "Project not found. Please check the ID and try again." });
       }
       res.json(project);
     } catch (error) {

@@ -3,7 +3,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 // import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from "recharts";
 import type { SpendingData, StatusData, DivisionData } from "@/lib/types";
 // import { PieChart, BarChart } from "@ui5/webcomponents-react";
-import { PieChart } from '@ui5/webcomponents-react-charts';
+import { PieChart,BarChart } from '@ui5/webcomponents-react-charts';
 import '@ui5/webcomponents-react/dist/Assets.js';
 
 interface ChartsSectionProps {
@@ -42,7 +42,7 @@ export function ChartsSection({
     { name: 'Electrical', value: divisionData.electrical },
     { name: 'Instrumentation', value: divisionData.instrumentation },
   ] : [];
-
+console.log(divisionChartData,statusChartData,spendingChartData);
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
@@ -86,7 +86,7 @@ export function ChartsSection({
           onClick={function cie(){}}
   onDataPointClick={function cie(){}}
   onLegendClick={function cie(){}}
-          // noLegend={false}
+          noLegend={false}
           // loading={isLoading}
         />
         </div>

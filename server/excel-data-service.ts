@@ -1,4 +1,4 @@
-import * as XLSX from 'xlsx';
+import XLSX from 'xlsx';
 import fs from 'fs';
 import path from 'path';
 import type { ExcelProject, ExcelActivity } from '@shared/excel-schema';
@@ -10,8 +10,9 @@ const DATA_SOURCE_CONFIG = {
   // Set the path to your Excel file here
   filePath: path.join(process.cwd(), 'data', 'projects.xlsx'),
   
-  // Set the sheet name (or leave empty for first sheet)
-  sheetName: '', // Empty means first sheet
+  // Set the sheet names for the two sheets
+  projectsSheetName: 'Projects', // Sheet for project details
+  portfolioSheetName: 'Portfolio', // Sheet for portfolio/activities data
   
   // Column mappings from Excel to our schema
   columnMapping: {
@@ -39,9 +40,34 @@ const DATA_SOURCE_CONFIG = {
     'ProjectedGross Margin (%)': 'projectedGrossMargin',
     'Actual GrossMargin (%)': 'actualGrossMargin',
     '% Deviation of the Profit Margin': 'deviationProfitMargin'
+  },
+  
+  // Column mappings for Portfolio sheet (activities/milestones/risks)
+  portfolioColumnMapping: {
+    'Project Code': 'projectCode',
+    'Item': 'item',
+    'Description': 'description',
+    'Owner': 'owner',
+    'Start Date': 'startDate',
+    'Finish Date': 'finishDate',
+    'Percentage Complete': 'percentageComplete',
+    'Category': 'category',
+    'Predecessor': 'predecessor',
+    'Status': 'status'
   }
 };
-
+const portfolioColumnMapping= {
+    'Project Code': 'projectCode',
+    'Item': 'item',
+    'Description': 'description',
+    'Owner': 'owner',
+    'Start Date': 'startDate',
+    'Finish Date': 'finishDate',
+    'Percentage Complete': 'percentageComplete',
+    'Category': 'category',
+    'Predecessor': 'predecessor',
+    'Status': 'status'
+  }
 // Sample activities data for the second Excel file
 const SAMPLE_ACTIVITIES_DATA: ExcelActivity[] = [
   {
@@ -315,8 +341,8 @@ const SAMPLE_DATA: ExcelProject[] = [
   }
 ];
 
-// Function to read Excel file and convert to our schema
-function readExcelFile(): ExcelProject[] {
+// Function to read Projects sheet and convert to our schema
+function readProjectsSheet(): ExcelProject[] {
   try {
     if (!fs.existsSync(DATA_SOURCE_CONFIG.filePath)) {
       console.log('Excel file not found, using sample data');
@@ -324,11 +350,10 @@ function readExcelFile(): ExcelProject[] {
     }
 
     const workbook = XLSX.readFile(DATA_SOURCE_CONFIG.filePath);
-    const sheetName = DATA_SOURCE_CONFIG.sheetName || workbook.SheetNames[0];
-    const worksheet = workbook.Sheets[sheetName];
+    const worksheet = workbook.Sheets["Portfolio"] 
     
     if (!worksheet) {
-      console.error('Sheet not found, using sample data');
+      console.error(`Projects sheet "${DATA_SOURCE_CONFIG.projectsSheetName}" not found, using sample data`);
       return SAMPLE_DATA;
     }
 
@@ -362,8 +387,53 @@ function readExcelFile(): ExcelProject[] {
     });
     
   } catch (error) {
-    console.error('Error reading Excel file:', error);
+    console.error('Error reading Projects sheet:', error);
     return SAMPLE_DATA;
+  }
+}
+
+// Function to read Portfolio sheet and convert to activities schema
+function readPortfolioSheet(): ExcelActivity[] {
+  try {
+    if (!fs.existsSync(DATA_SOURCE_CONFIG.filePath)) {
+      console.log('Excel file not found, using sample activities data');
+      return SAMPLE_ACTIVITIES_DATA;
+    }
+
+    const workbook = XLSX.readFile(DATA_SOURCE_CONFIG.filePath);
+    const worksheet = workbook.Sheets["Projects"] 
+      console.log(`Portfolio sheet "${"projects"}" found, using sample activities data`);
+    
+    if (!worksheet) {
+      console.error(`Portfolio sheet "${DATA_SOURCE_CONFIG.portfolioSheetName}" not found, using sample activities data`);
+      return SAMPLE_ACTIVITIES_DATA;
+    }
+
+    const jsonData = XLSX.utils.sheet_to_json(worksheet);
+    
+    return jsonData.map((row: any, index: number) => {
+      const mappedRow: any = { id: index + 1 };
+      
+      // Map Excel columns to our activities schema
+      Object.entries(portfolioColumnMapping).forEach(([excelCol, schemaCol]) => {
+        let value = row[excelCol];
+        
+        // Handle data type conversions
+        if (schemaCol === 'percentageComplete') {
+          value = typeof value === 'string' ? parseFloat(value) || 0 : value || 0;
+        } else if (['startDate', 'finishDate'].includes(schemaCol)) {
+          value = value instanceof Date ? value.toISOString().split('T')[0] : value;
+        }
+        
+        mappedRow[schemaCol] = value || '';
+      });
+
+      return mappedRow as ExcelActivity;
+    });
+    
+  } catch (error) {
+    console.error('Error reading Portfolio sheet:', error);
+    return SAMPLE_ACTIVITIES_DATA;
   }
 }
 
@@ -378,14 +448,13 @@ export class ExcelDataService {
   }
   
   private loadData() {
-    this.data = readExcelFile();
-    console.log(`Loaded ${this.data.length} projects from data source`);
+    this.data = readProjectsSheet();
+    console.log(`Loaded ${this.data.length} projects from portfolio sheet`);
   }
 
   private loadActivitiesData() {
-    // For now, use sample data. Later this can be configured to read from a second Excel file
-    this.activitiesData = SAMPLE_ACTIVITIES_DATA;
-    console.log(`Loaded ${this.activitiesData.length} activities from data source`);
+    this.activitiesData = readPortfolioSheet();
+    console.log(`Loaded ${this.activitiesData.length} activities from project sheet`);
   }
   
   // Reload data (useful for when Excel file is updated)
@@ -427,7 +496,8 @@ export class ExcelDataService {
   
   // Get project by ID
   getProjectById(id: string): ExcelProject | undefined {
-    return this.data.find(p => p.id.toString() === id || p.projectCode === id);
+
+    return this.data.find(p => p.projectCode.toString() === id || p.id.toString() === id);
   }
   
   // Get overview statistics
@@ -499,25 +569,30 @@ export class ExcelDataService {
   
   // Get all project locations for mapping
   getAllProjectLocations(): Array<{id: string, name: string, code: string, locations: Array<{lat: number, lng: number}>}> {
-    const result = this.data.map(project => ({
-      id: project.id.toString(),
-      name: project.description,
-      code: project.projectCode,
-      locations: parseLocation(project.location || '')
-    }));
-    
+    const result: Array<{id: string, name: string, code: string, locations: Array<{lat: number, lng: number}>}> = [];
+    this.data.forEach(project => {
+      const locations = parseLocation(project.location || '');
+      locations.forEach(loc => {
+      result.push({
+        id: project.id.toString(),
+        name: project.description,
+        code: project.projectCode,
+        locations: [loc]
+      });
+      });
+    });
     return result;
   }
 
   // Get activities by project code
   getActivitiesByProjectCode(projectCode: string): ExcelActivity[] {
-    return this.activitiesData.filter(activity => activity.projectCode === projectCode);
+  return this.activitiesData.filter(activity => activity.projectCode.toLocaleString() === projectCode);
   }
 
   // Get activities by project code and category
   getActivitiesByCategory(projectCode: string, category: string): ExcelActivity[] {
-    return this.activitiesData.filter(activity => 
-      activity.projectCode === projectCode && activity.category === category
+    return this.activitiesData.filter(activity =>
+      String(activity.projectCode) === String(projectCode) && activity.category === category
     );
   }
 
