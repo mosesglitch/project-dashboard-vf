@@ -4,13 +4,14 @@ import { useLocation } from "wouter";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-import {
-  PieChart,
-  DonutChart,
-  BarChart,
-  ColumnChart,
-} from "@ui5/webcomponents-react-charts";
-import { Link } from "react-router-dom";
+// Temporarily remove problematic UI5 charts to fix runtime errors
+// import {
+//   PieChart,
+//   DonutChart,
+//   BarChart,
+//   ColumnChart,
+// } from "@ui5/webcomponents-react-charts";
+import { Link } from "wouter";
 // Fix default markers in react-leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -371,13 +372,10 @@ export default function UI5Dashboard() {
               >
                 <div style={{ flex: 1, padding: "1rem", minHeight: 0 }}>
                   {spendingStats ? (
-                    <DonutChart
-                      dataset={formatChartData(spendingStats)}
-                      dimension={{ accessor: "name" }}
-                      measure={{ accessor: "value" }}
-                      noLegend={false}
-                      chartConfig={{ height: 250 }}
-                    />
+                    <div style={{ height: 250, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', border: '1px dashed #ccc' }}>
+                      <Text>Spending Categories Chart</Text>
+                      <Text style={{ fontSize: 'small', marginTop: '0.5rem' }}>Data available: {Object.keys(spendingStats).length} categories</Text>
+                    </div>
                   ) : (
                     <Text>Loading...</Text>
                   )}
@@ -402,13 +400,10 @@ export default function UI5Dashboard() {
               >
                 <div style={{ flex: 1, padding: "1rem", minHeight: 0 }}>
                   {performanceStats ? (
-                    <DonutChart
-                      dataset={formatChartData(performanceStats)}
-                      dimension={{ accessor: "name" }}
-                      measure={{ accessor: "value" }}
-                      noLegend={false}
-                      chartConfig={{ height: 250 }}
-                    />
+                    <div style={{ height: 250, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', border: '1px dashed #ccc' }}>
+                      <Text>Performance Status Chart</Text>
+                      <Text style={{ fontSize: 'small', marginTop: '0.5rem' }}>Data available: {Object.keys(performanceStats).length} categories</Text>
+                    </div>
                   ) : (
                     <Text>Loading...</Text>
                   )}
@@ -433,12 +428,10 @@ export default function UI5Dashboard() {
               >
                 <div style={{ flex: 1, padding: "1rem", minHeight: 0 }}>
                   {divisionStats ? (
-                    <ColumnChart
-                      dataset={formatChartData(divisionStats)}
-                      dimensions={[{ accessor: "name", label: "Division" }]}
-                      measures={[{ accessor: "value", label: "Projects" }]}
-                      chartConfig={{ height: 250 }}
-                    />
+                    <div style={{ height: 250, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', border: '1px dashed #ccc' }}>
+                      <Text>Division Projects Chart</Text>
+                      <Text style={{ fontSize: 'small', marginTop: '0.5rem' }}>Data available: {Object.keys(divisionStats).length} divisions</Text>
+                    </div>
                   ) : (
                     <Text>Loading...</Text>
                   )}
