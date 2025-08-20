@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useParams, Link } from "wouter";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -95,6 +96,7 @@ const getProgressColor = (percentageComplete: number | string) => {
 };
 
 export default function ProjectDetailsDashboard() {
+  const [startDateForUpcoming, setStartDateForUpcoming] = useState<string>("");
   const { id } = useParams();
 
   // Fetch project data
@@ -286,14 +288,16 @@ export default function ProjectDetailsDashboard() {
         day: "numeric",
       })
       : "";
-
+     if (!startDateForUpcoming) {
+      setStartDateForUpcoming(startDateLabel);
+    }
     return (
       <TimelineChart
         dataset={adjustedDataset}
         isDiscrete
         start={start}
         totalDuration={16}
-        columnTitle={`Duration Starts(${startDateLabel})`}
+        columnTitle={`Duration`}
         style={{ width: "100%", paddingBottom: "2rem" }}
       />
     );
@@ -335,7 +339,7 @@ export default function ProjectDetailsDashboard() {
       <div className="p-4 md:p-6">
         {/* Header with Back Button */}
         <div className="mb-6 flex items-center gap- justify-between">
-          
+
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
               Project {project.projectCode}
@@ -570,8 +574,8 @@ export default function ProjectDetailsDashboard() {
                         <div
                           key={index}
                           className={`flex items-center justify-between p-3 border rounded-lg transition-colors ${isComplete
-                              ? 'bg-green-50 dark:bg-green-950/20 border-green-200'
-                              : 'bg-gray-50 dark:bg-gray-800 border-gray-200'
+                            ? 'bg-green-50 dark:bg-green-950/20 border-green-200'
+                            : 'bg-gray-50 dark:bg-gray-800 border-gray-200'
                             }`}
                         >
                           <div className="flex items-center gap-3">
@@ -655,6 +659,11 @@ export default function ProjectDetailsDashboard() {
                   <Calendar className="h-5 w-5" />
                   Upcoming Activities ({upcomingActivities?.length || 0})
                 </CardTitle>
+                <p>
+                  <span className="text-xs text-muted-foreground">
+                    Next 14 days of activities (from {startDateForUpcoming || 'N/A'})
+                  </span>
+                </p>
               </CardHeader>
               <CardContent>
                 <div className="overflow-x-auto">
