@@ -47,7 +47,12 @@ import {
   Label,
   Text,
 } from "@ui5/webcomponents-react";
-
+import {
+  PieChart,
+  DonutChart,
+  BarChart,
+  ColumnChart,
+} from "@ui5/webcomponents-react-charts";
 // UI5 Charts - temporarily disabled due to runtime errors
 // import {
 //   PieChart,
@@ -356,86 +361,92 @@ export default function UI5Dashboard() {
             >
               {/* Spending Categories Pie Chart */}
               <Card
-                style={{
-                  minWidth: "350px",
-                  maxWidth: "400px",
-                  height: "450px",
-                  display: "flex",
-                  flexDirection: "column",
-                }}
-                header={
-                  <CardHeader
-                    titleText="Spending Categories"
-                    data-testid="card-spending-chart"
-                  />
-                }
+              style={{
+                minWidth: "350px",
+                maxWidth: "400px",
+                height: "450px",
+                display: "flex",
+                flexDirection: "column",
+              }}
+              header={
+                <CardHeader
+                titleText="Spending Categories"
+                data-testid="card-spending-chart"
+                />
+              }
               >
-                <div style={{ flex: 1, padding: "1rem", minHeight: 0 }}>
-                  {spendingStats ? (
-                    <div style={{ height: 250, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', border: '1px dashed #ccc' }}>
-                      <Text>Spending Categories Chart</Text>
-                      <Text style={{ fontSize: 'small', marginTop: '0.5rem' }}>Data available: {Object.keys(spendingStats).length} categories</Text>
-                    </div>
-                  ) : (
-                    <Text>Loading...</Text>
-                  )}
-                </div>
+              <div style={{ flex: 1, padding: "1rem", minHeight: 0 }}>
+                {spendingStats ? (
+                <PieChart
+                  dataset={formatChartData(spendingStats)}
+                  dimensions={[{ accessor: "name" }]}
+                  measures={[{ accessor: "value" }]}
+                  chartConfig={{ height: 250 }}
+                />
+                ) : (
+                <Text>Loading...</Text>
+                )}
+              </div>
               </Card>
 
               {/* Project Status by Performance Category Pie Chart */}
               <Card
-                style={{
-                  minWidth: "350px",
-                  maxWidth: "400px",
-                  height: "450px",
-                  display: "flex",
-                  flexDirection: "column",
-                }}
-                header={
-                  <CardHeader
-                    titleText="Project Status (Performance Category)"
-                    data-testid="card-status-chart"
-                  />
-                }
+              style={{
+                minWidth: "350px",
+                maxWidth: "400px",
+                height: "450px",
+                display: "flex",
+                flexDirection: "column",
+              }}
+              header={
+                <CardHeader
+                titleText="Project Status (Performance Category)"
+                data-testid="card-status-chart"
+                />
+              }
               >
-                <div style={{ flex: 1, padding: "1rem", minHeight: 0 }}>
-                  {performanceStats ? (
-                    <div style={{ height: 250, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', border: '1px dashed #ccc' }}>
-                      <Text>Performance Status Chart</Text>
-                      <Text style={{ fontSize: 'small', marginTop: '0.5rem' }}>Data available: {Object.keys(performanceStats).length} categories</Text>
-                    </div>
-                  ) : (
-                    <Text>Loading...</Text>
-                  )}
-                </div>
+              <div style={{ flex: 1, padding: "1rem", minHeight: 0 }}>
+                {performanceStats ? (
+                <PieChart
+                  dataset={formatChartData(performanceStats)}
+                  dimensions={[{ accessor: "name" }]}
+                  measures={[{ accessor: "value" }]}
+                  chartConfig={{ height: 250 }}
+                />
+                ) : (
+                <Text>Loading...</Text>
+                )}
+              </div>
               </Card>
 
               {/* Projects by Division Bar Chart */}
               <Card
-                style={{
-                  minWidth: "350px",
-                  maxWidth: "400px",
-                  height: "450px",
-                  display: "flex",
-                  flexDirection: "column",
-                }}
-                header={
-                  <CardHeader
-                    titleText="Projects by Division"
-                    data-testid="card-division-chart"
-                  />
-                }
+              style={{
+                minWidth: "350px",
+                maxWidth: "400px",
+                height: "450px",
+                display: "flex",
+                flexDirection: "column",
+              }}
+              header={
+                <CardHeader
+                titleText="Projects by Division"
+                data-testid="card-division-chart"
+                />
+              }
               >
-                <div style={{ flex: 1, padding: "1rem", minHeight: 0 }}>
-                  {divisionStats ? (
-                    <div style={{ height: 250, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', border: '1px dashed #ccc' }}>
-                      <Text>Division Projects Chart</Text>
-                      <Text style={{ fontSize: 'small', marginTop: '0.5rem' }}>Data available: {Object.keys(divisionStats).length} divisions</Text>
-                    </div>
-                  ) : (
-                    <Text>Loading...</Text>
-                  )}
-                </div>
+              <div style={{ flex: 1, padding: "1rem", minHeight: 0 }}>
+                {divisionStats ? (
+                <BarChart
+                  dataset={formatChartData(divisionStats)}
+                  dimensions={[{ accessor: "name", label: "Division" }]}
+                  measures={[{ accessor: "value", label: "Projects" }]}
+                  chartConfig={{ height: 250 }}
+                />
+                ) : (
+                <Text>Loading...</Text>
+                )}
+              </div>
               </Card>
             </FlexBox>
           </ObjectPageSubSection>

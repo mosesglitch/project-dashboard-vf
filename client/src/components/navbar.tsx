@@ -16,7 +16,7 @@ export function Navbar() {
 
   return (
     <nav className="border-b bg-white dark:bg-gray-900 sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="px-2 sm:px-6 lg:px-1">
         <div className="flex justify-between h-16">
           {/* Logo and Company Name */}
           <div className="flex items-center">
@@ -27,10 +27,10 @@ export function Navbar() {
                 </div>
                 <div>
                   <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-                    ProjectVision
+                    Burhani Engineers
                   </h1>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
-                    Management Dashboard
+                    Project Performance Dashboard
                   </p>
                 </div>
               </div>

@@ -31,12 +31,7 @@ export function DashboardHeader({ filters, onFiltersChange }: DashboardHeaderPro
           {/* Organization Logo/Name */}
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <h1 
-                className="text-xl font-bold text-gray-900 dark:text-white"
-                data-testid="text-organization-name"
-              >
-                TechCorp Engineering
-              </h1>
+             
             </div>
           </div>
 

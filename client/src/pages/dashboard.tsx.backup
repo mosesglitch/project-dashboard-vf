@@ -91,14 +91,7 @@ export default function Dashboard() {
       <Navbar />
       <div className="p-4 md:p-6">
         {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-          TechCorp Engineering Dashboard
-        </h1>
-        <p className="text-gray-600 dark:text-gray-300">
-          Project portfolio management and monitoring
-        </p>
-      </div>
+      
 
       {/* Filters */}
       <div className="mb-6 flex flex-wrap gap-4 items-center">

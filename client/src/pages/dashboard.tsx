@@ -13,6 +13,7 @@ import { Navbar } from "@/components/navbar";
 import { ProjectMap } from "@/components/dashboard/project-map";
 import type { ExcelProject } from "@shared/excel-schema";
 import type { DashboardFilters } from "@/lib/types";
+import { BarChart, ColumnChart, DonutChart } from '@ui5/webcomponents-react-charts';
 
 export default function Dashboard() {
   const [filters, setFilters] = useState<DashboardFilters>({
@@ -86,286 +87,309 @@ export default function Dashboard() {
     }
     return <Badge variant="outline">{status}</Badge>;
   };
-
+  console.log(performanceStats, spendingStats, "Hello world")
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Navbar />
       <div className="p-4 md:p-6">
         {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-          TechCorp Engineering Dashboard
-        </h1>
-        <p className="text-gray-600 dark:text-gray-300">
-          Project portfolio management and monitoring
-        </p>
-      </div>
 
-      {/* Filters */}
-      <div className="mb-6 flex flex-wrap gap-4 items-center">
-        <Input
-          type="date"
-          placeholder="From Date"
-          value={filters.dateFrom}
-          onChange={(e) => setFilters({ ...filters, dateFrom: e.target.value })}
-          className="w-auto"
-          data-testid="input-date-from"
-        />
-        <Input
-          type="date"
-          placeholder="To Date"
-          value={filters.dateTo}
-          onChange={(e) => setFilters({ ...filters, dateTo: e.target.value })}
-          className="w-auto"
-          data-testid="input-date-to"
-        />
-        <Select value={filters.status} onValueChange={(value) => setFilters({ ...filters, status: value })}>
-          <SelectTrigger className="w-48" data-testid="select-status-filter">
-            <SelectValue placeholder="All Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Status</SelectItem>
-            <SelectItem value="active">Active</SelectItem>
-            <SelectItem value="completed">Completed</SelectItem>
-            <SelectItem value="delayed">Delayed</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={filters.division} onValueChange={(value) => setFilters({ ...filters, division: value })}>
-          <SelectTrigger className="w-48" data-testid="select-division-filter">
-            <SelectValue placeholder="All Divisions" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Divisions</SelectItem>
-            <SelectItem value="mechanical">Mechanical</SelectItem>
-            <SelectItem value="electrical">Electrical</SelectItem>
-            <SelectItem value="instrumentation">Instrumentation</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
 
-      {/* Main Dashboard Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* KPI Cards */}
-        <div className="lg:col-span-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
-            <Card data-testid="tile-total-projects">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Projects</CardTitle>
-                <BarChart3 className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {kpiData?.totalProjects ? Math.round(kpiData.totalProjects).toString() : "0"}
-                </div>
-                <p className="text-xs text-muted-foreground">Active portfolio</p>
-              </CardContent>
-            </Card>
-
-            <Card data-testid="tile-total-budget">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Budget</CardTitle>
-                <DollarSign className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {kpiData ? formatCurrency(Math.round(kpiData.totalBudget)) : "$0"}
-                </div>
-                <p className="text-xs text-muted-foreground">Allocated funds</p>
-              </CardContent>
-            </Card>
-
-            <Card data-testid="tile-actual-spend">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Actual Spend</CardTitle>
-                <TrendingUp className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-orange-600">
-                  {kpiData ? formatCurrency(Math.round(kpiData.actualSpend)) : "$0"}
-                </div>
-                <p className="text-xs text-muted-foreground">Current spending</p>
-              </CardContent>
-            </Card>
-
-            <Card data-testid="tile-amount-received">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Amount Received</CardTitle>
-                <DollarSign className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-blue-600">
-                  {kpiData ? formatCurrency(Math.round(kpiData.amountReceived)) : "$0"}
-                </div>
-                <p className="text-xs text-muted-foreground">Revenue collected</p>
-              </CardContent>
-            </Card>
-
-            <Card data-testid="tile-total-risks">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Risks</CardTitle>
-                <AlertTriangle className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-red-600">
-                  {kpiData?.totalRisks ? Math.round(kpiData.totalRisks).toString() : "0"}
-                </div>
-                <p className="text-xs text-muted-foreground">Active risks</p>
-              </CardContent>
-            </Card>
-          </div>
+        {/* Filters */}
+        <div className="mb-6 flex flex-wrap gap-4 items-center">
+          <Input
+            type="date"
+            placeholder="From Date"
+            value={filters.dateFrom}
+            onChange={(e) => setFilters({ ...filters, dateFrom: e.target.value })}
+            className="w-auto"
+            data-testid="input-date-from"
+          />
+          <Input
+            type="date"
+            placeholder="To Date"
+            value={filters.dateTo}
+            onChange={(e) => setFilters({ ...filters, dateTo: e.target.value })}
+            className="w-auto"
+            data-testid="input-date-to"
+          />
+          <Select value={filters.status} onValueChange={(value) => setFilters({ ...filters, status: value })}>
+            <SelectTrigger className="w-48" data-testid="select-status-filter">
+              <SelectValue placeholder="All Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value="active">Active</SelectItem>
+              <SelectItem value="completed">Completed</SelectItem>
+              <SelectItem value="delayed">Delayed</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={filters.division} onValueChange={(value) => setFilters({ ...filters, division: value })}>
+            <SelectTrigger className="w-48" data-testid="select-division-filter">
+              <SelectValue placeholder="All Divisions" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Divisions</SelectItem>
+              <SelectItem value="mechanical">Mechanical</SelectItem>
+              <SelectItem value="electrical">Electrical</SelectItem>
+              <SelectItem value="instrumentation">Instrumentation</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
-        {/* Charts Row */}
-        <div className="lg:col-span-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            {/* Spending Categories Chart */}
-            <Card data-testid="card-spending-chart">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <PieChart className="h-5 w-5" />
-                  Spending Categories
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  {spendingStats && Object.entries(spendingStats).map(([category, count]) => (
-                    <div key={category} className="flex justify-between items-center">
-                      <span className="text-sm">{category}</span>
-                      <Badge variant="outline">{count as number}</Badge>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+        {/* Main Dashboard Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* KPI Cards */}
+          <div className="lg:col-span-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+              <Card data-testid="tile-total-projects">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Projects</CardTitle>
+                  <BarChart3 className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    {kpiData?.totalProjects ? Math.round(kpiData.totalProjects).toString() : "0"}
+                  </div>
+                  <p className="text-xs text-muted-foreground">Active portfolio</p>
+                </CardContent>
+              </Card>
 
-            {/* Performance Status Chart */}
-            <Card data-testid="card-status-chart">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BarChart3 className="h-5 w-5" />
-                  Performance Status
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  {performanceStats && Object.entries(performanceStats).map(([status, count]) => (
-                    <div key={status} className="flex justify-between items-center">
-                      <span className="text-sm">{status}</span>
-                      <Badge variant={status === 'On Track' ? 'default' : 'destructive'}>
-                        {count as number}
-                      </Badge>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+              <Card data-testid="tile-total-budget">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Budget</CardTitle>
+                  <DollarSign className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    {kpiData ? formatCurrency(Math.round(kpiData.totalBudget)) : "$0"}
+                  </div>
+                  <p className="text-xs text-muted-foreground">Allocated funds</p>
+                </CardContent>
+              </Card>
 
-            {/* Division Projects Chart */}
-            <Card data-testid="card-division-chart">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BarChart3 className="h-5 w-5" />
-                  Projects by Division
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  {divisionStats && Object.entries(divisionStats).map(([division, count]) => (
-                    <div key={division} className="flex justify-between items-center">
-                      <span className="text-sm">{division}</span>
-                      <Badge variant="outline">{count as number}</Badge>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+              <Card data-testid="tile-actual-spend">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Actual Spend</CardTitle>
+                  <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-orange-600">
+                    {kpiData ? formatCurrency(Math.round(kpiData.actualSpend)) : "$0"}
+                  </div>
+                  <p className="text-xs text-muted-foreground">Current spending</p>
+                </CardContent>
+              </Card>
+
+              <Card data-testid="tile-amount-received">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Amount Received</CardTitle>
+                  <DollarSign className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-blue-600">
+                    {kpiData ? formatCurrency(Math.round(kpiData.amountReceived)) : "$0"}
+                  </div>
+                  <p className="text-xs text-muted-foreground">Revenue collected</p>
+                </CardContent>
+              </Card>
+
+              <Card data-testid="tile-total-risks">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Risks</CardTitle>
+                  <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-red-600">
+                    {kpiData?.totalRisks ? Math.round(kpiData.totalRisks).toString() : "0"}
+                  </div>
+                  <p className="text-xs text-muted-foreground">Active risks</p>
+                </CardContent>
+              </Card>
+            </div>
           </div>
-        </div>
 
-        {/* Projects Table */}
-        <div className="lg:col-span-4">
-          <Card data-testid="card-projects-table">
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Project Portfolio</CardTitle>
-              <Button variant="outline" data-testid="button-export-projects">
-                Export Data
-              </Button>
-            </CardHeader>
-            <CardContent>
-              <div className="overflow-x-auto">
-                <Table data-testid="table-projects">
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Project Code</TableHead>
-                      <TableHead>Description</TableHead>
-                      <TableHead>Division</TableHead>
-                      <TableHead>Progress</TableHead>
-                      <TableHead>Budget</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Budget Status</TableHead>
-                      <TableHead>Risks</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {projectsLoading ? (
+          {/* Charts Row */}
+          <div className="lg:col-span-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+              {/* Spending Categories Chart */}
+              <Card data-testid="card-spending-chart">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <PieChart className="h-5 w-5" />
+                    Spending Categories
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {spendingStats ? (
+                    <DonutChart
+                      dataset={Object.entries(spendingStats).map(([category, value]) => ({ category, value }))}
+                      dimension={{ accessor: "category" }}
+                      measures={[
+                        {
+                          accessor: "value",
+                          label: "Spend",
+                          color: "#3B82F6"
+                        }
+                      ]}
+                    />
+                  ) : (
+                    <div className="space-y-2">
+                      <span className="text-sm text-muted-foreground">No data</span>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Performance Status Chart */}
+              <Card data-testid="card-status-chart">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <PieChart className="h-5 w-5" />
+                    Performance Status
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {performanceStats ? (
+                    <DonutChart
+                      dataset={Object.entries(performanceStats).map(([name, value]) => ({ name, value }))}
+                      dimension={{ accessor: "name" }}
+                      measures={[
+                        {
+                          accessor: "value",
+                          label: "Projects",
+                          color: "#3B82F6"
+                        }
+                      ]}
+                    />
+                  ) : (
+                    <div className="space-y-2">
+                      <span className="text-sm text-muted-foreground">No data</span>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Division Projects Chart */}
+              <Card data-testid="card-division-chart">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <BarChart3 className="h-5 w-5" />
+                    Projects by Division
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {divisionStats ? (
+                    <BarChart
+                      dataset={Object.entries(divisionStats).map(([name, value]) => ({ name, value }))}
+                      dimensions={[
+                        {
+                          accessor: "name",
+                          formatter: (name: string) => name
+                        }
+                      ]}
+                      measures={[
+                        {
+                          accessor: "value",
+                          label: "Projects",
+                          color: "#3B82F6"
+                        }
+                      ]}
+                    />
+                  ) : (
+                    <div className="space-y-2">
+                      <span className="text-sm text-muted-foreground">No data</span>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+
+          {/* Projects Table */}
+          <div className="lg:col-span-4">
+            <Card data-testid="card-projects-table">
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle>Project Portfolio</CardTitle>
+                <Button variant="outline" data-testid="button-export-projects">
+                  Export Data
+                </Button>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <Table data-testid="table-projects">
+                    <TableHeader>
                       <TableRow>
-                        <TableCell colSpan={8} className="text-center py-4">
-                          Loading projects...
-                        </TableCell>
+                        <TableHead>Project Code</TableHead>
+                        <TableHead>Description</TableHead>
+                        <TableHead>Division</TableHead>
+                        <TableHead>Progress</TableHead>
+                        <TableHead>Budget</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Budget Status</TableHead>
+                        <TableHead>Risks</TableHead>
                       </TableRow>
-                    ) : projects && projects.length > 0 ? (
-                      projects.map((project) => (
-                        <TableRow 
-                          key={project.id} 
-                          className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
-                          onClick={() => window.open(`/project/${project.projectCode}`, '_blank')}
-                          data-testid={`row-project-${project.projectCode}`}
-                        >
-                          <TableCell className="font-medium">
-                            <Link href={`/project/${project.projectCode}`} className="text-blue-600 hover:underline">
-                              {project.projectCode}
-                            </Link>
-                          </TableCell>
-                          <TableCell className="max-w-xs truncate" title={project.description}>
-                            {project.description}
-                          </TableCell>
-                          <TableCell>{project.division}</TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <Progress 
-                                value={project.percentageComplete * 100} 
-                                className="w-16 h-2"
-                              />
-                              <span className="text-sm text-gray-600">
-                                {(project.percentageComplete * 100).toFixed(0)}%
-                              </span>
-                            </div>
-                          </TableCell>
-                          <TableCell>{formatCurrency(project.budgetAmount)}</TableCell>
-                          <TableCell>{project.performanceCategory ? getStatusBadge(project.performanceCategory) : '-'}</TableCell>
-                          <TableCell>{project.budgetStatusCategory ? getBudgetStatusBadge(project.budgetStatusCategory) : '-'}</TableCell>
-                          <TableCell>
-                            <Badge variant={(project.issuesRisks || 0) > 3 ? "destructive" : "outline"}>
-                              {project.issuesRisks || 0}
-                            </Badge>
+                    </TableHeader>
+                    <TableBody>
+                      {projectsLoading ? (
+                        <TableRow>
+                          <TableCell colSpan={8} className="text-center py-4">
+                            Loading projects...
                           </TableCell>
                         </TableRow>
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell colSpan={8} className="text-center py-4">
-                          No projects found
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
-            </CardContent>
-          </Card>
+                      ) : projects && projects.length > 0 ? (
+                        projects.map((project) => (
+                          <TableRow
+                            key={project.id}
+                            className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
+                            onClick={() => window.open(`/project/${project.projectCode}`, '_blank')}
+                            data-testid={`row-project-${project.projectCode}`}
+                          >
+                            <TableCell className="font-medium">
+                              <Link href={`/project/${project.projectCode}`} className="text-blue-600 hover:underline">
+                                {project.projectCode}
+                              </Link>
+                            </TableCell>
+                            <TableCell className="max-w-xs truncate" title={project.description}>
+                              {project.description}
+                            </TableCell>
+                            <TableCell>{project.division}</TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                <Progress
+                                  value={project.percentageComplete * 100}
+                                  className="w-16 h-2"
+                                />
+                                <span className="text-sm text-gray-600">
+                                  {(project.percentageComplete * 100).toFixed(0)}%
+                                </span>
+                              </div>
+                            </TableCell>
+                            <TableCell>{formatCurrency(project.budgetAmount)}</TableCell>
+                            <TableCell>{project.performanceCategory ? getStatusBadge(project.performanceCategory) : '-'}</TableCell>
+                            <TableCell>{project.budgetStatusCategory ? getBudgetStatusBadge(project.budgetStatusCategory) : '-'}</TableCell>
+                            <TableCell>
+                              <Badge variant={(project.issuesRisks || 0) > 3 ? "destructive" : "outline"}>
+                                {project.issuesRisks || 0}
+                              </Badge>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      ) : (
+                        <TableRow>
+                          <TableCell colSpan={8} className="text-center py-4">
+                            No projects found
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
-      </div>
-      
+
         {/* Project Locations Map */}
         <div className="mt-6">
           <ProjectMap projects={projects || []} />
