@@ -443,47 +443,119 @@ export default function ProjectDetailsDashboard() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <BarChart3 className="h-5 w-5" />
-              Budget Consumption Analysis
+              Budget vs Time vs Scope Analysis
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {/* Budget Overview */}
-              <div className="grid grid-cols-3 gap-4 mb-4">
+            <div className="space-y-6">
+              {/* Performance Comparison Chart */}
+              <div className="space-y-4">
+                <h4 className="text-sm font-medium text-muted-foreground">Performance Comparison</h4>
+                
+                {/* Budget vs Expected Progress */}
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span>Budget Consumption</span>
+                    <span className={`font-medium ${
+                      (project.budgetSpent || 0) > (project.scopeCompletion || 0) ? 'text-red-600' : 'text-green-600'
+                    }`}>
+                      {((project.budgetSpent || 0) * 100).toFixed(1)}%
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+                    <div 
+                      className={`h-3 rounded-full transition-all duration-300 ${
+                        (project.budgetSpent || 0) > (project.scopeCompletion || 0) ? 'bg-red-500' : 'bg-green-500'
+                      }`}
+                      style={{ width: `${Math.min((project.budgetSpent || 0) * 100, 100)}%` }}
+                    ></div>
+                  </div>
+                </div>
+
+                {/* Scope Completion */}
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span>Scope Completion</span>
+                    <span className="font-medium text-blue-600">
+                      {((project.scopeCompletion || 0) * 100).toFixed(1)}%
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+                    <div 
+                      className="h-3 rounded-full bg-blue-500 transition-all duration-300"
+                      style={{ width: `${(project.scopeCompletion || 0) * 100}%` }}
+                    ></div>
+                  </div>
+                </div>
+
+                {/* Time Completion */}
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span>Time Elapsed</span>
+                    <span className={`font-medium ${
+                      (project.timeCompletion || 0) > 1 ? 'text-red-600' : 'text-orange-600'
+                    }`}>
+                      {((project.timeCompletion || 0) * 100).toFixed(1)}%
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+                    <div 
+                      className={`h-3 rounded-full transition-all duration-300 ${
+                        (project.timeCompletion || 0) > 1 ? 'bg-red-500' : 'bg-orange-500'
+                      }`}
+                      style={{ width: `${Math.min((project.timeCompletion || 0) * 100, 100)}%` }}
+                    ></div>
+                  </div>
+                </div>
+
+                {/* Performance Indicators */}
+                <div className="grid grid-cols-3 gap-3 pt-2 border-t">
+                  <div className="text-center">
+                    <p className="text-xs text-muted-foreground">Budget Efficiency</p>
+                    <p className={`text-sm font-bold ${
+                      (project.scopeCompletion || 0) > (project.budgetSpent || 0) ? 'text-green-600' : 'text-red-600'
+                    }`}>
+                      {(project.scopeCompletion || 0) > 0 ? 
+                        (((project.scopeCompletion || 0) / (project.budgetSpent || 0.01)) * 100).toFixed(0) + '%' : 
+                        'N/A'
+                      }
+                    </p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-xs text-muted-foreground">Schedule Performance</p>
+                    <p className={`text-sm font-bold ${
+                      (project.scopeCompletion || 0) > (project.timeCompletion || 0) ? 'text-green-600' : 'text-red-600'
+                    }`}>
+                      {(project.timeCompletion || 0) > 0 ? 
+                        (((project.scopeCompletion || 0) / (project.timeCompletion || 0.01)) * 100).toFixed(0) + '%' : 
+                        'N/A'
+                      }
+                    </p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-xs text-muted-foreground">Overall Index</p>
+                    <p className="text-sm font-bold text-blue-600">
+                      {(project.performanceIndex || 0).toFixed(2)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Financial Summary */}
+              <div className="grid grid-cols-3 gap-4 pt-4 border-t">
                 <div className="text-center">
-                  <p className="text-sm text-muted-foreground">Budget</p>
+                  <p className="text-xs text-muted-foreground">Budget</p>
                   <p className="text-lg font-bold">{formatCurrency(project.budgetAmount)}</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-sm text-muted-foreground">Spent</p>
+                  <p className="text-xs text-muted-foreground">Spent</p>
                   <p className="text-lg font-bold text-orange-600">{formatCurrency(project.totalAmountSpent)}</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-sm text-muted-foreground">Remaining</p>
+                  <p className="text-xs text-muted-foreground">Remaining</p>
                   <p className="text-lg font-bold text-green-600">
                     {formatCurrency(Math.max(0, project.budgetAmount - project.totalAmountSpent))}
                   </p>
-                </div>
-              </div>
-              
-              {/* Budget Progress Bar */}
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span>Budget Utilization</span>
-                  <span>{((project.budgetSpent || 0) * 100).toFixed(1)}%</span>
-                </div>
-                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4">
-                  <div 
-                    className={`h-4 rounded-full transition-all duration-300 ${
-                      (project.budgetSpent || 0) > 1 ? 'bg-red-500' : 
-                      (project.budgetSpent || 0) > 0.8 ? 'bg-yellow-500' : 'bg-green-500'
-                    }`}
-                    style={{ width: `${Math.min((project.budgetSpent || 0) * 100, 100)}%` }}
-                  ></div>
-                </div>
-                <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>$0</span>
-                  <span>{formatCurrency(project.budgetAmount)}</span>
                 </div>
               </div>
 
