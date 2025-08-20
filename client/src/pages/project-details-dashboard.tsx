@@ -25,7 +25,14 @@ import {
 
 import type { ExcelProject, ExcelActivity } from "@shared/excel-schema";
 
-const formatDate = (excelDate: number) => {
+const formatDate = (excelDate: number | string) => {
+  if (typeof excelDate === 'string') {
+    return new Date(excelDate).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short", 
+      day: "numeric",
+    });
+  }
   // Excel date serial number to JavaScript Date
   const excelEpoch = new Date(1899, 11, 30); // Excel's epoch
   const jsDate = new Date(excelEpoch.getTime() + (excelDate * 24 * 60 * 60 * 1000));
@@ -69,15 +76,17 @@ const getBudgetStatusBadge = (status: string) => {
   return <Badge variant="outline">{status}</Badge>;
 };
 
-const getStatusIcon = (percentageComplete: number) => {
-  if (percentageComplete >= 1) return <CheckCircle className="w-4 h-4 text-green-600" />;
-  if (percentageComplete > 0) return <Clock className="w-4 h-4 text-yellow-600" />;
+const getStatusIcon = (percentageComplete: number | string) => {
+  const progress = typeof percentageComplete === 'string' ? parseFloat(percentageComplete) || 0 : percentageComplete;
+  if (progress >= 1) return <CheckCircle className="w-4 h-4 text-green-600" />;
+  if (progress > 0) return <Clock className="w-4 h-4 text-yellow-600" />;
   return <Calendar className="w-4 h-4 text-blue-600" />;
 };
 
-const getProgressColor = (percentageComplete: number) => {
-  if (percentageComplete >= 1) return "bg-green-500";
-  if (percentageComplete > 0.8) return "bg-yellow-500";
+const getProgressColor = (percentageComplete: number | string) => {
+  const progress = typeof percentageComplete === 'string' ? parseFloat(percentageComplete) || 0 : percentageComplete;
+  if (progress >= 1) return "bg-green-500";
+  if (progress > 0.8) return "bg-yellow-500";
   return "bg-blue-500";
 };
 
@@ -174,9 +183,9 @@ export default function ProjectDetailsDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {(project.scopeCompletion * 100).toFixed(0)}%
+              {((project.scopeCompletion || 0) * 100).toFixed(0)}%
             </div>
-            <Progress value={project.scopeCompletion * 100} className="mt-2" />
+            <Progress value={(project.scopeCompletion || 0) * 100} className="mt-2" />
           </CardContent>
         </Card>
 
@@ -187,9 +196,9 @@ export default function ProjectDetailsDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-orange-600">
-              {(project.timeCompletion * 100).toFixed(0)}%
+              {((project.timeCompletion || 0) * 100).toFixed(0)}%
             </div>
-            <Progress value={Math.min(project.timeCompletion * 100, 100)} className="mt-2" />
+            <Progress value={Math.min((project.timeCompletion || 0) * 100, 100)} className="mt-2" />
           </CardContent>
         </Card>
 
@@ -200,7 +209,7 @@ export default function ProjectDetailsDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-lg font-medium">
-              {getStatusBadge(project.performanceCategory)}
+              {getStatusBadge(project.performanceCategory || 'Unknown')}
             </div>
             <p className="text-xs text-muted-foreground mt-1">Current status</p>
           </CardContent>
@@ -213,7 +222,7 @@ export default function ProjectDetailsDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-lg font-medium">
-              {getBudgetStatusBadge(project.budgetStatusCategory)}
+              {getBudgetStatusBadge(project.budgetStatusCategory || 'Unknown')}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
               {formatCurrency(project.budgetAmount)}
@@ -228,7 +237,7 @@ export default function ProjectDetailsDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-red-600">
-              {(project.deviationProfitMargin * 100).toFixed(1)}%
+              {((project.deviationProfitMargin || 0) * 100).toFixed(1)}%
             </div>
             <p className="text-xs text-muted-foreground">From projected</p>
           </CardContent>
@@ -313,11 +322,11 @@ export default function ProjectDetailsDashboard() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-muted-foreground">Start Date</p>
-                  <p className="text-lg font-semibold">{formatDate(project.startDate)}</p>
+                  <p className="text-lg font-semibold">{formatDate(project.startDate || 0)}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Finish Date</p>
-                  <p className="text-lg font-semibold">{formatDate(project.finishDate)}</p>
+                  <p className="text-lg font-semibold">{formatDate(project.finishDate || 0)}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Division</p>
@@ -326,7 +335,7 @@ export default function ProjectDetailsDashboard() {
                 <div>
                   <p className="text-sm text-muted-foreground">Performance Index</p>
                   <p className="text-lg font-semibold">
-                    {project.performanceIndex.toFixed(2)}
+                    {(project.performanceIndex || 0).toFixed(2)}
                   </p>
                 </div>
                 <div>
@@ -369,17 +378,21 @@ export default function ProjectDetailsDashboard() {
                       <div>
                         <p className="font-medium text-sm">{milestone.item}</p>
                         <p className="text-xs text-muted-foreground">
-                          {formatDate(milestone.startDate)} - {formatDate(milestone.finishDate)}
+                          {formatDate(milestone.startDate || 0)} - {formatDate(milestone.finishDate || 0)}
                         </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
                       <Progress 
-                        value={(milestone.percentageComplete || 0) * 100} 
+                        value={typeof milestone.percentageComplete === 'string' ? 
+                          (parseFloat(milestone.percentageComplete) || 0) * 100 : 
+                          (milestone.percentageComplete || 0) * 100} 
                         className="w-16 h-2" 
                       />
                       <span className="text-xs text-muted-foreground">
-                        {((milestone.percentageComplete || 0) * 100).toFixed(0)}%
+                        {typeof milestone.percentageComplete === 'string' ? 
+                          ((parseFloat(milestone.percentageComplete) || 0) * 100).toFixed(0) : 
+                          ((milestone.percentageComplete || 0) * 100).toFixed(0)}%
                       </span>
                     </div>
                   </div>
@@ -425,109 +438,176 @@ export default function ProjectDetailsDashboard() {
           </CardContent>
         </Card>
 
-        {/* Upcoming Activities */}
-        <Card data-testid="card-upcoming-activities">
+        {/* Budget Consumption Chart */}
+        <Card data-testid="card-budget-chart" className="lg:col-span-2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5" />
-              Upcoming Activities ({upcomingActivities?.length || 0})
+              <BarChart3 className="h-5 w-5" />
+              Budget Consumption Analysis
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Activity</TableHead>
-                    <TableHead>Start Date</TableHead>
-                    <TableHead>Finish Date</TableHead>
-                    <TableHead>Progress</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {upcomingActivities && upcomingActivities.length > 0 ? (
-                    upcomingActivities.map((activity, index) => (
-                      <TableRow key={index}>
-                        <TableCell className="font-medium text-sm">{activity.item}</TableCell>
-                        <TableCell className="text-sm">{formatDate(activity.startDate)}</TableCell>
-                        <TableCell className="text-sm">{formatDate(activity.finishDate)}</TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Progress 
-                              value={(activity.percentageComplete || 0) * 100} 
-                              className="w-16 h-2" 
-                            />
-                            <span className="text-xs">
-                              {((activity.percentageComplete || 0) * 100).toFixed(0)}%
-                            </span>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={4} className="text-center text-muted-foreground text-sm">
-                        No upcoming activities
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
+            <div className="space-y-4">
+              {/* Budget Overview */}
+              <div className="grid grid-cols-3 gap-4 mb-4">
+                <div className="text-center">
+                  <p className="text-sm text-muted-foreground">Budget</p>
+                  <p className="text-lg font-bold">{formatCurrency(project.budgetAmount)}</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-sm text-muted-foreground">Spent</p>
+                  <p className="text-lg font-bold text-orange-600">{formatCurrency(project.totalAmountSpent)}</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-sm text-muted-foreground">Remaining</p>
+                  <p className="text-lg font-bold text-green-600">
+                    {formatCurrency(Math.max(0, project.budgetAmount - project.totalAmountSpent))}
+                  </p>
+                </div>
+              </div>
+              
+              {/* Budget Progress Bar */}
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span>Budget Utilization</span>
+                  <span>{((project.budgetSpent || 0) * 100).toFixed(1)}%</span>
+                </div>
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4">
+                  <div 
+                    className={`h-4 rounded-full transition-all duration-300 ${
+                      (project.budgetSpent || 0) > 1 ? 'bg-red-500' : 
+                      (project.budgetSpent || 0) > 0.8 ? 'bg-yellow-500' : 'bg-green-500'
+                    }`}
+                    style={{ width: `${Math.min((project.budgetSpent || 0) * 100, 100)}%` }}
+                  ></div>
+                </div>
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>$0</span>
+                  <span>{formatCurrency(project.budgetAmount)}</span>
+                </div>
+              </div>
 
-        {/* Late Activities */}
-        <Card data-testid="card-late-activities">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-red-500" />
-              Late Activities ({lateActivities?.length || 0})
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Activity</TableHead>
-                    <TableHead>Start Date</TableHead>
-                    <TableHead>Finish Date</TableHead>
-                    <TableHead>Progress</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {lateActivities && lateActivities.length > 0 ? (
-                    lateActivities.map((activity, index) => (
-                      <TableRow key={index} className="bg-red-50 dark:bg-red-950/20">
-                        <TableCell className="font-medium text-sm">{activity.item}</TableCell>
-                        <TableCell className="text-sm">{formatDate(activity.startDate)}</TableCell>
-                        <TableCell className="text-sm">{formatDate(activity.finishDate)}</TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Progress 
-                              value={(activity.percentageComplete || 0) * 100} 
-                              className="w-16 h-2" 
-                            />
-                            <span className="text-xs">
-                              {((activity.percentageComplete || 0) * 100).toFixed(0)}%
-                            </span>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={4} className="text-center text-muted-foreground text-sm">
-                        No late activities
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
+              {/* Margin Analysis */}
+              <div className="grid grid-cols-2 gap-4 pt-4 border-t">
+                <div>
+                  <p className="text-sm text-muted-foreground">Projected Margin</p>
+                  <p className="text-xl font-bold">{((project.projectedGrossMargin || 0) * 100).toFixed(1)}%</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Actual Margin</p>
+                  <p className="text-xl font-bold">{((project.actualGrossMargin || 0) * 100).toFixed(1)}%</p>
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Activities Section - Full Width */}
+      <div className="mt-6">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Upcoming Activities - 3/4 width */}
+          <Card data-testid="card-upcoming-activities" className="lg:col-span-3">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Calendar className="h-5 w-5" />
+                Upcoming Activities ({upcomingActivities?.length || 0})
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Activity</TableHead>
+                      <TableHead>Start Date</TableHead>
+                      <TableHead>Finish Date</TableHead>
+                      <TableHead>Progress</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {upcomingActivities && upcomingActivities.length > 0 ? (
+                      upcomingActivities.map((activity, index) => (
+                        <TableRow key={index}>
+                          <TableCell className="font-medium text-sm">{activity.item}</TableCell>
+                          <TableCell className="text-sm">{formatDate(activity.startDate || 0)}</TableCell>
+                          <TableCell className="text-sm">{formatDate(activity.finishDate || 0)}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Progress 
+                                value={typeof activity.percentageComplete === 'string' ? 
+                                  (parseFloat(activity.percentageComplete) || 0) * 100 : 
+                                  (activity.percentageComplete || 0) * 100} 
+                                className="w-16 h-2" 
+                              />
+                              <span className="text-xs">
+                                {typeof activity.percentageComplete === 'string' ? 
+                                  ((parseFloat(activity.percentageComplete) || 0) * 100).toFixed(0) : 
+                                  ((activity.percentageComplete || 0) * 100).toFixed(0)}%
+                              </span>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={4} className="text-center text-muted-foreground text-sm">
+                          No upcoming activities
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Late Activities - 1/4 width - Compact */}
+          <Card data-testid="card-late-activities" className="lg:col-span-1">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-sm">
+                <AlertTriangle className="h-4 w-4 text-red-500" />
+                Late Tasks ({lateActivities?.length || 0})
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2 max-h-96 overflow-y-auto">
+                {lateActivities && lateActivities.length > 0 ? (
+                  lateActivities.map((activity, index) => (
+                    <div
+                      key={index}
+                      className="p-2 border border-red-200 rounded-lg bg-red-50 dark:bg-red-950/20"
+                    >
+                      <div className="space-y-1">
+                        <p className="font-medium text-xs text-red-800 dark:text-red-200">
+                          {activity.item}
+                        </p>
+                        <div className="flex items-center justify-between text-xs text-muted-foreground">
+                          <span>{formatDate(activity.finishDate || 0)}</span>
+                          <div className="flex items-center gap-1">
+                            <Progress 
+                              value={typeof activity.percentageComplete === 'string' ? 
+                                (parseFloat(activity.percentageComplete) || 0) * 100 : 
+                                (activity.percentageComplete || 0) * 100} 
+                              className="w-8 h-1" 
+                            />
+                            <span>
+                              {typeof activity.percentageComplete === 'string' ? 
+                                ((parseFloat(activity.percentageComplete) || 0) * 100).toFixed(0) : 
+                                ((activity.percentageComplete || 0) * 100).toFixed(0)}%
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-center text-muted-foreground text-sm">No late activities</p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );
