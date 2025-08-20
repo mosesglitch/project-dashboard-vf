@@ -338,11 +338,11 @@ export default function Dashboard() {
                             </div>
                           </TableCell>
                           <TableCell>{formatCurrency(project.budgetAmount)}</TableCell>
-                          <TableCell>{getStatusBadge(project.performanceCategory)}</TableCell>
-                          <TableCell>{getBudgetStatusBadge(project.budgetStatusCategory)}</TableCell>
+                          <TableCell>{getStatusBadge(project.performanceCategory || 'Unknown')}</TableCell>
+                          <TableCell>{getBudgetStatusBadge(project.budgetStatusCategory || 'Unknown')}</TableCell>
                           <TableCell>
-                            <Badge variant={project.issuesRisks > 3 ? "destructive" : "outline"}>
-                              {project.issuesRisks}
+                            <Badge variant={(project.issuesRisks || 0) > 3 ? "destructive" : "outline"}>
+                              {project.issuesRisks || 0}
                             </Badge>
                           </TableCell>
                         </TableRow>
