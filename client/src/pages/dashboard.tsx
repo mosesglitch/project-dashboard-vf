@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { CalendarIcon, DollarSign, TrendingUp, AlertTriangle, BarChart3, PieChart } from "lucide-react";
 import { Navbar } from "@/components/navbar";
+import { ProjectMap } from "@/components/dashboard/project-map";
 import type { ExcelProject } from "@shared/excel-schema";
 import type { DashboardFilters } from "@/lib/types";
 
@@ -362,7 +363,12 @@ export default function Dashboard() {
               </div>
             </CardContent>
           </Card>
-          </div>
+        </div>
+      </div>
+      
+        {/* Project Locations Map */}
+        <div className="mt-6">
+          <ProjectMap projects={projects || []} />
         </div>
       </div>
     </div>

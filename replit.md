@@ -49,6 +49,10 @@ Preferred communication style: Simple, everyday language.
 - Responsive design that adjusts card layouts for mobile and desktop viewing
 - Enhanced budget consumption analysis comparing performance against time and scope metrics
 - All original data maintained including workstream items, risk tracking, and activity management
+- Added interactive project locations map with Leaflet integration
+- Map displays project locations parsed from location tuples with division-based color coding
+- Project codes rendered as popups on map markers with project details
+- Map legend shows division distribution and project counts by location
 
 ## System Architecture
 

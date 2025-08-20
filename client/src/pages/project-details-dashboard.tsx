@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Navbar } from "@/components/navbar";
+import { ProjectMap } from "@/components/dashboard/project-map";
 import { 
   ArrowLeft, 
   Calendar, 
@@ -722,7 +723,12 @@ export default function ProjectDetailsDashboard() {
               </div>
             </CardContent>
           </Card>
-          </div>
+        </div>
+      </div>
+
+        {/* Project Location Map */}
+        <div className="mt-6">
+          <ProjectMap projects={project ? [project] : []} />
         </div>
       </div>
     </div>
