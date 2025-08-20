@@ -317,10 +317,11 @@ export default function Dashboard() {
               </CardHeader>
               <CardContent>
                 <div className="overflow-x-auto">
-                  <Table data-testid="table-projects">
-                    <TableHeader>
+                    <div className="overflow-x-auto">
+                    <Table data-testid="table-projects">
+                      <TableHeader>
                       <TableRow>
-                        <TableHead>Project Code</TableHead>
+                        <TableHead className="sticky left-0 bg-white dark:bg-gray-900 z-10">Project Code</TableHead>
                         <TableHead>Description</TableHead>
                         <TableHead>Division</TableHead>
                         <TableHead>Progress</TableHead>
@@ -329,61 +330,62 @@ export default function Dashboard() {
                         <TableHead>Budget Status</TableHead>
                         <TableHead>Risks</TableHead>
                       </TableRow>
-                    </TableHeader>
-                    <TableBody>
+                      </TableHeader>
+                      <TableBody>
                       {projectsLoading ? (
                         <TableRow>
-                          <TableCell colSpan={8} className="text-center py-4">
-                            Loading projects...
-                          </TableCell>
+                        <TableCell colSpan={8} className="text-center py-4">
+                          Loading projects...
+                        </TableCell>
                         </TableRow>
                       ) : projects && projects.length > 0 ? (
                         projects.map((project) => (
-                          <TableRow
-                            key={project.id}
-                            className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
-                            onClick={() => window.open(`/project/${project.projectCode}`, '_blank')}
-                            data-testid={`row-project-${project.projectCode}`}
-                          >
-                            <TableCell className="font-medium">
-                              <Link href={`/project/${project.projectCode}`} className="text-blue-600 hover:underline">
-                                {project.projectCode}
-                              </Link>
-                            </TableCell>
-                            <TableCell className="max-w-xs truncate" title={project.description}>
-                              {project.description}
-                            </TableCell>
-                            <TableCell>{project.division}</TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-2">
-                                <Progress
-                                  value={project.percentageComplete * 100}
-                                  className="w-16 h-2"
-                                />
-                                <span className="text-sm text-gray-600">
-                                  {(project.percentageComplete * 100).toFixed(0)}%
-                                </span>
-                              </div>
-                            </TableCell>
-                            <TableCell>{formatCurrency(project.budgetAmount)}</TableCell>
-                            <TableCell>{project.performanceCategory ? getStatusBadge(project.performanceCategory) : '-'}</TableCell>
-                            <TableCell>{project.budgetStatusCategory ? getBudgetStatusBadge(project.budgetStatusCategory) : '-'}</TableCell>
-                            <TableCell>
-                              <Badge variant={(project.issuesRisks || 0) > 3 ? "destructive" : "outline"}>
-                                {project.issuesRisks || 0}
-                              </Badge>
-                            </TableCell>
-                          </TableRow>
+                        <TableRow
+                          key={project.id}
+                          className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
+                          onClick={() => window.open(`/project/${project.projectCode}`, '_blank')}
+                          data-testid={`row-project-${project.projectCode}`}
+                        >
+                          <TableCell className="font-medium sticky left-0 bg-white dark:bg-gray-900 z-10">
+                          <Link href={`/project/${project.projectCode}`} className="text-blue-600 hover:underline">
+                            {project.projectCode}
+                          </Link>
+                          </TableCell>
+                          <TableCell className="max-w-xs truncate" title={project.description}>
+                          {project.description}
+                          </TableCell>
+                          <TableCell>{project.division}</TableCell>
+                          <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Progress
+                            value={project.percentageComplete * 100}
+                            className="w-16 h-2"
+                            />
+                            <span className="text-sm text-gray-600">
+                            {(project.percentageComplete * 100).toFixed(0)}%
+                            </span>
+                          </div>
+                          </TableCell>
+                          <TableCell>{formatCurrency(project.budgetAmount)}</TableCell>
+                          <TableCell>{project.performanceCategory ? getStatusBadge(project.performanceCategory) : '-'}</TableCell>
+                          <TableCell>{project.budgetStatusCategory ? getBudgetStatusBadge(project.budgetStatusCategory) : '-'}</TableCell>
+                          <TableCell>
+                          <Badge variant={(project.issuesRisks || 0) > 3 ? "destructive" : "outline"}>
+                            {project.issuesRisks || 0}
+                          </Badge>
+                          </TableCell>
+                        </TableRow>
                         ))
                       ) : (
                         <TableRow>
-                          <TableCell colSpan={8} className="text-center py-4">
-                            No projects found
-                          </TableCell>
+                        <TableCell colSpan={8} className="text-center py-4">
+                          No projects found
+                        </TableCell>
                         </TableRow>
                       )}
-                    </TableBody>
-                  </Table>
+                      </TableBody>
+                    </Table>
+                    </div>
                 </div>
               </CardContent>
             </Card>
