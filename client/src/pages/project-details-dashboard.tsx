@@ -293,7 +293,7 @@ export default function ProjectDetailsDashboard() {
         isDiscrete
         start={start}
         totalDuration={16}
-        columnTitle={`Duration (${startDateLabel} - ${finishDateLabel})`}
+        columnTitle={`Duration Starts(${startDateLabel})`}
         style={{ width: "100%", paddingBottom: "2rem" }}
       />
     );
