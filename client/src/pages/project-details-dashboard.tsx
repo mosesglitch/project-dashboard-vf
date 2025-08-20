@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Navbar } from "@/components/navbar";
 import { 
   ArrowLeft, 
   Calendar, 
@@ -155,8 +156,10 @@ export default function ProjectDetailsDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 md:p-6">
-      {/* Header with Back Button */}
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <Navbar />
+      <div className="p-4 md:p-6">
+        {/* Header with Back Button */}
       <div className="mb-6 flex items-center gap-4">
         <Link href="/">
           <Button variant="outline" size="sm" className="flex items-center gap-2">
@@ -368,35 +371,63 @@ export default function ProjectDetailsDashboard() {
           <CardContent>
             <div className="space-y-3 max-h-64 overflow-y-auto">
               {milestones && milestones.length > 0 ? (
-                milestones.map((milestone, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between p-3 border rounded-lg bg-gray-50 dark:bg-gray-800"
-                  >
-                    <div className="flex items-center gap-3">
-                      {getStatusIcon(milestone.percentageComplete || 0)}
-                      <div>
-                        <p className="font-medium text-sm">{milestone.item}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {formatDate(milestone.startDate || 0)} - {formatDate(milestone.finishDate || 0)}
-                        </p>
+                (() => {
+                  // Order milestones by phase: Preliminaries, Procurement, Construction, Commissioning
+                  const phaseOrder = ['Preliminaries', 'Procurement', 'Construction', 'Commissioning'];
+                  const orderedMilestones = milestones.sort((a, b) => {
+                    const aPhase = phaseOrder.findIndex(phase => 
+                      a.item.toLowerCase().includes(phase.toLowerCase()));
+                    const bPhase = phaseOrder.findIndex(phase => 
+                      b.item.toLowerCase().includes(phase.toLowerCase()));
+                    
+                    if (aPhase === -1 && bPhase === -1) return 0;
+                    if (aPhase === -1) return 1;
+                    if (bPhase === -1) return -1;
+                    return aPhase - bPhase;
+                  });
+
+                  return orderedMilestones.map((milestone, index) => {
+                    const progress = typeof milestone.percentageComplete === 'string' ? 
+                      parseFloat(milestone.percentageComplete) || 0 : milestone.percentageComplete || 0;
+                    const isComplete = progress >= 1;
+                    
+                    return (
+                      <div
+                        key={index}
+                        className={`flex items-center justify-between p-3 border rounded-lg transition-colors ${
+                          isComplete 
+                            ? 'bg-green-50 dark:bg-green-950/20 border-green-200' 
+                            : 'bg-gray-50 dark:bg-gray-800 border-gray-200'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          {getStatusIcon(progress)}
+                          <div>
+                            <p className={`font-medium text-sm ${
+                              isComplete ? 'text-green-800 dark:text-green-200' : ''
+                            }`}>
+                              {milestone.item}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {formatDate(milestone.startDate || 0)} - {formatDate(milestone.finishDate || 0)}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Progress 
+                            value={progress * 100} 
+                            className={`w-16 h-2 ${isComplete ? 'bg-green-100' : ''}`}
+                          />
+                          <span className={`text-xs ${
+                            isComplete ? 'text-green-600 font-medium' : 'text-muted-foreground'
+                          }`}>
+                            {(progress * 100).toFixed(0)}%
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Progress 
-                        value={typeof milestone.percentageComplete === 'string' ? 
-                          (parseFloat(milestone.percentageComplete) || 0) * 100 : 
-                          (milestone.percentageComplete || 0) * 100} 
-                        className="w-16 h-2" 
-                      />
-                      <span className="text-xs text-muted-foreground">
-                        {typeof milestone.percentageComplete === 'string' ? 
-                          ((parseFloat(milestone.percentageComplete) || 0) * 100).toFixed(0) : 
-                          ((milestone.percentageComplete || 0) * 100).toFixed(0)}%
-                      </span>
-                    </div>
-                  </div>
-                ))
+                    );
+                  });
+                })()
               ) : (
                 <p className="text-center text-muted-foreground text-sm">No milestones data available</p>
               )}
@@ -655,7 +686,19 @@ export default function ProjectDetailsDashboard() {
                           {activity.item}
                         </p>
                         <div className="flex items-center justify-between text-xs text-muted-foreground">
-                          <span>{formatDate(activity.finishDate || 0)}</span>
+                          <div>
+                            <span>{formatDate(activity.finishDate || 0)}</span>
+                            <div className="text-red-600 font-medium mt-1">
+                              Late by: {(() => {
+                                const finishDate = new Date(1899, 11, 30);
+                                finishDate.setTime(finishDate.getTime() + ((activity.finishDate || 0) * 24 * 60 * 60 * 1000));
+                                const today = new Date();
+                                const diffTime = today.getTime() - finishDate.getTime();
+                                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                                return diffDays > 0 ? `${diffDays} days` : '0 days';
+                              })()}
+                            </div>
+                          </div>
                           <div className="flex items-center gap-1">
                             <Progress 
                               value={typeof activity.percentageComplete === 'string' ? 
@@ -679,6 +722,7 @@ export default function ProjectDetailsDashboard() {
               </div>
             </CardContent>
           </Card>
+          </div>
         </div>
       </div>
     </div>
