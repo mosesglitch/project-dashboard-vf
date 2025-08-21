@@ -13,7 +13,7 @@ import { Navbar } from "@/components/navbar";
 import { ProjectMap } from "@/components/dashboard/project-map";
 import type { ExcelProject } from "@shared/excel-schema";
 import type { DashboardFilters } from "@/lib/types";
-import { BarChart, ColumnChart, DonutChart } from '@ui5/webcomponents-react-charts';
+import { PieChart as RechartsPie, Pie, Cell, ResponsiveContainer, BarChart as RechartsBar, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from "recharts";
 
 export default function Dashboard() {
   const [filters, setFilters] = useState<DashboardFilters>({
@@ -222,17 +222,25 @@ export default function Dashboard() {
                 </CardHeader>
                 <CardContent>
                   {spendingStats ? (
-                    <DonutChart
-                      dataset={Object.entries(spendingStats).map(([category, value]) => ({ category, value }))}
-                      dimension={{ accessor: "category" }}
-                      measures={[
-                        {
-                          accessor: "value",
-                          label: "Spend",
-                          color: "#3B82F6"
-                        }
-                      ]}
-                    />
+                    <ResponsiveContainer width="100%" height={250}>
+                      <RechartsPie>
+                        <Pie
+                          data={Object.entries(spendingStats).map(([category, value]) => ({ name: category, value }))}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={60}
+                          outerRadius={100}
+                          paddingAngle={5}
+                          dataKey="value"
+                        >
+                          {Object.entries(spendingStats).map((_, index) => (
+                            <Cell key={`cell-${index}`} fill={["#3B82F6", "#10B981", "#F59E0B", "#EF4444"][index % 4]} />
+                          ))}
+                        </Pie>
+                        <Tooltip />
+                        <Legend />
+                      </RechartsPie>
+                    </ResponsiveContainer>
                   ) : (
                     <div className="space-y-2">
                       <span className="text-sm text-muted-foreground">No data</span>
@@ -251,17 +259,25 @@ export default function Dashboard() {
                 </CardHeader>
                 <CardContent>
                   {performanceStats ? (
-                    <DonutChart
-                      dataset={Object.entries(performanceStats).map(([name, value]) => ({ name, value }))}
-                      dimension={{ accessor: "name" }}
-                      measures={[
-                        {
-                          accessor: "value",
-                          label: "Projects",
-                          color: "#3B82F6"
-                        }
-                      ]}
-                    />
+                    <ResponsiveContainer width="100%" height={250}>
+                      <RechartsPie>
+                        <Pie
+                          data={Object.entries(performanceStats).map(([name, value]) => ({ name, value }))}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={60}
+                          outerRadius={100}
+                          paddingAngle={5}
+                          dataKey="value"
+                        >
+                          {Object.entries(performanceStats).map((_, index) => (
+                            <Cell key={`cell-${index}`} fill={["#3B82F6", "#10B981", "#F59E0B", "#EF4444"][index % 4]} />
+                          ))}
+                        </Pie>
+                        <Tooltip />
+                        <Legend />
+                      </RechartsPie>
+                    </ResponsiveContainer>
                   ) : (
                     <div className="space-y-2">
                       <span className="text-sm text-muted-foreground">No data</span>
@@ -280,22 +296,20 @@ export default function Dashboard() {
                 </CardHeader>
                 <CardContent>
                   {divisionStats ? (
-                    <BarChart
-                      dataset={Object.entries(divisionStats).map(([name, value]) => ({ name, value }))}
-                      dimensions={[
-                        {
-                          accessor: "name",
-                          formatter: (name: string) => name
-                        }
-                      ]}
-                      measures={[
-                        {
-                          accessor: "value",
-                          label: "Projects",
-                          color: "#3B82F6"
-                        }
-                      ]}
-                    />
+                    <ResponsiveContainer width="100%" height={250}>
+                      <RechartsBar data={Object.entries(divisionStats).map(([name, value]) => ({ name, value }))}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="name" />
+                        <YAxis />
+                        <Tooltip />
+                        <Legend />
+                        <Bar 
+                          dataKey="value" 
+                          fill="#3B82F6" 
+                          name="Projects"
+                        />
+                      </RechartsBar>
+                    </ResponsiveContainer>
                   ) : (
                     <div className="space-y-2">
                       <span className="text-sm text-muted-foreground">No data</span>
