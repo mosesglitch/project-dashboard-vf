@@ -5,6 +5,119 @@ import { insertProjectSchema } from "@shared/schema";
 import { excelDataService } from "./excel-data-service";
 import { parseLocation, calculateBudgetStatusCategory, calculatePerformanceStatus } from "@shared/excel-schema";
 
+// AI Insight Generation Functions
+function generatePortfolioInsights(data: any) {
+  const { projects, stats, performanceStats, spendingStats, divisionStats } = data;
+  
+  const insights = [];
+  
+  // Budget Analysis
+  const budgetUtilization = (stats.actualSpend / stats.totalBudget * 100).toFixed(1);
+  insights.push({
+    type: "financial",
+    title: "Budget Performance",
+    content: `Portfolio shows ${budgetUtilization}% budget utilization across ${stats.totalProjects} active projects. ${spendingStats['Critically Over Budget']} projects are critically over budget, requiring immediate attention.`,
+    priority: spendingStats['Critically Over Budget'] > 0 ? "high" : "medium",
+    icon: "💰"
+  });
+  
+  // Schedule Performance
+  const delayedProjects = performanceStats['Critical Delay'] + performanceStats['Slightly Behind'];
+  const onTrackPercentage = ((performanceStats['On Track'] + performanceStats['Ahead of Schedule']) / stats.totalProjects * 100).toFixed(1);
+  insights.push({
+    type: "schedule",
+    title: "Schedule Health",
+    content: `${onTrackPercentage}% of projects are on track or ahead. ${delayedProjects} projects experiencing delays need schedule recovery actions.`,
+    priority: delayedProjects > stats.totalProjects * 0.3 ? "high" : "medium",
+    icon: "📅"
+  });
+  
+  // Division Analysis  
+  const topDivision = Object.entries(divisionStats).reduce((a, b) => (a[1] as number) > (b[1] as number) ? a : b);
+  insights.push({
+    type: "operations", 
+    title: "Division Focus",
+    content: `${topDivision[0]} division leads with ${topDivision[1]} projects (${((topDivision[1] as number)/stats.totalProjects*100).toFixed(1)}%). Consider resource rebalancing if bottlenecks emerge.`,
+    priority: "low",
+    icon: "🏗️"
+  });
+  
+  // Risk Assessment
+  const avgRiskPerProject = (stats.totalRisks / stats.totalProjects).toFixed(1);
+  insights.push({
+    type: "risk",
+    title: "Risk Exposure",
+    content: `Average ${avgRiskPerProject} risks per project. Projects with >5 risks need enhanced risk management protocols.`,
+    priority: parseInt(avgRiskPerProject) > 3 ? "high" : "medium", 
+    icon: "⚠️"
+  });
+  
+  return {
+    insights,
+    summary: `Portfolio of ${stats.totalProjects} projects with ${formatCurrency(stats.totalBudget)} total budget. Key focus areas: ${delayedProjects > 0 ? 'schedule recovery, ' : ''}${spendingStats['Critically Over Budget'] > 0 ? 'budget control, ' : ''}risk mitigation.`,
+    lastUpdated: new Date().toISOString()
+  };
+}
+
+function generateProjectInsights(data: any) {
+  const { project, activities, milestones, risks, upcoming, late } = data;
+  
+  const insights = [];
+  
+  // Budget Analysis
+  const budgetVariance = ((project.totalAmountSpent - project.budgetAmount) / project.budgetAmount * 100).toFixed(1);
+  const budgetVarianceNum = parseFloat(budgetVariance);
+  insights.push({
+    type: "financial",
+    title: "Budget Status", 
+    content: `Project is ${budgetVarianceNum > 0 ? 'over' : 'under'} budget by ${Math.abs(budgetVarianceNum)}%. Current spend: ${formatCurrency(project.totalAmountSpent)} vs Budget: ${formatCurrency(project.budgetAmount)}.`,
+    priority: Math.abs(budgetVarianceNum) > 10 ? "high" : "medium",
+    icon: "💰"
+  });
+  
+  // Schedule Analysis
+  const progressVsTime = (project.percentageComplete * 100).toFixed(1);
+  insights.push({
+    type: "schedule",
+    title: "Progress Analysis",
+    content: `Project ${progressVsTime}% complete. Performance category: ${project.performanceCategory}. ${late.length} activities are running late.`,
+    priority: project.performanceCategory?.includes('Critical') ? "high" : "medium", 
+    icon: "📈"
+  });
+  
+  // Risk Analysis
+  insights.push({
+    type: "risk",
+    title: "Risk Assessment",
+    content: `${project.issuesRisks} total risks identified. ${risks.filter((r: any) => r.status === 'Open').length} open risks require monitoring.`,
+    priority: project.issuesRisks > 5 ? "high" : "low",
+    icon: "⚠️"
+  });
+  
+  // Milestone Analysis
+  const completedMilestones = milestones.filter((m: any) => m.percentageComplete === 1).length;
+  insights.push({
+    type: "operations",
+    title: "Milestone Progress", 
+    content: `${completedMilestones}/${milestones.length} milestones completed. ${upcoming.length} upcoming activities scheduled.`,
+    priority: "medium",
+    icon: "🎯"
+  });
+  
+  return {
+    insights,
+    summary: `${project.description} - ${progressVsTime}% complete, ${project.performanceCategory.toLowerCase()}. Focus on ${late.length > 0 ? 'schedule recovery and ' : ''}${Math.abs(parseFloat(budgetVariance)) > 10 ? 'budget control.' : 'maintaining momentum.'}`,
+    lastUpdated: new Date().toISOString()
+  };
+}
+
+function formatCurrency(amount: number) {
+  if (!amount || isNaN(amount)) return '$0';
+  if (amount >= 1000000) return `$${(amount / 1000000).toFixed(1)}M`;
+  if (amount >= 1000) return `$${(amount / 1000).toFixed(0)}K`;
+  return `$${amount.toLocaleString()}`;
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Get all projects with optional filters
   app.get("/api/projects", async (req, res) => {
@@ -185,6 +298,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // AI Insights for Portfolio/Dashboard
+  app.get("/api/ai/insights/portfolio", async (req, res) => {
+    try {
+      const projects = excelDataService.getProjects();
+      const stats = excelDataService.getOverviewStats();
+      const performanceStats = excelDataService.getPerformanceCategoryStats();
+      const spendingStats = excelDataService.getSpendingCategoriesStats();
+      const divisionStats = excelDataService.getDivisionStats();
+      
+      // Generate AI insights based on data
+      const insights = generatePortfolioInsights({
+        projects,
+        stats,
+        performanceStats,
+        spendingStats,
+        divisionStats
+      });
+      
+      res.json(insights);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to generate portfolio insights" });
+    }
+  });
+
+  // AI Insights for Individual Project
+  app.get("/api/ai/insights/project/:projectCode", async (req, res) => {
+    try {
+      const project = excelDataService.getProjectById(req.params.projectCode);
+      if (!project) {
+        return res.status(404).json({ message: "Project not found" });
+      }
+      
+      const activities = excelDataService.getActivitiesByProjectCode(req.params.projectCode);
+      const milestones = excelDataService.getMilestonesByProjectCode(req.params.projectCode);
+      const risks = excelDataService.getRisksByProjectCode(req.params.projectCode);
+      const upcoming = excelDataService.getUpcomingActivitiesByProjectCode(req.params.projectCode);
+      const late = excelDataService.getLateActivitiesByProjectCode(req.params.projectCode);
+      
+      // Generate AI insights for individual project
+      const insights = generateProjectInsights({
+        project,
+        activities,
+        milestones,
+        risks,
+        upcoming,
+        late
+      });
+      
+      res.json(insights);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to generate project insights" });
+    }
+  });
 
   const httpServer = createServer(app);
   return httpServer;

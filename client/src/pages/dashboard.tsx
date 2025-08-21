@@ -11,6 +11,7 @@ import { Progress } from "@/components/ui/progress";
 import { CalendarIcon, DollarSign, TrendingUp, AlertTriangle, BarChart3, PieChart } from "lucide-react";
 import { Navbar } from "@/components/navbar";
 import { ProjectMap } from "@/components/dashboard/project-map";
+import { AIInsights } from "@/components/ai-insights";
 import type { ExcelProject } from "@shared/excel-schema";
 import type { DashboardFilters } from "@/lib/types";
 import { PieChart as RechartsPie, Pie, Cell, ResponsiveContainer, BarChart as RechartsBar, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from "recharts";
@@ -55,13 +56,16 @@ export default function Dashboard() {
     queryKey: ["/api/projects/stats/divisions"],
   });
 
-  const formatCurrency = (amount: number) => {
-    if (amount >= 1000000) {
-      return `$${(amount / 1000000).toFixed(1)}M`;
-    } else if (amount >= 1000) {
-      return `$${(amount / 1000).toFixed(0)}K`;
+  const formatCurrency = (amount: number | undefined | null) => {
+    // Handle NaN, null, undefined, or empty string values
+    const validAmount = typeof amount === 'number' && !isNaN(amount) ? amount : 0;
+    
+    if (validAmount >= 1000000) {
+      return `$${(validAmount / 1000000).toFixed(1)}M`;
+    } else if (validAmount >= 1000) {
+      return `$${(validAmount / 1000).toFixed(0)}K`;
     }
-    return `$${amount.toLocaleString()}`;
+    return `$${validAmount.toLocaleString()}`;
   };
 
   const getStatusBadge = (status: string) => {
@@ -162,9 +166,9 @@ export default function Dashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
-                    {kpiData ? formatCurrency(Math.round(kpiData.totalBudget)) : "$0"}
+                    {kpiData ? formatCurrency(kpiData.totalBudget) + " (est)" : "$0"}
                   </div>
-                  <p className="text-xs text-muted-foreground">Allocated funds</p>
+                  <p className="text-xs text-muted-foreground">Allocated funds estimate</p>
                 </CardContent>
               </Card>
 
@@ -175,9 +179,9 @@ export default function Dashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold text-orange-600">
-                    {kpiData ? formatCurrency(Math.round(kpiData.actualSpend)) : "$0"}
+                    {kpiData ? formatCurrency(kpiData.actualSpend) + " (est)" : "$0"}
                   </div>
-                  <p className="text-xs text-muted-foreground">Current spending</p>
+                  <p className="text-xs text-muted-foreground">Current spending estimate</p>
                 </CardContent>
               </Card>
 
@@ -188,9 +192,9 @@ export default function Dashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold text-blue-600">
-                    {kpiData ? formatCurrency(Math.round(kpiData.amountReceived)) : "$0"}
+                    {kpiData ? formatCurrency(kpiData.amountReceived) + " (est)" : "$0"}
                   </div>
-                  <p className="text-xs text-muted-foreground">Revenue collected</p>
+                  <p className="text-xs text-muted-foreground">Revenue collected estimate</p>
                 </CardContent>
               </Card>
 
@@ -207,6 +211,11 @@ export default function Dashboard() {
                 </CardContent>
               </Card>
             </div>
+          </div>
+
+          {/* AI Insights Section */}
+          <div className="lg:col-span-4 mb-6">
+            <AIInsights type="portfolio" />
           </div>
 
           {/* Charts Row */}

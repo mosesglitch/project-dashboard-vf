@@ -40,6 +40,7 @@ import "@ui5/webcomponents-icons/dist/arrow-left.js";
 import "@ui5/webcomponents-icons/dist/workflow-tasks.js";
 import "@ui5/webcomponents-icons/dist/calendar.js";
 
+import { AIInsights } from "@/components/ai-insights";
 import type { ExcelProject, ExcelActivity } from "@shared/excel-schema";
 const formatDate = (dateString) => {
   return new Date(dateString).toLocaleDateString("en-US", {
@@ -626,6 +627,15 @@ export default function ProjectDetails() {
                 </div>
               </Card>
             </FlexBox>
+          </ObjectPageSubSection>
+        </ObjectPageSection>
+
+        {/* Section 1.5: AI Insights */}
+        <ObjectPageSection id="ai-insights-section" titleText="AI Insights">
+          <ObjectPageSubSection id="ai-insights-subsection" titleText="">
+            <div style={{ padding: "1rem" }}>
+              <AIInsights type="project" projectCode={project?.projectCode} />
+            </div>
           </ObjectPageSubSection>
         </ObjectPageSection>
 

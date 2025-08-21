@@ -503,10 +503,34 @@ export class ExcelDataService {
   // Get overview statistics
   getOverviewStats(): any {
     const total = this.data.length;
-    const totalBudget = this.data.reduce((sum, p) => sum + p.budgetAmount, 0);
-    const actualSpend = this.data.reduce((sum, p) => sum + p.totalAmountSpent, 0);
-    const amountReceived = this.data.reduce((sum, p) => sum + (p.amountReceived || 0), 0);
-    const totalRisks = this.data.reduce((sum, p) => sum + (p.issuesRisks || 0), 0);
+    
+    // Sum only valid numeric values, excluding NaN, null, undefined, or empty strings
+    const totalBudget = this.data.reduce((sum, p) => {
+      const amount = typeof p.budgetAmount === 'number' && !isNaN(p.budgetAmount) ? p.budgetAmount : 0;
+      return sum + amount;
+    }, 0);
+    
+    const actualSpend = this.data.reduce((sum, p) => {
+      const amount = typeof p.totalAmountSpent === 'number' && !isNaN(p.totalAmountSpent) ? p.totalAmountSpent : 0;
+      return sum + amount;
+    }, 0);
+    
+    const amountReceived = this.data.reduce((sum, p) => {
+      // Handle cases where amountReceived might be empty string or invalid
+      let amount = 0;
+      if (typeof p.amountReceived === 'number' && !isNaN(p.amountReceived)) {
+        amount = p.amountReceived;
+      } else if (typeof p.amountReceived === 'string' && p.amountReceived !== '') {
+        const parsed = parseFloat(p.amountReceived);
+        amount = isNaN(parsed) ? 0 : parsed;
+      }
+      return sum + amount;
+    }, 0);
+    
+    const totalRisks = this.data.reduce((sum, p) => {
+      const risks = typeof p.issuesRisks === 'number' && !isNaN(p.issuesRisks) ? p.issuesRisks : 0;
+      return sum + risks;
+    }, 0);
     
     return {
       totalProjects: total,
