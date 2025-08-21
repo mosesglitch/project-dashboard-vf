@@ -41,6 +41,7 @@ import "@ui5/webcomponents-icons/dist/workflow-tasks.js";
 import "@ui5/webcomponents-icons/dist/calendar.js";
 
 import { AIInsights } from "@/components/ai-insights";
+import { ProjectAnalytics } from "@/components/project-analytics";
 import type { ExcelProject, ExcelActivity } from "@shared/excel-schema";
 const formatDate = (dateString) => {
   return new Date(dateString).toLocaleDateString("en-US", {
@@ -635,6 +636,15 @@ export default function ProjectDetails() {
           <ObjectPageSubSection id="ai-insights-subsection" titleText="">
             <div style={{ padding: "1rem" }}>
               <AIInsights type="project" projectCode={project?.projectCode} />
+            </div>
+          </ObjectPageSubSection>
+        </ObjectPageSection>
+
+        {/* Section 1.7: Project Analytics */}
+        <ObjectPageSection id="analytics-section" titleText="Project Analytics">
+          <ObjectPageSubSection id="analytics-subsection" titleText="">
+            <div style={{ padding: "1rem" }}>
+              {project && <ProjectAnalytics project={project} />}
             </div>
           </ObjectPageSubSection>
         </ObjectPageSection>
