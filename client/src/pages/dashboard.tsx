@@ -280,12 +280,12 @@ export default function Dashboard() {
                   <div className="space-y-4">
                     <h3 className="text-lg font-semibold">Budget Status</h3>
                     <div className="space-y-2">
-                      {budgetStats ? (
-                        Object.entries(budgetStats).map(([status, count]) => (
+                      {spendingStats ? (
+                        Object.entries(spendingStats).map(([status, count]) => (
                           <div key={status} className="flex justify-between items-center">
                             <span className="text-sm">{status}:</span>
                             <Badge variant="outline" className="ml-2">
-                              {count} projects
+                              {count as number} projects
                             </Badge>
                           </div>
                         ))
