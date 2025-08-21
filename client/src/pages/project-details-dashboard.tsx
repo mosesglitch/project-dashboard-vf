@@ -29,6 +29,8 @@ import {
 import type { ExcelProject, ExcelActivity } from "@shared/excel-schema";
 import { TimelineChart } from "@ui5/webcomponents-react-charts";
 import { Text } from "@ui5/webcomponents-react";
+import { AIInsights } from "@/components/ai-insights";
+import { ProjectAnalytics } from "@/components/project-analytics";
 
 const formatDate = (excelDate: number | string) => {
   if (typeof excelDate === 'string') {
@@ -647,6 +649,36 @@ export default function ProjectDetailsDashboard() {
 
           {/* Budget Consumption Chart */}
 
+        </div>
+
+        {/* AI Insights Section */}
+        <div className="mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Activity className="h-5 w-5" />
+                AI Insights
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <AIInsights type="project" projectCode={project?.projectCode} />
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Project Analytics Section */}
+        <div className="mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <BarChart3 className="h-5 w-5" />
+                Project Analytics
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {project && <ProjectAnalytics project={project} />}
+            </CardContent>
+          </Card>
         </div>
 
         {/* Activities Section - Full Width */}
