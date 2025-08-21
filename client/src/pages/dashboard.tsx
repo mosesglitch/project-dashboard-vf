@@ -213,6 +213,92 @@ export default function Dashboard() {
             </div>
           </div>
 
+          {/* Budget Overview Section */}
+          <div className="lg:col-span-4 mb-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <DollarSign className="h-5 w-5" />
+                  Budget Overview
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {/* Budget Summary */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold">Budget Summary</h3>
+                    <div className="space-y-3">
+                      <div className="flex justify-between">
+                        <span className="text-sm text-muted-foreground">Total Allocated:</span>
+                        <span className="font-semibold">{kpiData ? formatCurrency(kpiData.totalBudget) : 'KSh 0'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-muted-foreground">Total Spent:</span>
+                        <span className="font-semibold text-orange-600">{kpiData ? formatCurrency(kpiData.actualSpend) : 'KSh 0'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-muted-foreground">Total Received:</span>
+                        <span className="font-semibold text-green-600">{kpiData ? formatCurrency(kpiData.amountReceived) : 'KSh 0'}</span>
+                      </div>
+                      <div className="flex justify-between border-t pt-2">
+                        <span className="text-sm text-muted-foreground">Available Budget:</span>
+                        <span className="font-semibold text-blue-600">
+                          {kpiData ? formatCurrency(Math.max(0, kpiData.totalBudget - kpiData.actualSpend)) : 'KSh 0'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Budget Utilization */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold">Budget Utilization</h3>
+                    <div className="space-y-3">
+                      <div>
+                        <div className="flex justify-between mb-2">
+                          <span className="text-sm">Spent</span>
+                          <span className="text-sm">{kpiData && kpiData.totalBudget > 0 ? ((kpiData.actualSpend / kpiData.totalBudget) * 100).toFixed(1) : '0'}%</span>
+                        </div>
+                        <Progress 
+                          value={kpiData && kpiData.totalBudget > 0 ? (kpiData.actualSpend / kpiData.totalBudget) * 100 : 0} 
+                          className="h-2" 
+                        />
+                      </div>
+                      <div>
+                        <div className="flex justify-between mb-2">
+                          <span className="text-sm">Received</span>
+                          <span className="text-sm">{kpiData && kpiData.totalBudget > 0 ? ((kpiData.amountReceived / kpiData.totalBudget) * 100).toFixed(1) : '0'}%</span>
+                        </div>
+                        <Progress 
+                          value={kpiData && kpiData.totalBudget > 0 ? (kpiData.amountReceived / kpiData.totalBudget) * 100 : 0} 
+                          className="h-2" 
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Budget Status */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold">Budget Status</h3>
+                    <div className="space-y-2">
+                      {budgetStats ? (
+                        Object.entries(budgetStats).map(([status, count]) => (
+                          <div key={status} className="flex justify-between items-center">
+                            <span className="text-sm">{status}:</span>
+                            <Badge variant="outline" className="ml-2">
+                              {count} projects
+                            </Badge>
+                          </div>
+                        ))
+                      ) : (
+                        <span className="text-sm text-muted-foreground">No budget status data</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
           {/* AI Insights Section */}
           <div className="lg:col-span-4 mb-6">
             <AIInsights type="portfolio" />
