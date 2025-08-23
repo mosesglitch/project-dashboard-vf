@@ -25,31 +25,61 @@ interface AIInsightsProps {
 
 const priorityColors = {
   low: "bg-blue-100 text-blue-800",
-  medium: "bg-yellow-100 text-yellow-800", 
-  high: "bg-red-100 text-red-800"
+  medium: "bg-yellow-100 text-yellow-800",
+  high: "bg-red-100 text-red-800",
 };
 
 const priorityIcons = {
   low: <Info className="h-4 w-4" />,
   medium: <TrendingUp className="h-4 w-4" />,
-  high: <AlertTriangle className="h-4 w-4" />
+  high: <AlertTriangle className="h-4 w-4" />,
 };
 
 export function AIInsights({ type, projectCode }: AIInsightsProps) {
-  const { data: insights, isLoading } = useQuery<AIInsightsData>({
+  // Query for structured insights
+  const {
+    data: insights,
+    isLoading: isLoadingInsights,
+  } = useQuery<AIInsightsData>({
     queryKey: ["ai-insights", type, projectCode],
     queryFn: async () => {
-      const url = type === "portfolio" 
-        ? "/api/ai/insights/portfolio"
-        : `/api/ai/insights/project/${projectCode}`;
-      
+      const url =
+        type === "portfolio"
+          ? "/api/ai/insights/portfolio"
+          : `/api/ai/insights/project/${projectCode}`;
+
       const response = await fetch(url);
       if (!response.ok) throw new Error("Failed to fetch AI insights");
       return response.json();
     },
     enabled: type === "portfolio" || (type === "project" && !!projectCode),
-    refetchInterval: 300000, // Refresh every 5 minutes
+    refetchInterval: 300000, // 5 minutes
   });
+
+  // Query for raw HTML insights
+  const {
+    data: rawInsights,
+    isLoading: isLoadingRaw,
+  } = useQuery<string>({
+    queryKey: ["ai-insights-raw", projectCode],
+    queryFn: async () => {
+      const response = await fetch(`/api/ai/insights/raw/${projectCode}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({        }),
+      });
+      if (!response.ok) throw new Error("Failed to fetch raw insights");
+      const text = await response.text();
+
+      // Clean any ```html fences
+      return text.replace(/^```html\n?/, "").replace(/```$/, "").trim();
+    },
+    enabled: type === "project" && !!projectCode,
+    refetchInterval: 300000,
+  });
+
+  // Combined loading state
+  const isLoading = isLoadingInsights || isLoadingRaw;
 
   if (isLoading) {
     return (
@@ -71,7 +101,7 @@ export function AIInsights({ type, projectCode }: AIInsightsProps) {
     );
   }
 
-  if (!insights || !insights.insights) {
+  if (!insights) {
     return (
       <Card className="bg-white dark:bg-gray-900 border dark:border-gray-700">
         <CardHeader>
@@ -81,7 +111,9 @@ export function AIInsights({ type, projectCode }: AIInsightsProps) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">No insights available at this time.</p>
+          <p className="text-sm text-muted-foreground">
+            No insights available at this time.
+          </p>
         </CardContent>
       </Card>
     );
@@ -106,10 +138,13 @@ export function AIInsights({ type, projectCode }: AIInsightsProps) {
           </p>
         </div>
 
-        {/* Individual Insights */}
+        {/* Structured Insights */}
         <div className="space-y-3">
           {insights.insights.map((insight, index) => (
-            <div key={index} className="p-3 border rounded-lg dark:border-gray-700">
+            <div
+              key={index}
+              className="p-3 border rounded-lg dark:border-gray-700"
+            >
               <div className="flex items-start gap-3">
                 <div className="text-lg">{insight.icon}</div>
                 <div className="flex-1 min-w-0">
@@ -117,7 +152,9 @@ export function AIInsights({ type, projectCode }: AIInsightsProps) {
                     <h4 className="text-sm font-medium text-gray-900 dark:text-white">
                       {insight.title}
                     </h4>
-                    <Badge className={`text-xs ${priorityColors[insight.priority]}`}>
+                    <Badge
+                      className={`text-xs ${priorityColors[insight.priority]}`}
+                    >
                       <div className="flex items-center gap-1">
                         {priorityIcons[insight.priority]}
                         {insight.priority}
@@ -132,6 +169,14 @@ export function AIInsights({ type, projectCode }: AIInsightsProps) {
             </div>
           ))}
         </div>
+
+        {/* Raw HTML Insights */}
+        {rawInsights && (
+          <div
+            className="prose dark:prose-invert max-w-none mt-6"
+            dangerouslySetInnerHTML={{ __html: rawInsights }}
+          />
+        )}
       </CardContent>
     </Card>
   );

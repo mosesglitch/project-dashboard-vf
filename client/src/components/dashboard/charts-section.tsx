@@ -22,7 +22,6 @@ export function ChartsSection({
   divisionData,
   isLoading
 }: ChartsSectionProps) {
-console.log("we in")
   const spendingChartData = spendingData ? [
     { name: 'Under Budget', value: spendingData.underBudget },
     { name: 'Within Budget', value: spendingData.withinBudget },
@@ -42,8 +41,7 @@ console.log("we in")
     { name: 'Electrical', value: divisionData.electrical },
     { name: 'Instrumentation', value: divisionData.instrumentation },
   ] : [];
-  console.log("Hallosir,Vipi",divisionChartData, statusChartData, spendingChartData);
-  if (isLoading) {
+   if (isLoading) {
     return (
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         {Array.from({ length: 3 }).map((_, index) => (

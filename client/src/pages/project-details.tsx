@@ -927,7 +927,7 @@ export default function ProjectDetails() {
                   }
                 >
                   {lateActivities.map((activity, index) => {
-                    console.log(activity)
+                  
                     // Handle Excel serial date or ISO string for finishDate
                     let finishDate: Date | null = null;
                     if (activity.finishDate) {

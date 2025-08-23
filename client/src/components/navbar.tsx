@@ -1,10 +1,15 @@
-import { useState } from 'react';
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, BarChart3, Home, FolderOpen } from "lucide-react";
+import { Menu, BarChart3, Home, FolderOpen, ArrowLeft } from "lucide-react";
 import { Link, useLocation } from "wouter";
 
-export function Navbar() {
+interface NavbarProps {
+  DisplayTitle?: string;
+  subtitle?: string;
+}
+
+export function Navbar({ DisplayTitle, subtitle }: NavbarProps) {
   const [location] = useLocation();
   const [isOpen, setIsOpen] = useState(false);
 
@@ -22,15 +27,16 @@ export function Navbar() {
           <div className="flex items-center">
             <Link href="/">
               <div className="flex items-center space-x-3 cursor-pointer">
-                <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                  <BarChart3 className="h-5 w-5 text-white" />
+                <div className="w-16 h-16 mr-1  flex items-center justify-center">
+                  {/* <BarChart3 className="h-5 w-5 text-white" /> */}
+                  <img src="/logo.png" alt="Logo" className="w-15 h-15"/>
                 </div>
                 <div>
                   <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-                    Burhani Engineers
+                    {DisplayTitle || "Burhani Engineers"}
                   </h1>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
-                    Project Performance Dashboard
+                    {subtitle || "Project Performance Dashboard"}
                   </p>
                 </div>
               </div>
@@ -39,7 +45,21 @@ export function Navbar() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            {navigationItems.map((item) => {
+            {/* Show Back to Dashboard button if props exist */}
+            {(DisplayTitle || subtitle) && (
+              <Link href="/">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center gap-2"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  Back to Dashboard
+                </Button>
+              </Link>
+            )}
+
+            {/* {navigationItems.map((item) => {
               const Icon = item.icon;
               const isActive = location === item.href;
               return (
@@ -53,7 +73,7 @@ export function Navbar() {
                   </Button>
                 </Link>
               );
-            })}
+            })} */}
           </div>
 
           {/* Mobile Menu */}
@@ -73,12 +93,30 @@ export function Navbar() {
                     </div>
                     <div>
                       <h2 className="font-bold text-gray-900 dark:text-white">
-                        ProjectVision
+                        {DisplayTitle || "Burhani Engineers"}
                       </h2>
-                      <p className="text-xs text-gray-500">Management Dashboard</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        {subtitle || "Project Performance Dashboard"}
+                      </p>
                     </div>
                   </div>
-                  {navigationItems.map((item) => {
+
+                  {/* Back to Dashboard button (mobile) */}
+                  {(DisplayTitle || subtitle) && (
+                    <Link href="/">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex items-center gap-2"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        <ArrowLeft className="h-4 w-4" />
+                        Back to Dashboard
+                      </Button>
+                    </Link>
+                  )}
+
+                  {/* {navigationItems.map((item) => {
                     const Icon = item.icon;
                     const isActive = location === item.href;
                     return (
@@ -93,7 +131,7 @@ export function Navbar() {
                         </Button>
                       </Link>
                     );
-                  })}
+                  })} */}
                 </div>
               </SheetContent>
             </Sheet>
