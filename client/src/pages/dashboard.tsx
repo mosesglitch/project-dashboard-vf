@@ -92,7 +92,7 @@ export default function Dashboard() {
   });
   // Suppose `projects` is your array of project objects
   const topProjects = [...(projects || [])]
-    .sort((a, b) => (b.budgetAmount || 0) - (a.budgetAmount || 0)) // sort descending
+    .sort((a, b) => (b.coAmount || 0) - (a.coAmount || 0)) // sort descending
     .slice(0, 15); // pick top 10
 
   const sortedProjects = [...(projects || [])]?.sort((a, b) => {
@@ -662,7 +662,7 @@ export default function Dashboard() {
                 <CardTitle className="flex items-center gap-2">
                   <DollarSign className="h-4 w-4 text-muted-foreground" />
                   {/* <BarChart3 className="h-5 w-5" /> */}
-                  Top 15 Projects by Budget
+                  Top 15 Projects by CO amount
                 </CardTitle>
               </CardHeader>
               <CardContent>
