@@ -488,7 +488,9 @@ console.log(data)
       htmlOutput = `<div>${htmlOutput}</div>`;
     }
 
-    res.send({ status: "success", insights: htmlOutput });
+    res.json({status: "success",
+              insights: htmlOutput
+            });
   } catch (error) {
     console.error("AI Insights Error:", error);
     res.status(500).json({ message: "Failed to generate AI insights" });
