@@ -424,6 +424,76 @@ console.log(data)
     res.status(500).json({ message: "Failed to generate AI insights" });
   }
 });
+app.post("/api/ai/insights/json/:projectCode", async (req, res) => {
+  try {
+    let data = req.body;
+
+    // If no body provided, pull data from excelDataService
+    if (!data || Object.keys(data).length === 0) {
+      const project = excelDataService.getProjectById(req.params.projectCode);
+      if (!project) {
+        return res.status(404).json({ message: "Project not found" });
+      }
+
+      const activities = excelDataService.getActivitiesByProjectCode(req.params.projectCode);
+      const milestones = excelDataService.getMilestonesByProjectCode(req.params.projectCode);
+      const risks = excelDataService.getRisksByProjectCode(req.params.projectCode);
+      const upcoming = excelDataService.getUpcomingActivitiesByProjectCode(req.params.projectCode);
+      const late = excelDataService.getLateActivitiesByProjectCode(req.params.projectCode);
+
+      // Build structured project snapshot
+      data = generateProjectInsights({
+        project,
+        activities,
+        milestones,
+        risks,
+        upcoming,
+        late,
+      });
+    }
+console.log(data)
+    // Build prompt for Gemini
+    const prompt = `
+      You are a project management assistant. Given the following project data:
+
+      ${JSON.stringify(data, null, 2)}
+
+      Provide very brief insights on project health and actionable recommendations
+      to ensure it runs better. 
+
+      ⚠️ Important:
+      - Return ONLY valid, minimal HTML.
+      - Wrap everything in a single <div>.
+      - Do not include extra explanations, markdown, or code fences.
+    `;
+
+    const rawResponse = await generateContent(prompt);
+
+    let htmlOutput = "";
+
+    // Normalize response
+    if (typeof rawResponse === "string") {
+      htmlOutput = rawResponse;
+    } else if (rawResponse?.candidates?.[0]?.content?.parts?.[0]?.text) {
+      htmlOutput = rawResponse.candidates[0].content.parts[0].text;
+    } else {
+      htmlOutput = "<div><p>No insights generated.</p></div>";
+    }
+
+    // Clean: remove ```html fences if present
+    htmlOutput = htmlOutput.replace(/^```html|```$/g, "").trim();
+
+    // Ensure wrapping
+    if (!htmlOutput.startsWith("<div")) {
+      htmlOutput = `<div>${htmlOutput}</div>`;
+    }
+
+    res.send({ status: "success", insights: htmlOutput });
+  } catch (error) {
+    console.error("AI Insights Error:", error);
+    res.status(500).json({ message: "Failed to generate AI insights" });
+  }
+});
 
 
   const httpServer = createServer(app);
