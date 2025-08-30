@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, BarChart3, Home, FolderOpen, ArrowLeft } from "lucide-react";
+import { Menu, BarChart3, Home, FolderOpen, ArrowLeft, Sun, Moon } from "lucide-react";
 import { Link, useLocation } from "wouter";
+import { useTheme } from "@/components/theme-provider";
 
 interface NavbarProps {
   DisplayTitle?: string;
@@ -12,6 +13,7 @@ interface NavbarProps {
 export function Navbar({ DisplayTitle, subtitle }: NavbarProps) {
   const [location] = useLocation();
   const [isOpen, setIsOpen] = useState(false);
+  const { theme, setTheme } = useTheme();
 
   const navigationItems = [
     { href: "/", label: "Dashboard", icon: Home },
@@ -58,6 +60,20 @@ export function Navbar({ DisplayTitle, subtitle }: NavbarProps) {
                 </Button>
               </Link>
             )}
+            
+            {/* Dark Mode Toggle */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              data-testid="button-theme-toggle"
+            >
+              {theme === "dark" ? (
+                <Sun className="h-4 w-4" />
+              ) : (
+                <Moon className="h-4 w-4" />
+              )}
+            </Button>
 
             {/* {navigationItems.map((item) => {
               const Icon = item.icon;
@@ -115,6 +131,24 @@ export function Navbar({ DisplayTitle, subtitle }: NavbarProps) {
                       </Button>
                     </Link>
                   )}
+                  
+                  {/* Dark Mode Toggle (mobile) */}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setTheme(theme === "dark" ? "light" : "dark");
+                      setIsOpen(false);
+                    }}
+                    data-testid="button-theme-toggle-mobile"
+                    className="flex items-center gap-2"
+                  >
+                    {theme === "dark" ? (
+                      <><Sun className="h-4 w-4" /> Light Mode</>
+                    ) : (
+                      <><Moon className="h-4 w-4" /> Dark Mode</>
+                    )}
+                  </Button>
 
                   {/* {navigationItems.map((item) => {
                     const Icon = item.icon;

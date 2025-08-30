@@ -21,6 +21,7 @@ import {
   BarChart3,
   PieChart,
   Filter,
+  ArrowRight,
 } from "lucide-react";
 import { Navbar } from "@/components/navbar";
 import { ProjectMap } from "@/components/dashboard/project-map";
@@ -794,6 +795,9 @@ console.log("projects",projects)
                               Risks{" "}
                               {sortField === "risks" && (sortAsc ? "↑" : "↓")}
                             </TableHead>
+                            <TableHead className="sticky top-0 bg-white dark:bg-gray-900 z-10 w-12">
+                              {/* Arrow column - no header text */}
+                            </TableHead>
                           </TableRow>
                         </TableHeader>
 
@@ -877,12 +881,26 @@ console.log("projects",projects)
                                     {project.issuesRisks || 0}
                                   </Badge>
                                 </TableCell>
+                                <TableCell className="w-12">
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      window.open(`/project/${project.projectCode}`, "_blank");
+                                    }}
+                                    data-testid={`button-goto-project-${project.projectCode}`}
+                                    className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                  >
+                                    <ArrowRight className="h-4 w-4" />
+                                  </Button>
+                                </TableCell>
                               </TableRow>
                             ))
                           ) : (
                             <TableRow>
                               <TableCell
-                                colSpan={8}
+                                colSpan={9}
                                 className="text-center py-4"
                               >
                                 No projects found
