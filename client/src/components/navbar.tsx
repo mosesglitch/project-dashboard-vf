@@ -54,6 +54,8 @@ export function Navbar({ DisplayTitle, subtitle }: NavbarProps) {
                   variant="outline"
                   size="sm"
                   className="flex items-center gap-2"
+                        style={{backgroundColor:"#054d17ff",color:"white"}}
+
                 >
                   <ArrowLeft className="h-4 w-4" />
                   Back to Dashboard
@@ -123,7 +125,8 @@ export function Navbar({ DisplayTitle, subtitle }: NavbarProps) {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="flex items-center gap-2"
+                        style={{backgroundColor:"#22c55e"}}
+                        className="flex items-center gap-2 "
                         onClick={() => setIsOpen(false)}
                       >
                         <ArrowLeft className="h-4 w-4" />

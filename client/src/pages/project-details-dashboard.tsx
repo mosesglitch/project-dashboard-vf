@@ -1,10 +1,19 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams, Link } from "wouter";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
+import { Input } from "@/components/ui/input";
+// import { Progress } from "@/components/ui/progress";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -23,9 +32,12 @@ import {
   Circle,
   Clock,
   Settings,
+  Plus,
   Building,
   ShoppingCart,
   DollarSign,
+  Edit,
+  Trash2,
   TrendingUp,
   AlertTriangle,
   Target,
@@ -40,6 +52,22 @@ import { TimelineChart } from "@ui5/webcomponents-react-charts";
 import { Text } from "@ui5/webcomponents-react";
 import { AIInsights } from "@/components/ai-insights";
 import { ProjectAnalytics } from "@/components/project-analytics";
+
+// Progress Component
+const Progress = ({ value = 0, className = "", ...props }) => {
+  const clampedValue = Math.min(Math.max(value, 0), 100);
+  
+  return (
+    <div className={`relative w-full overflow-hidden rounded-full bg-secondary ${className}`} {...props}>
+      <div className="h-2 w-full bg-gray-200 rounded-full">
+        <div 
+          className="h-2  rounded-full transition-all duration-300 ease-in-out"
+          style={{ width: `${clampedValue}%`, backgroundColor: "#054d17ff" }}
+        />
+      </div>
+    </div>
+  );
+};
 
 const formatDate = (excelDate: number | string) => {
   if (typeof excelDate === "string") {
@@ -60,7 +88,22 @@ const formatDate = (excelDate: number | string) => {
     day: "numeric",
   });
 };
-
+interface Risk {
+  _id?: string;
+  projectCode: string;
+  title: string;
+  description: string;
+  status: "active" | "resolved" | "mitigated";
+  priority: "low" | "medium" | "high" | "critical";
+  owner: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+interface ProjectDetailsModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  projectId: string | number;
+}
 const formatCurrency = (amount: number) => {
   if (amount >= 1000000) {
     return `$${(amount / 1000000).toFixed(1)}M`;
@@ -121,6 +164,18 @@ const getProgressColor = (percentageComplete: number | string) => {
 
 export default function ProjectDetailsDashboard() {
   const [startDateForUpcoming, setStartDateForUpcoming] = useState<string>("");
+  const [isAddingRisk, setIsAddingRisk] = useState(false);
+  const [editingRisk, setEditingRisk] = useState<Risk | null>(null);
+  const [riskForm, setRiskForm] = useState({
+    title: "",
+    description: "",
+    status: "active" as Risk["status"],
+    priority: "medium" as Risk["priority"],
+    owner: "",
+  });
+
+  const queryClient = useQueryClient();
+
   const { id } = useParams();
 
   // Fetch project data
@@ -146,17 +201,156 @@ export default function ProjectDetailsDashboard() {
     enabled: !!project?.projectCode,
   });
 
-  const { data: risks } = useQuery<ExcelActivity[]>({
-    queryKey: ["/api/projects", project?.projectCode, "risks"],
+  // Fetch risks
+  const { data: risks, isLoading: risksLoading } = useQuery<Risk[]>({
+    queryKey: ["/api/risks", project?.projectCode],
     queryFn: async () => {
       const response = await fetch(
-        `/api/projects/${project?.projectCode}/risks`
+        `/api/risks?projectCode=${project?.projectCode}`
       );
       if (!response.ok) throw new Error("Failed to fetch risks");
       return response.json();
     },
+    // enabled: isOpen && !!project?.projectCode,
     enabled: !!project?.projectCode,
   });
+
+  // Create risk mutation
+  const createRiskMutation = useMutation({
+    mutationFn: async (
+      newRisk: Omit<Risk, "_id" | "createdAt" | "updatedAt">
+    ) => {
+      const response = await fetch("/api/risks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newRisk),
+      });
+      if (!response.ok) throw new Error("Failed to create risk");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["/api/risks", project?.projectCode],
+      });
+      setIsAddingRisk(false);
+      setRiskForm({
+        title: "",
+        description: "",
+        status: "active",
+        priority: "medium",
+        owner: "",
+      });
+    },
+  });
+
+  // Update risk mutation
+  const updateRiskMutation = useMutation({
+    mutationFn: async (updatedRisk: Risk) => {
+      const response = await fetch(`/api/risks/${updatedRisk._id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedRisk),
+      });
+      if (!response.ok) throw new Error("Failed to update risk");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["/api/risks", project?.projectCode],
+      });
+      setEditingRisk(null);
+      setRiskForm({
+        title: "",
+        description: "",
+        status: "active",
+        priority: "medium",
+        owner: "",
+      });
+    },
+  });
+
+  // Delete risk mutation
+  const deleteRiskMutation = useMutation({
+    mutationFn: async (riskId: string) => {
+      const response = await fetch(`/api/risks/${riskId}`, {
+        method: "DELETE",
+      });
+      if (!response.ok) throw new Error("Failed to delete risk");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["/api/risks", project?.projectCode],
+      });
+    },
+  });
+
+  const handleCreateRisk = () => {
+    if (!project?.projectCode) return;
+    createRiskMutation.mutate({
+      ...riskForm,
+      projectCode: project.projectCode,
+    });
+  };
+
+  const handleUpdateRisk = () => {
+    if (!editingRisk) return;
+    updateRiskMutation.mutate({
+      ...editingRisk,
+      ...riskForm,
+    });
+  };
+
+  const handleEditRisk = (risk: Risk) => {
+    setEditingRisk(risk);
+    setRiskForm({
+      title: risk.title,
+      description: risk.description,
+      status: risk.status,
+      priority: risk.priority,
+      owner: risk.owner,
+    });
+    setIsAddingRisk(true);
+  };
+
+  const handleDeleteRisk = (riskId: string) => {
+    if (confirm("Are you sure you want to delete this risk?")) {
+      deleteRiskMutation.mutate(riskId);
+    }
+  };
+
+  const getPriorityBadge = (priority: Risk["priority"]) => {
+    const variants = {
+      low: "bg-blue-100 text-blue-800",
+      medium: "bg-yellow-100 text-yellow-800",
+      high: "bg-orange-100 text-orange-800",
+      critical: "bg-red-100 text-red-800",
+    };
+    return (
+      <Badge className={variants[priority]}>{priority.toUpperCase()}</Badge>
+    );
+  };
+
+  const getStatusBadge = (status: Risk["status"]) => {
+    const variants = {
+      active: "bg-red-100 text-red-800",
+      mitigated: "bg-yellow-100 text-yellow-800",
+      resolved: "bg-green-100 text-green-800",
+    };
+    return <Badge className={variants[status]}>{status.toUpperCase()}</Badge>;
+  };
+
+  // const { data: risks } = useQuery<ExcelActivity[]>({
+  //   queryKey: ["/api/projects", project?.projectCode, "risks"],
+  //   queryFn: async () => {
+  //     const response = await fetch(
+  //       `/api/projects/${project?.projectCode}/risks`
+  //     );
+  //     if (!response.ok) throw new Error("Failed to fetch risks");
+  //     return response.json();
+  //   },
+  //   enabled: !!project?.projectCode,
+  // });
 
   // Helper to calculate duration in days
   function getDuration(
@@ -336,9 +530,9 @@ export default function ProjectDetailsDashboard() {
         dataset={adjustedDataset}
         isDiscrete
         start={start}
-        totalDuration={16}
+        totalDuration={45}
         columnTitle={`Duration (days)`}
-        style={{ width: "100%", paddingBottom: "2rem" }}
+        style={{ width: "100%", paddingBottom: "2rem", backgroundColor: "" }}
       />
     );
   }
@@ -395,16 +589,16 @@ export default function ProjectDetailsDashboard() {
     }
   };
 
-  const Progress = ({ value, className = "" }) => (
-    <div
-      className={`bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden ${className}`}
-    >
-      <div
-        className="h-full bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-500"
-        style={{ width: `${Math.min(100, Math.max(0, value))}%` }}
-      />
-    </div>
-  );
+  // const Progress = ({ value, className = "" }) => (
+  //   <div
+  //     className={`bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden ${className}`}
+  //   >
+  //     <div
+  //       className="h-full bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-500"
+  //       style={{ width: `${Math.min(100, Math.max(0, value))}%` }}
+  //     />
+  //   </div>
+  // );
 
   // Order milestones by phase
   const phaseOrder = [
@@ -448,11 +642,11 @@ export default function ProjectDetailsDashboard() {
           <CardContent>
             <div className="text-2xl font-bold">
               {((project.scopeCompletion || 0) * 100).toFixed(0)}%
-            </div>
             <Progress
               value={(project.scopeCompletion || 0) * 100}
               className="mt-2"
             />
+            </div>
           </CardContent>
         </Card>
 
@@ -1002,43 +1196,194 @@ export default function ProjectDetailsDashboard() {
             </CardContent>
           </Card> */}
         {/* Risks Section */}
-        <Card data-testid="card-risks">
+
+        <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5" />
-              Risk Management ({risks?.length || 0})
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5" />
+                Risk Management
+              </CardTitle>
+              <Button
+                size="sm"
+                onClick={() => {
+                  setIsAddingRisk(true);
+                  setEditingRisk(null);
+                  setRiskForm({
+                    title: "",
+                    description: "",
+                    status: "active",
+                    priority: "medium",
+                    owner: "",
+                  });
+                }}
+                  style={{ backgroundColor: "#054d17ff" }}
+
+                data-testid="button-add-risk"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Risk
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3 max-h-64 overflow-y-auto">
-              {risks && risks.length > 0 ? (
-                risks.map((risk, index) => (
-                  <div
-                    key={index}
-                    className="p-3 border rounded-lg bg-red-50 dark:bg-red-950/20 border-red-200"
+            {isAddingRisk && (
+              <div className="border rounded-lg p-4 mb-4 bg-gray-50 dark:bg-gray-800">
+                <h4 className="font-semibold mb-3">
+                  {editingRisk ? "Edit Risk" : "Add New Risk"}
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Input
+                    placeholder="Risk title"
+                    value={riskForm.title}
+                    onChange={(e) =>
+                      setRiskForm({ ...riskForm, title: e.target.value })
+                    }
+                    data-testid="input-risk-title"
+                  />
+                  <Input
+                    placeholder="Owner"
+                    value={riskForm.owner}
+                    onChange={(e) =>
+                      setRiskForm({ ...riskForm, owner: e.target.value })
+                    }
+                    data-testid="input-risk-owner"
+                  />
+                  <Select
+                    value={riskForm.priority}
+                    onValueChange={(value: Risk["priority"]) =>
+                      setRiskForm({ ...riskForm, priority: value })
+                    }
                   >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium text-sm">{risk.item}</p>
-                        <p className="text-xs text-muted-foreground">
-                          Owner: {risk.owner || "Unassigned"}
-                        </p>
-                      </div>
-                      <Badge variant="destructive">
-                        {risk.status || "Active"}
-                      </Badge>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className="text-center text-muted-foreground text-sm">
-                  No active risks
-                </p>
-              )}
-            </div>
+                    <SelectTrigger data-testid="select-risk-priority">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="low">Low</SelectItem>
+                      <SelectItem value="medium">Medium</SelectItem>
+                      <SelectItem value="high">High</SelectItem>
+                      <SelectItem value="critical">Critical</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select
+                    value={riskForm.status}
+                    onValueChange={(value: Risk["status"]) =>
+                      setRiskForm({ ...riskForm, status: value })
+                    }
+                  >
+                    <SelectTrigger data-testid="select-risk-status">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="mitigated">Mitigated</SelectItem>
+                      <SelectItem value="resolved">Resolved</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Textarea
+                  placeholder="Risk description"
+                  value={riskForm.description}
+                  onChange={(e) =>
+                    setRiskForm({ ...riskForm, description: e.target.value })
+                  }
+                  className="mt-4"
+                  data-testid="textarea-risk-description"
+                />
+                <div className="flex gap-2 mt-4">
+                  <Button
+                    size="sm"
+                    onClick={editingRisk ? handleUpdateRisk : handleCreateRisk}
+                    disabled={
+                      createRiskMutation.isPending ||
+                      updateRiskMutation.isPending
+                    }
+                    data-testid="button-save-risk"
+                  >
+                    {editingRisk ? "Update Risk" : "Add Risk"}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      setIsAddingRisk(false);
+                      setEditingRisk(null);
+                      setRiskForm({
+                        title: "",
+                        description: "",
+                        status: "active",
+                        priority: "medium",
+                        owner: "",
+                      });
+                    }}
+                    data-testid="button-cancel-risk"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {risksLoading ? (
+              <p>Loading risks...</p>
+            ) : risks && risks.length > 0 ? (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Title</TableHead>
+                    <TableHead>Priority</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Owner</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {risks.map((risk) => (
+                    <TableRow key={risk._id}>
+                      <TableCell>
+                        <div>
+                          <p className="font-medium">{risk.title}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {risk.description}
+                          </p>
+                        </div>
+                      </TableCell>
+                      <TableCell>{getPriorityBadge(risk.priority)}</TableCell>
+                      <TableCell>{getStatusBadge(risk.status)}</TableCell>
+                      <TableCell>{risk.owner}</TableCell>
+                      <TableCell>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleEditRisk(risk)}
+                            data-testid={`button-edit-risk-${risk._id}`}
+                          >
+                            <Edit className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() =>
+                              risk._id && handleDeleteRisk(risk._id)
+                            }
+                            data-testid={`button-delete-risk-${risk._id}`}
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            ) : (
+              <p className="text-muted-foreground">
+                No risks recorded for this project.
+              </p>
+            )}
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">

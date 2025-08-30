@@ -375,6 +375,8 @@ export function ProjectDetailsModal({ isOpen, onClose, projectId }: ProjectDetai
                     setEditingRisk(null);
                     setRiskForm({ title: "", description: "", status: "active", priority: "medium", owner: "" });
                   }}
+                  style={{ backgroundColor: "#054d17ff" }}
+
                   data-testid="button-add-risk"
                 >
                   <Plus className="h-4 w-4 mr-2" />

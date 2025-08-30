@@ -31,17 +31,10 @@ import { FilterModal } from "@/components/filter-modal";
 import type { ExcelProject } from "@shared/excel-schema";
 import type { DashboardFilters } from "@/lib/types";
 import {
-  PieChart as RechartsPieChart,
-  Pie,
-  Cell,
-  BarChart as RechartsBarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip as RechartsTooltip,
-  ResponsiveContainer,
-} from "recharts";
+  DonutChart,
+  BarChart,
+  ColumnChart,
+} from "@ui5/webcomponents-react-charts";
 
 type Project = {
   code: string;
@@ -422,23 +415,21 @@ console.log("projects",projects)
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {divisionStats ? (
-                    <ResponsiveContainer width="100%" height={220}>
-                      <RechartsBarChart
-                        data={Object.entries(divisionStats).map(
-                          ([division, value]) => ({
-                            division,
-                            value,
-                          })
-                        )}
-                      >
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="division" />
-                        <YAxis />
-                        <RechartsTooltip />
-                        <Bar dataKey="value" fill="#3b82f6" />
-                      </RechartsBarChart>
-                    </ResponsiveContainer>
+                   {divisionStats ? (
+                    <BarChart
+                      dataset={Object.entries(divisionStats).map(
+                        ([division, value]) => ({
+                          division,
+                          value,
+                        })
+                      )}
+                      dimensions={[{ accessor: "division" }]}
+                      measures={[{ accessor: "value", label: "Projects" }]}
+                      style={{ height: "220px" }}
+                      onClick={() => {}}
+                      onDataPointClick={() => {}}
+                      onLegendClick={() => {}}
+                    />
                   ) : (
                     <span className="text-sm text-muted-foreground">
                       No data
@@ -455,46 +446,31 @@ console.log("projects",projects)
                 </CardHeader>
                 <CardContent>
                   {projects && projects.length > 0 ? (
-                    <ResponsiveContainer width="100%" height={220}>
-                      <RechartsPieChart>
-                        <Pie
-                          data={Object.values(
-                            projects.reduce<
-                              Record<string, { division: string; value: number }>
-                            >((acc, project) => {
-                              const div = project.division || "Unknown";
-                              if (!acc[div]) {
-                                acc[div] = { division: div, value: 0 };
-                              }
-                              acc[div].value += Math.round(project.coAmount || 0);
-                              return acc;
-                            }, {})
-                          )}
-                          cx="50%"
-                          cy="50%"
-                          outerRadius={60}
-                          innerRadius={30}
-                          dataKey="value"
-                          label={({ division, value }) => `${division}: ${formatCurrency(value)}`}
-                        >
-                          {Object.values(
-                            projects.reduce<
-                              Record<string, { division: string; value: number }>
-                            >((acc, project) => {
-                              const div = project.division || "Unknown";
-                              if (!acc[div]) {
-                                acc[div] = { division: div, value: 0 };
-                              }
-                              acc[div].value += Math.round(project.coAmount || 0);
-                              return acc;
-                            }, {})
-                          ).map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={`hsl(${index * 45}, 70%, 50%)`} />
-                          ))}
-                        </Pie>
-                        <RechartsTooltip formatter={(value) => formatCurrency(Number(value))} />
-                      </RechartsPieChart>
-                    </ResponsiveContainer>
+                    <DonutChart
+                      dataset={Object.values(
+                        projects.reduce<
+                          Record<string, { division: string; value: number }>
+                        >((acc, project) => {
+                          const div = project.division || "Unknown";
+                          if (!acc[div]) {
+                            acc[div] = { division: div, value: 0 };
+                          }
+                          acc[div].value += Math.round(project.coAmount || 0);
+                          return acc;
+                        }, {})
+                      )}
+                      dimension={{ accessor: "division" }}
+                      measure={{
+                        accessor: "value",
+                        formatter: (val) => formatCurrency(Number(val)), // use your function here
+                      }}
+                      onClick={(e) => console.log("Chart clicked", e)}
+                      onDataPointClick={(e) =>
+                        console.log("Data point clicked", e)
+                      }
+                      onLegendClick={(e) => console.log("Legend clicked", e)}
+                      style={{ height: "220px" }}
+                    />
                   ) : (
                     <span className="text-sm text-muted-foreground">
                       No data
@@ -513,46 +489,26 @@ console.log("projects",projects)
                 </CardHeader>
                 <CardContent>
                   {projects && projects.length > 0 ? (
-                    <ResponsiveContainer width="100%" height={220}>
-                      <RechartsPieChart>
-                        <Pie
-                          data={Object.values(
-                            projects.reduce<
-                              Record<string, { category: string; value: number }>
-                            >((acc, project) => {
-                              const cat = project.performanceCategory || "Unknown";
-                              if (!acc[cat]) {
-                                acc[cat] = { category: cat, value: 0 };
-                              }
-                              acc[cat].value += 1; // count each project
-                              return acc;
-                            }, {})
-                          )}
-                          cx="50%"
-                          cy="50%"
-                          outerRadius={60}
-                          innerRadius={30}
-                          dataKey="value"
-                          label={({ category, value }) => `${category}: ${value}`}
-                        >
-                          {Object.values(
-                            projects.reduce<
-                              Record<string, { category: string; value: number }>
-                            >((acc, project) => {
-                              const cat = project.performanceCategory || "Unknown";
-                              if (!acc[cat]) {
-                                acc[cat] = { category: cat, value: 0 };
-                              }
-                              acc[cat].value += 1; // count each project
-                              return acc;
-                            }, {})
-                          ).map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={`hsl(${index * 60}, 70%, 50%)`} />
-                          ))}
-                        </Pie>
-                        <RechartsTooltip />
-                      </RechartsPieChart>
-                    </ResponsiveContainer>
+                    <DonutChart
+                      dataset={Object.values(
+                        projects.reduce<
+                          Record<string, { category: string; value: number }>
+                        >((acc, project) => {
+                          const cat = project.performanceCategory || "Unknown";
+                          if (!acc[cat]) {
+                            acc[cat] = { category: cat, value: 0 };
+                          }
+                          acc[cat].value += 1; // count each project
+                          return acc;
+                        }, {})
+                      )}
+                      dimension={{ accessor: "category" }}
+                      measure={{ accessor: "value" }}
+                      onClick={() => {}}
+                      onDataPointClick={() => {}}
+                      onLegendClick={() => {}}
+                      style={{ height: "220px" }}
+                    />
                   ) : (
                     <span className="text-sm text-muted-foreground">
                       No data
@@ -571,48 +527,27 @@ console.log("projects",projects)
                 </CardHeader>
                 <CardContent>
                   {projects && projects.length > 0 ? (
-                    <ResponsiveContainer width="100%" height={220}>
-                      <RechartsPieChart>
-                        <Pie
-                          data={Object.values(
-                            projects.reduce<
-                              Record<string, { status: string; value: number }>
-                            >((acc, project) => {
-                              const status =
-                                project.budgetStatusCategory || "Unknown";
-                              if (!acc[status]) {
-                                acc[status] = { status, value: 0 };
-                              }
-                              acc[status].value += 1; // count each project
-                              return acc;
-                            }, {})
-                          )}
-                          cx="50%"
-                          cy="50%"
-                          outerRadius={60}
-                          innerRadius={30}
-                          dataKey="value"
-                          label={({ status, value }) => `${status}: ${value}`}
-                        >
-                          {Object.values(
-                            projects.reduce<
-                              Record<string, { status: string; value: number }>
-                            >((acc, project) => {
-                              const status =
-                                project.budgetStatusCategory || "Unknown";
-                              if (!acc[status]) {
-                                acc[status] = { status, value: 0 };
-                              }
-                              acc[status].value += 1; // count each project
-                              return acc;
-                            }, {})
-                          ).map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={`hsl(${index * 80}, 70%, 50%)`} />
-                          ))}
-                        </Pie>
-                        <RechartsTooltip />
-                      </RechartsPieChart>
-                    </ResponsiveContainer>
+                    <DonutChart
+                      dataset={Object.values(
+                        projects.reduce<
+                          Record<string, { status: string; value: number }>
+                        >((acc, project) => {
+                          const status =
+                            project.budgetStatusCategory || "Unknown";
+                          if (!acc[status]) {
+                            acc[status] = { status, value: 0 };
+                          }
+                          acc[status].value += 1; // count each project
+                          return acc;
+                        }, {})
+                      )}
+                      dimension={{ accessor: "status" }}
+                      measure={{ accessor: "value" }}
+                      onClick={() => {}}
+                      onDataPointClick={() => {}}
+                      onLegendClick={() => {}}
+                      style={{ height: "220px" }}
+                    />
                   ) : (
                     <span className="text-sm text-muted-foreground">
                       No data
@@ -704,36 +639,67 @@ console.log("projects",projects)
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <RechartsBarChart
-                    data={topProjects.map((p) => ({
-                      projectCode: `#${p.projectCode}`,
-                      coAmount: p.coAmount || 0,
-                      budgetAmount: p.budgetAmount || 0,
-                      totalAmountSpent: p.totalAmountSpent || 0,
-                      description: p.description,
-                      deviationProfitMargin: p.deviationProfitMargin,
-                      budgetSpent: p.budgetSpent,
-                    }))}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis 
-                      dataKey="projectCode" 
-                      angle={-45}
-                      textAnchor="end"
-                      height={80}
-                      fontSize={10}
-                    />
-                    <YAxis tickFormatter={(value) => formatCurrency(value)} />
-                    <RechartsTooltip 
-                      formatter={(value, name) => [formatCurrency(Number(value)), name]}
-                      labelFormatter={(label) => `Project: ${label}`}
-                    />
-                    <Bar dataKey="coAmount" fill="#3b82f6" name="CO Amount" />
-                    <Bar dataKey="budgetAmount" fill="#10b981" name="Budget Amount" />
-                    <Bar dataKey="totalAmountSpent" fill="#f59e0b" name="Actual Spent" />
-                  </RechartsBarChart>
-                </ResponsiveContainer>
+               <ColumnChart
+                  dataset={topProjects.map((p) => ({
+                    projectCode: p.projectCode.toString(),
+                    coAmount: p.coAmount || 0,
+                    budgetAmount: p.budgetAmount || 0,
+                    totalAmountSpent: p.totalAmountSpent || 0,
+                    description: p.description,
+                    deviationProfitMargin: p.deviationProfitMargin,
+                    budgetSpent: p.budgetSpent,
+                  }))}
+                  dimensions={[
+                    {
+                      accessor: "projectCode",
+                      formatter: (val) => `#${val}`, // optional formatting for x-axis
+                    },
+                  ]}
+                  measures={[
+                     {
+                      accessor: "coAmount",
+                      label: "CO Amount",
+                      formatter: (val) => formatCurrency(val),
+                    },
+                    {
+                      accessor: "budgetAmount",
+                      label: "Budget Amount",
+                      formatter: (val) => formatCurrency(val),
+                    },
+                    {
+                      accessor: "totalAmountSpent",
+                      label: "Actual Spent",
+                      formatter: (val) => formatCurrency(val),
+                    },
+                   
+                  ]}
+                  tooltipConfig={{
+                    formatter: (value: any, name: string, props: any) => {
+                      const datum = props.payload;
+                      if (datum) {
+                        return [
+                          formatCurrency(value), // formatted value
+                          name,
+                          <div
+                            key="extra"
+                            style={{ fontSize: "0.8em", marginTop: 4 }}
+                          >
+                            <div>Description: {datum.description}</div>
+                            {/* <div>
+                              Deviation Margin:{" "}
+                              {datum.deviationProfitMargin?.toFixed(2)}
+                            </div> */}
+                            <div>Budget Spent: {datum.budgetSpent}</div>
+                          </div>,
+                        ];
+                      }
+                      return [formatCurrency(value), name];
+                    },
+                  }}
+                  onClick={(e) => console.log("Chart clicked", e)}
+                  onDataPointClick={(e) => console.log("Data point clicked", e)}
+                  onLegendClick={(e) => console.log("Legend clicked", e)}
+                />
               </CardContent>
             </Card>
           </div>

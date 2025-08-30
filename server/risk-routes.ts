@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { MongoClient, ObjectId } from "mongodb";
 import { z } from "zod";
-
+import { connectToDatabase } from "./mongodb";
 const router = Router();
 
 // Risk schema validation
@@ -20,13 +20,10 @@ const UpdateRiskSchema = RiskSchema.partial().omit({ projectCode: true });
 let db: any = null;
 
 async function getDatabase() {
-  if (!db) {
-    const client = new MongoClient(process.env.DATABASE_URL || "mongodb://localhost:27017");
-    await client.connect();
-    db = client.db("project_management");
-  }
+  const { db } = await connectToDatabase();
   return db;
 }
+
 
 // Get risks by project code
 router.get("/", async (req, res) => {
