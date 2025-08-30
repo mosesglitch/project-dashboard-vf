@@ -1,6 +1,8 @@
 export interface DashboardFilters {
   status: string;
   division: string;
+  budgetStatus?: string;
+  performanceStatus?: string;
   dateFrom: string;
   dateTo: string;
 }

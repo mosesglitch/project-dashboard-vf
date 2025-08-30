@@ -6,6 +6,7 @@ import { excelDataService } from "./excel-data-service";
 import { parseLocation, calculateBudgetStatusCategory, calculatePerformanceStatus } from "@shared/excel-schema";
 import { generateContent } from "@/lib/gemini";
 import { connectToDatabase } from "./mongodb";
+import riskRoutes from "./risk-routes";
 
 // AI Insight Generation Functions
 function generatePortfolioInsights(data: any) {
@@ -582,6 +583,9 @@ app.post("/api/ai/insights/json/:projectCode", async (req, res) => {
   }
 });
 
+
+  // Register risk management routes
+  app.use("/api/risks", riskRoutes);
 
   const httpServer = createServer(app);
   return httpServer;

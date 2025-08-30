@@ -4,14 +4,6 @@ import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import {
   Table,
   TableBody,
   TableCell,
@@ -28,10 +20,13 @@ import {
   AlertTriangle,
   BarChart3,
   PieChart,
+  Filter,
 } from "lucide-react";
 import { Navbar } from "@/components/navbar";
 import { ProjectMap } from "@/components/dashboard/project-map";
 import { AIInsights } from "@/components/ai-insights";
+import { ProjectDetailsModal } from "@/components/project-details-modal";
+import { FilterModal } from "@/components/filter-modal";
 import type { ExcelProject } from "@shared/excel-schema";
 import type { DashboardFilters } from "@/lib/types";
 import {
@@ -57,11 +52,16 @@ export default function Dashboard() {
   const [filters, setFilters] = useState<DashboardFilters>({
     status: "all",
     division: "all",
+    budgetStatus: "all",
+    performanceStatus: "all",
     dateFrom: "",
     dateTo: "",
   });
   const [sortField, setSortField] = useState("progress");
   const [sortAsc, setSortAsc] = useState(false);
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
+  const [selectedProjectId, setSelectedProjectId] = useState<string | number | null>(null);
 
   // Fetch data using Excel data service
   const { data: projects, isLoading: projectsLoading } = useQuery<
@@ -196,59 +196,31 @@ console.log("projects",projects)
       <div className="px-4 md:px-6 pt-3">
         {/* Header */}
 
-        {/* Filters */}
-        <div className="mb-3 flex flex-wrap gap-4 items-center">
-          <Input
-            type="date"
-            placeholder="From Date"
-            value={filters.dateFrom}
-            onChange={(e) =>
-              setFilters({ ...filters, dateFrom: e.target.value })
-            }
-            className="w-auto"
-            data-testid="input-date-from"
-          />
-          <Input
-            type="date"
-            placeholder="To Date"
-            value={filters.dateTo}
-            onChange={(e) => setFilters({ ...filters, dateTo: e.target.value })}
-            className="w-auto"
-            data-testid="input-date-to"
-          />
-          <Select
-            value={filters.status}
-            onValueChange={(value) => setFilters({ ...filters, status: value })}
+        {/* Filter Button */}
+        <div className="mb-3 flex justify-between items-center">
+          <div className="flex items-center gap-4">
+            {/* Filter indicator */}
+            {(filters.division !== "all" || 
+              filters.status !== "all" || 
+              filters.budgetStatus !== "all" || 
+              filters.performanceStatus !== "all" ||
+              filters.dateFrom || 
+              filters.dateTo) && (
+              <div className="text-sm text-muted-foreground">
+                Filters applied
+              </div>
+            )}
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsFilterModalOpen(true)}
+            data-testid="button-open-filters"
+            className="flex items-center gap-2"
           >
-            <SelectTrigger className="w-48" data-testid="select-status-filter">
-              <SelectValue placeholder="All Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="active">Active</SelectItem>
-              <SelectItem value="completed">Completed</SelectItem>
-              <SelectItem value="delayed">Delayed</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select
-            value={filters.division}
-            onValueChange={(value) =>
-              setFilters({ ...filters, division: value })
-            }
-          >
-            <SelectTrigger
-              className="w-48"
-              data-testid="select-division-filter"
-            >
-              <SelectValue placeholder="All Divisions" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Divisions</SelectItem>
-              <SelectItem value="mechanical">Mechanical</SelectItem>
-              <SelectItem value="electrical">Electrical</SelectItem>
-              <SelectItem value="instrumentation">Instrumentation</SelectItem>
-            </SelectContent>
-          </Select>
+            <Filter className="h-4 w-4" />
+            Filters
+          </Button>
         </div>
 
         {/* Main Dashboard Grid */}
@@ -840,21 +812,21 @@ console.log("projects",projects)
                               <TableRow
                                 key={project.id}
                                 className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
-                                onClick={() =>
-                                  window.open(
-                                    `/project/${project.projectCode}`,
-                                    "_blank"
-                                  )
-                                }
+                                onClick={() => {
+                                  setSelectedProjectId(project.id);
+                                  setIsProjectModalOpen(true);
+                                }}
                                 data-testid={`row-project-${project.projectCode}`}
                               >
-                                <TableCell className="font-medium sticky left-0 bg-white dark:bg-gray-900 z-10">
-                                  <Link
-                                    href={`/project/${project.projectCode}`}
-                                    className="text-blue-600 hover:underline"
-                                  >
-                                    {project.projectCode}
-                                  </Link>
+                                <TableCell 
+                                  className="font-medium sticky left-0 bg-white dark:bg-gray-900 z-10 text-blue-600 hover:underline cursor-pointer"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedProjectId(project.id);
+                                    setIsProjectModalOpen(true);
+                                  }}
+                                >
+                                  {project.projectCode}
                                 </TableCell>
                                 <TableCell
                                   className="max-w-xs truncate"
@@ -934,6 +906,21 @@ console.log("projects",projects)
           <ProjectMap projects={projects || []} />
         </div>
       </div>
+
+      {/* Filter Modal */}
+      <FilterModal
+        isOpen={isFilterModalOpen}
+        onClose={() => setIsFilterModalOpen(false)}
+        filters={filters}
+        onFiltersChange={setFilters}
+      />
+
+      {/* Project Details Modal */}
+      <ProjectDetailsModal
+        isOpen={isProjectModalOpen}
+        onClose={() => setIsProjectModalOpen(false)}
+        projectId={selectedProjectId}
+      />
     </div>
   );
 }
