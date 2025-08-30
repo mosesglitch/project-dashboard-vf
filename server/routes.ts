@@ -172,7 +172,41 @@ app.post("/api/portfolio/add", async (req, res) => {
     res.status(500).json({ message: "Failed to insert portfolio items" });
   }
 });
+ // ❌ Delete all Projects
+  app.delete("/api/projects/deleteAll", async (req, res) => {
+    try {
+      const { db } = await connectToDatabase();
+      const ProjectCollection = db.collection("project_data");
 
+      const result = await ProjectCollection.deleteMany({}); // remove all docs
+
+      res.json({
+        message: "🗑️ All projects deleted",
+        deletedCount: result.deletedCount,
+      });
+    } catch (error) {
+      console.error("❌ Failed to delete projects", error);
+      res.status(500).json({ message: "Failed to delete projects" });
+    }
+  });
+
+  // ❌ Delete all Portfolio items
+  app.delete("/api/portfolio/deleteAll", async (req, res) => {
+    try {
+      const { db } = await connectToDatabase();
+      const PortfolioCollection = db.collection("portfolio");
+
+      const result = await PortfolioCollection.deleteMany({}); // remove all docs
+
+      res.json({
+        message: "🗑️ All portfolio items deleted",
+        deletedCount: result.deletedCount,
+      });
+    } catch (error) {
+      console.error("❌ Failed to delete portfolio items", error);
+      res.status(500).json({ message: "Failed to delete portfolio items" });
+    }
+  });
   // Get all projects with optional filters
   app.get("/api/projects", async (req, res) => {
     try {
@@ -434,7 +468,6 @@ app.post("/api/ai/insights/raw/:projectCode", async (req, res) => {
         late,
       });
     }
-console.log(data)
     // Build prompt for Gemini
     const prompt = `
       You are a project management assistant. Given the following project data:
@@ -504,7 +537,6 @@ app.post("/api/ai/insights/json/:projectCode", async (req, res) => {
         late,
       });
     }
-console.log(data)
     // Build prompt for Gemini
     const prompt = `
       You are a project management assistant. Given the following project data:

@@ -57,18 +57,146 @@ const DATA_SOURCE_CONFIG = {
     'Status': 'status'
   }
 };
-const portfolioColumnMapping= {
-    'Project Code': 'projectCode',
-    'Item': 'item',
-    'Description': 'description',
-    'Owner': 'owner',
-    'Start Date': 'startDate',
-    'Finish Date': 'finishDate',
-    'Percentage Complete': 'percentageComplete',
-    'Category': 'category',
-    'Predecessor': 'predecessor',
-    'Status': 'status'
+function mapRow(
+  row: any,
+  mapping: Record<string, string>,
+  index: number,
+  isProjectSheet = false
+): any {
+  const mappedRow: any = { id: index + 1 };
+
+  Object.entries(mapping).forEach(([excelCol, schemaCol]) => {
+    let value = row[excelCol];
+
+    // 🔄 Handle data type conversions
+    if (
+      [
+        "percentageComplete",
+        "scopeCompletion",
+        "timeCompletion",
+        "performanceIndex",
+        "budgetAmount",
+        "totalAmountSpent",
+        "budgetSpent",
+        "amountReceived",
+        "coAmount",
+        "projectedGrossMargin",
+        "actualGrossMargin",
+        "deviationProfitMargin",
+      ].includes(schemaCol)
+    ) {
+      value = typeof value === "string" ? parseFloat(value) || 0 : value || 0;
+    } else if (schemaCol === "issuesRisks") {
+      value = typeof value === "string" ? parseInt(value) || 0 : value || 0;
+    } else if (["startDate", "finishDate"].includes(schemaCol)) {
+      value =
+        value instanceof Date ? value.toISOString().split("T")[0] : value;
+    }
+
+    mappedRow[schemaCol] = value ?? "";
+  });
+
+  // 🔄 Derived fields (only for project sheet)
+  if (
+    isProjectSheet &&
+    !mappedRow.budgetStatusCategory &&
+    mappedRow.budgetAmount &&
+    mappedRow.totalAmountSpent
+  ) {
+    mappedRow.budgetStatusCategory = calculateBudgetStatusCategory(
+      mappedRow.budgetAmount,
+      mappedRow.totalAmountSpent
+    );
   }
+
+  return mappedRow;
+}
+
+async function readProjectsFromMongo(): Promise<ExcelProject[]> {
+  try {
+    const { db } = await connectToDatabase();
+    const docs = await db.collection("portfolio").find({}).toArray();
+
+    return docs.map((doc, i) =>
+      mapRow(doc, DATA_SOURCE_CONFIG.columnMapping, i)
+    );
+  } catch (error) {
+    console.error("❌ Error reading projects from MongoDB:", error);
+    return SAMPLE_DATA;
+  }
+}
+
+async function readActivitiesFromMongo(): Promise<ExcelActivity[]> {
+  try {
+    const { db } = await connectToDatabase();
+    const docs = await db.collection("project_data").find({}).toArray();
+
+    return docs.map((doc, i) =>
+      mapRow(doc, DATA_SOURCE_CONFIG.portfolioColumnMapping, i)
+    );
+  } catch (error) {
+    console.error("❌ Error reading activities from MongoDB:", error);
+    return SAMPLE_ACTIVITIES_DATA;
+  }
+}
+/**
+ * Generic Excel sheet reader
+ */
+function readExcelSheet<T>(
+  sheetName: string,
+  mapping: Record<string, string>,
+  isProjectSheet = false,
+  sampleData: T[]
+): T[] {
+  try {
+    if (!fs.existsSync(DATA_SOURCE_CONFIG.filePath)) {
+      console.warn(
+        `⚠️ Excel file not found at ${DATA_SOURCE_CONFIG.filePath}, using sample data`
+      );
+      return sampleData;
+    }
+
+    const workbook = XLSX.readFile(DATA_SOURCE_CONFIG.filePath);
+    const worksheet = workbook.Sheets[sheetName];
+
+    if (!worksheet) {
+      console.error(
+        `❌ Sheet "${sheetName}" not found in Excel, using sample data`
+      );
+      return sampleData;
+    }
+
+    const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+    return jsonData.map((row: any, i: number) =>
+      mapRow(row, mapping, i, isProjectSheet)
+    );
+  } catch (error) {
+    console.error(`❌ Error reading sheet "${sheetName}":`, error);
+    return sampleData;
+  }
+}
+
+/**
+ * Specific wrappers for your two Excel sheets
+ */
+function readProjectsSheet(): ExcelProject[] {
+  return readExcelSheet<ExcelProject>(
+    "Portfolio",
+    DATA_SOURCE_CONFIG.columnMapping,
+    true, // 🔄 isProjectSheet
+    SAMPLE_DATA
+  );
+}
+
+function readPortfolioSheet(): ExcelActivity[] {
+  return readExcelSheet<ExcelActivity>(
+    "Projects",
+    DATA_SOURCE_CONFIG.portfolioColumnMapping,
+    false,
+    SAMPLE_ACTIVITIES_DATA
+  );
+}
 // Sample activities data for the second Excel file
 const SAMPLE_ACTIVITIES_DATA: ExcelActivity[] = [
   {
@@ -342,166 +470,7 @@ const SAMPLE_DATA: ExcelProject[] = [
   }
 ];
 
-// Function to read Projects sheet and convert to our schema
-function readProjectsSheet(): ExcelProject[] {
-  try {
-    if (!fs.existsSync(DATA_SOURCE_CONFIG.filePath)) {
-      console.log('Excel file not found, using sample data');
-      return SAMPLE_DATA;
-    }
 
-    const workbook = XLSX.readFile(DATA_SOURCE_CONFIG.filePath);
-    const worksheet = workbook.Sheets["Portfolio"] 
-    
-    if (!worksheet) {
-      console.error(`Projects sheet "${DATA_SOURCE_CONFIG.projectsSheetName}" not found, using sample data`);
-      return SAMPLE_DATA;
-    }
-
-    const jsonData = XLSX.utils.sheet_to_json(worksheet);
-    
-    return jsonData.map((row: any, index: number) => {
-      const mappedRow: any = { id: index + 1 };
-      
-      // Map Excel columns to our schema
-      Object.entries(DATA_SOURCE_CONFIG.columnMapping).forEach(([excelCol, schemaCol]) => {
-        let value = row[excelCol];
-        
-        // Handle data type conversions
-        if (['percentageComplete', 'scopeCompletion', 'timeCompletion', 'performanceIndex', 'budgetAmount', 'totalAmountSpent', 'budgetSpent', 'amountReceived', 'coAmount', 'projectedGrossMargin', 'actualGrossMargin', 'deviationProfitMargin'].includes(schemaCol)) {
-          value = typeof value === 'string' ? parseFloat(value) || 0 : value || 0;
-        } else if (schemaCol === 'issuesRisks') {
-          value = typeof value === 'string' ? parseInt(value) || 0 : value || 0;
-        } else if (['startDate', 'finishDate'].includes(schemaCol)) {
-          value = value instanceof Date ? value.toISOString().split('T')[0] : value;
-        }
-        
-        mappedRow[schemaCol] = value || '';
-      });
-
-      // Calculate derived fields if missing
-      if (!mappedRow.budgetStatusCategory && mappedRow.budgetAmount && mappedRow.totalAmountSpent) {
-        mappedRow.budgetStatusCategory = calculateBudgetStatusCategory(mappedRow.budgetAmount, mappedRow.totalAmountSpent);
-      }
-
-      return mappedRow as ExcelProject;
-    });
-    
-  } catch (error) {
-    console.error('Error reading Projects sheet:', error);
-    return SAMPLE_DATA;
-  }
-}
-
-// Function to read Portfolio sheet and convert to activities schema
-function readPortfolioSheet(): ExcelActivity[] {
-  try {
-    if (!fs.existsSync(DATA_SOURCE_CONFIG.filePath)) {
-      console.log('Excel file not found, using sample activities data');
-      return SAMPLE_ACTIVITIES_DATA;
-    }
-
-    const workbook = XLSX.readFile(DATA_SOURCE_CONFIG.filePath);
-    const worksheet = workbook.Sheets["Projects"] 
-      console.log(`Portfolio sheet "${"projects"}" found, using sample activities data`);
-    
-    if (!worksheet) {
-      console.error(`Portfolio sheet "${DATA_SOURCE_CONFIG.portfolioSheetName}" not found, using sample activities data`);
-      return SAMPLE_ACTIVITIES_DATA;
-    }
-
-    const jsonData = XLSX.utils.sheet_to_json(worksheet);
-    
-    return jsonData.map((row: any, index: number) => {
-      const mappedRow: any = { id: index + 1 };
-      
-      // Map Excel columns to our activities schema
-      Object.entries(portfolioColumnMapping).forEach(([excelCol, schemaCol]) => {
-        let value = row[excelCol];
-        
-        // Handle data type conversions
-        if (schemaCol === 'percentageComplete') {
-          value = typeof value === 'string' ? parseFloat(value) || 0 : value || 0;
-        } else if (['startDate', 'finishDate'].includes(schemaCol)) {
-          value = value instanceof Date ? value.toISOString().split('T')[0] : value;
-        }
-        
-        mappedRow[schemaCol] = value || '';
-      });
-
-      return mappedRow as ExcelActivity;
-    });
-    
-  } catch (error) {
-    console.error('Error reading Portfolio sheet:', error);
-    return SAMPLE_ACTIVITIES_DATA;
-  }
-}
-async function readProjectsFromMongo(): Promise<ExcelProject[]> {
-  try {
-    const { db } = await connectToDatabase();
-    const docs = await db.collection("project_data").find({}).toArray();
-
-    return docs.map((doc: any, index: number) => {
-      const mappedRow: any = { id: index + 1 };
-
-      Object.entries(DATA_SOURCE_CONFIG.columnMapping).forEach(([dbField, schemaCol]) => {
-        let value = doc[dbField];
-
-        // Handle data type conversions
-        if (['percentageComplete', 'scopeCompletion', 'timeCompletion', 'performanceIndex', 'budgetAmount', 'totalAmountSpent', 'budgetSpent', 'amountReceived', 'coAmount', 'projectedGrossMargin', 'actualGrossMargin', 'deviationProfitMargin'].includes(schemaCol)) {
-          value = typeof value === 'string' ? parseFloat(value) || 0 : value || 0;
-        } else if (schemaCol === 'issuesRisks') {
-          value = typeof value === 'string' ? parseInt(value) || 0 : value || 0;
-        } else if (['startDate', 'finishDate'].includes(schemaCol)) {
-          value = value instanceof Date ? value.toISOString().split('T')[0] : value;
-        }
-
-        mappedRow[schemaCol] = value || '';
-      });
-
-      if (!mappedRow.budgetStatusCategory && mappedRow.budgetAmount && mappedRow.totalAmountSpent) {
-        mappedRow.budgetStatusCategory = calculateBudgetStatusCategory(
-          mappedRow.budgetAmount,
-          mappedRow.totalAmountSpent
-        );
-      }
-
-      return mappedRow as ExcelProject;
-    });
-  } catch (error) {
-    console.error("❌ Error reading projects from MongoDB:", error);
-    return SAMPLE_DATA;
-  }
-}
-
-async function readActivitiesFromMongo(): Promise<ExcelActivity[]> {
-  try {
-    const { db } = await connectToDatabase();
-    const docs = await db.collection("portfolio").find({}).toArray();
-
-    return docs.map((doc: any, index: number) => {
-      const mappedRow: any = { id: index + 1 };
-
-      Object.entries(portfolioColumnMapping).forEach(([dbField, schemaCol]) => {
-        let value = doc[dbField];
-
-        if (schemaCol === 'percentageComplete') {
-          value = typeof value === 'string' ? parseFloat(value) || 0 : value || 0;
-        } else if (['startDate', 'finishDate'].includes(schemaCol)) {
-          value = value instanceof Date ? value.toISOString().split('T')[0] : value;
-        }
-
-        mappedRow[schemaCol] = value || '';
-      });
-
-      return mappedRow as ExcelActivity;
-    });
-  } catch (error) {
-    console.error("❌ Error reading activities from MongoDB:", error);
-    return SAMPLE_ACTIVITIES_DATA;
-  }
-}
 // Data service class
 export class ExcelDataService {
   private data: ExcelProject[] = [];
