@@ -74,7 +74,7 @@ export default function Dashboard() {
       return response.json();
     },
   });
-
+console.log("projects",projects)
   const { data: kpiData } = useQuery<any>({
     queryKey: ["/api/projects/stats/overview"],
   });
