@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import type { ExcelProject, ExcelActivity } from '@shared/excel-schema';
 import { parseLocation, calculateBudgetStatusCategory, calculatePerformanceStatus } from '@shared/excel-schema';
+import { connectToDatabase } from './mongodb';
 
 // ==== DATA SOURCE CONFIGURATION ====
 // Change this section to modify your data source easily
@@ -436,31 +437,108 @@ function readPortfolioSheet(): ExcelActivity[] {
     return SAMPLE_ACTIVITIES_DATA;
   }
 }
+async function readProjectsFromMongo(): Promise<ExcelProject[]> {
+  try {
+    const { db } = await connectToDatabase();
+    const docs = await db.collection("project_data").find({}).toArray();
 
+    return docs.map((doc: any, index: number) => {
+      const mappedRow: any = { id: index + 1 };
+
+      Object.entries(DATA_SOURCE_CONFIG.columnMapping).forEach(([dbField, schemaCol]) => {
+        let value = doc[dbField];
+
+        // Handle data type conversions
+        if (['percentageComplete', 'scopeCompletion', 'timeCompletion', 'performanceIndex', 'budgetAmount', 'totalAmountSpent', 'budgetSpent', 'amountReceived', 'coAmount', 'projectedGrossMargin', 'actualGrossMargin', 'deviationProfitMargin'].includes(schemaCol)) {
+          value = typeof value === 'string' ? parseFloat(value) || 0 : value || 0;
+        } else if (schemaCol === 'issuesRisks') {
+          value = typeof value === 'string' ? parseInt(value) || 0 : value || 0;
+        } else if (['startDate', 'finishDate'].includes(schemaCol)) {
+          value = value instanceof Date ? value.toISOString().split('T')[0] : value;
+        }
+
+        mappedRow[schemaCol] = value || '';
+      });
+
+      if (!mappedRow.budgetStatusCategory && mappedRow.budgetAmount && mappedRow.totalAmountSpent) {
+        mappedRow.budgetStatusCategory = calculateBudgetStatusCategory(
+          mappedRow.budgetAmount,
+          mappedRow.totalAmountSpent
+        );
+      }
+
+      return mappedRow as ExcelProject;
+    });
+  } catch (error) {
+    console.error("❌ Error reading projects from MongoDB:", error);
+    return SAMPLE_DATA;
+  }
+}
+
+async function readActivitiesFromMongo(): Promise<ExcelActivity[]> {
+  try {
+    const { db } = await connectToDatabase();
+    const docs = await db.collection("portfolio").find({}).toArray();
+
+    return docs.map((doc: any, index: number) => {
+      const mappedRow: any = { id: index + 1 };
+
+      Object.entries(portfolioColumnMapping).forEach(([dbField, schemaCol]) => {
+        let value = doc[dbField];
+
+        if (schemaCol === 'percentageComplete') {
+          value = typeof value === 'string' ? parseFloat(value) || 0 : value || 0;
+        } else if (['startDate', 'finishDate'].includes(schemaCol)) {
+          value = value instanceof Date ? value.toISOString().split('T')[0] : value;
+        }
+
+        mappedRow[schemaCol] = value || '';
+      });
+
+      return mappedRow as ExcelActivity;
+    });
+  } catch (error) {
+    console.error("❌ Error reading activities from MongoDB:", error);
+    return SAMPLE_ACTIVITIES_DATA;
+  }
+}
 // Data service class
 export class ExcelDataService {
   private data: ExcelProject[] = [];
   private activitiesData: ExcelActivity[] = [];
-  
+
+  // Decide here whether to use Mongo or Excel
+  private readonly useMongo: boolean = true; // 👈 flip between true/false
+
   constructor() {
     this.loadData();
     this.loadActivitiesData();
   }
-  
-  private loadData() {
-    this.data = readProjectsSheet();
-    console.log(`Loaded ${this.data.length} projects from portfolio sheet`);
+
+  private async loadData() {
+    if (this.useMongo) {
+      this.data = await readProjectsFromMongo();
+      console.log(`Loaded ${this.data.length} projects from MongoDB`);
+    } else {
+      this.data = readProjectsSheet();
+      console.log(`Loaded ${this.data.length} projects from portfolio sheet`);
+    }
   }
 
-  private loadActivitiesData() {
-    this.activitiesData = readPortfolioSheet();
-    console.log(`Loaded ${this.activitiesData.length} activities from project sheet`);
+  private async loadActivitiesData() {
+    if (this.useMongo) {
+      this.activitiesData = await readActivitiesFromMongo();
+      console.log(`Loaded ${this.activitiesData.length} activities from MongoDB`);
+    } else {
+      this.activitiesData = readPortfolioSheet();
+      console.log(`Loaded ${this.activitiesData.length} activities from project sheet`);
+    }
   }
-  
-  // Reload data (useful for when Excel file is updated)
-  reloadData() {
-    this.loadData();
-    this.loadActivitiesData();
+
+  // Reload data (useful for when Excel file or MongoDB is updated)
+  async reloadData() {
+    await this.loadData();
+    await this.loadActivitiesData();
   }
   
   // Get all projects with optional filters

@@ -7,7 +7,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import Dashboard from "@/pages/dashboard";
 import ProjectDetailsDashboard from "@/pages/project-details-dashboard";
 import NotFound from "@/pages/not-found";
-
+// require('dotenv').config();
 function Router() {
   return (
     <Switch>

@@ -5,6 +5,7 @@ import { insertProjectSchema } from "@shared/schema";
 import { excelDataService } from "./excel-data-service";
 import { parseLocation, calculateBudgetStatusCategory, calculatePerformanceStatus } from "@shared/excel-schema";
 import { generateContent } from "@/lib/gemini";
+import { connectToDatabase } from "./mongodb";
 
 // AI Insight Generation Functions
 function generatePortfolioInsights(data: any) {
@@ -120,6 +121,58 @@ function formatCurrency(amount: number) {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Add Projects to MongoDB
+app.post("/api/projects/add", async (req, res) => {
+ try {
+    const { data } = req.body; // expects { data: [ {}, {} ] }
+
+    if (!Array.isArray(data)) {
+      return res
+        .status(400)
+        .json({ message: "Invalid data format. Must be { data: [] }" });
+    }
+
+    const { db } = await connectToDatabase();
+    const ProjectCollection = db.collection("project_data");
+
+    const result = await ProjectCollection.insertMany(data);
+
+    res.json({
+      message: "✅ Projects added",
+      insertedCount: result.insertedCount,
+    });
+  } catch (error) {
+    console.error("❌ Failed to insert projects", error);
+    res.status(500).json({ message: "Failed to insert projects" });
+  }
+});
+
+// Add Activities/Portfolio to MongoDB
+app.post("/api/portfolio/add", async (req, res) => {
+   try {
+    const { data } = req.body; // expects { data: [ {}, {} ] }
+
+    if (!Array.isArray(data)) {
+      return res
+        .status(400)
+        .json({ message: "Invalid data format. Must be { data: [] }" });
+    }
+
+    const { db } = await connectToDatabase();
+    const PortfolioCollection = db.collection("portfolio");
+
+    const result = await PortfolioCollection.insertMany(data);
+
+    res.json({
+      message: "✅ Portfolio items added",
+      insertedCount: result.insertedCount,
+    });
+  } catch (error) {
+    console.error("❌ Failed to insert portfolio items", error);
+    res.status(500).json({ message: "Failed to insert portfolio items" });
+  }
+});
+
   // Get all projects with optional filters
   app.get("/api/projects", async (req, res) => {
     try {
