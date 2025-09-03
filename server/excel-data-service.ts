@@ -57,6 +57,7 @@ const DATA_SOURCE_CONFIG = {
     'Status': 'status'
   }
 };
+
 function mapRow(
   row: any,
   mapping: Record<string, string>,
@@ -139,6 +140,7 @@ async function readActivitiesFromMongo(): Promise<ExcelActivity[]> {
     return SAMPLE_ACTIVITIES_DATA;
   }
 }
+
 /**
  * Generic Excel sheet reader
  */
@@ -197,6 +199,7 @@ function readPortfolioSheet(): ExcelActivity[] {
     SAMPLE_ACTIVITIES_DATA
   );
 }
+
 // Sample activities data for the second Excel file
 const SAMPLE_ACTIVITIES_DATA: ExcelActivity[] = [
   {
@@ -470,54 +473,45 @@ const SAMPLE_DATA: ExcelProject[] = [
   }
 ];
 
-
-// Data service class
+// Data service class without caching
 export class ExcelDataService {
-  private data: ExcelProject[] = [];
-  private activitiesData: ExcelActivity[] = [];
-
   // Decide here whether to use Mongo or Excel
   private readonly useMongo: boolean = true; // 👈 flip between true/false
 
-  constructor() {
-    this.loadData();
-    this.loadActivitiesData();
-  }
-
-  private async loadData() {
+  // Get fresh projects data (no caching)
+  private async getProjectsData(): Promise<ExcelProject[]> {
     if (this.useMongo) {
-      this.data = await readProjectsFromMongo();
-      console.log(`Loaded ${this.data.length} projects from MongoDB`);
+      const data = await readProjectsFromMongo();
+      console.log(`Loaded ${data.length} projects from MongoDB`);
+      return data;
     } else {
-      this.data = readProjectsSheet();
-      console.log(`Loaded ${this.data.length} projects from portfolio sheet`);
+      const data = readProjectsSheet();
+      console.log(`Loaded ${data.length} projects from portfolio sheet`);
+      return data;
     }
   }
 
-  private async loadActivitiesData() {
+  // Get fresh activities data (no caching)
+  private async getActivitiesData(): Promise<ExcelActivity[]> {
     if (this.useMongo) {
-      this.activitiesData = await readActivitiesFromMongo();
-      console.log(`Loaded ${this.activitiesData.length} activities from MongoDB`);
+      const data = await readActivitiesFromMongo();
+      console.log(`Loaded ${data.length} activities from MongoDB`);
+      return data;
     } else {
-      this.activitiesData = readPortfolioSheet();
-      console.log(`Loaded ${this.activitiesData.length} activities from project sheet`);
+      const data = readPortfolioSheet();
+      console.log(`Loaded ${data.length} activities from project sheet`);
+      return data;
     }
-  }
-
-  // Reload data (useful for when Excel file or MongoDB is updated)
-  async reloadData() {
-    await this.loadData();
-    await this.loadActivitiesData();
   }
   
   // Get all projects with optional filters
-  getProjects(filters?: {
+  async getProjects(filters?: {
     status?: string;
     division?: string;
     dateFrom?: string;
     dateTo?: string;
-  }): ExcelProject[] {
-    let filteredData = [...this.data];
+  }): Promise<ExcelProject[]> {
+    let filteredData = await this.getProjectsData();
     
     if (filters) {
       if (filters.division && filters.division !== 'all' && filters.division !== '') {
@@ -542,27 +536,28 @@ export class ExcelDataService {
   }
   
   // Get project by ID
-  getProjectById(id: string): ExcelProject | undefined {
-
-    return this.data.find(p => p.projectCode.toString() === id || p.id.toString() === id);
+  async getProjectById(id: string): Promise<ExcelProject | undefined> {
+    const data = await this.getProjectsData();
+    return data.find(p => p.projectCode.toString() === id || p.id.toString() === id);
   }
   
   // Get overview statistics
-  getOverviewStats(): any {
-    const total = this.data.length;
+  async getOverviewStats(): Promise<any> {
+    const data = await this.getProjectsData();
+    const total = data.length;
     
     // Sum only valid numeric values, excluding NaN, null, undefined, or empty strings
-    const totalBudget = this.data.reduce((sum, p) => {
+    const totalBudget = data.reduce((sum, p) => {
       const amount = typeof p.budgetAmount === 'number' && !isNaN(p.budgetAmount) ? p.budgetAmount : 0;
       return sum + amount;
     }, 0);
     
-    const actualSpend = this.data.reduce((sum, p) => {
+    const actualSpend = data.reduce((sum, p) => {
       const amount = typeof p.totalAmountSpent === 'number' && !isNaN(p.totalAmountSpent) ? p.totalAmountSpent : 0;
       return sum + amount;
     }, 0);
     
-    const amountReceived = this.data.reduce((sum, p) => {
+    const amountReceived = data.reduce((sum, p) => {
       // Handle cases where amountReceived might be empty string or invalid
       let amount = 0;
       if (typeof p.amountReceived === 'number' && !isNaN(p.amountReceived)) {
@@ -574,7 +569,7 @@ export class ExcelDataService {
       return sum + amount;
     }, 0);
     
-    const totalRisks = this.data.reduce((sum, p) => {
+    const totalRisks = data.reduce((sum, p) => {
       const risks = typeof p.issuesRisks === 'number' && !isNaN(p.issuesRisks) ? p.issuesRisks : 0;
       return sum + risks;
     }, 0);
@@ -589,7 +584,8 @@ export class ExcelDataService {
   }
   
   // Get performance category statistics for pie chart
-  getPerformanceCategoryStats(): any {
+  async getPerformanceCategoryStats(): Promise<any> {
+    const data = await this.getProjectsData();
     const categories: Record<string, number> = {
       'On Track': 0,
       'Slightly Behind': 0,
@@ -597,7 +593,7 @@ export class ExcelDataService {
       'Ahead of Schedule': 0
     };
     
-    this.data.forEach(project => {
+    data.forEach(project => {
       const category = project.performanceCategory || 'On Track';
       if (category in categories) {
         categories[category]++;
@@ -608,7 +604,8 @@ export class ExcelDataService {
   }
   
   // Get spending categories data for pie chart
-  getSpendingCategoriesStats(): any {
+  async getSpendingCategoriesStats(): Promise<any> {
+    const data = await this.getProjectsData();
     const categories: Record<string, number> = {
       'Under Budget': 0,
       'Within Budget': 0,
@@ -616,7 +613,7 @@ export class ExcelDataService {
       'Critically Over Budget': 0
     };
     
-    this.data.forEach(project => {
+    data.forEach(project => {
       const category = project.budgetStatusCategory || 'Within Budget';
       if (category in categories) {
         categories[category]++;
@@ -627,10 +624,11 @@ export class ExcelDataService {
   }
   
   // Get division data for bar chart
-  getDivisionStats(): any {
+  async getDivisionStats(): Promise<any> {
+    const data = await this.getProjectsData();
     const divisions: Record<string, number> = {};
     
-    this.data.forEach(project => {
+    data.forEach(project => {
       const division = project.division || 'Other';
       divisions[division] = (divisions[division] || 0) + 1;
     });
@@ -639,56 +637,57 @@ export class ExcelDataService {
   }
   
   // Get all project locations for mapping
-  getAllProjectLocations(): Array<{id: string, name: string, code: string, locations: Array<{lat: number, lng: number}>}> {
+  async getAllProjectLocations(): Promise<Array<{id: string, name: string, code: string, locations: Array<{lat: number, lng: number}>}>> {
+    const data = await this.getProjectsData();
     const result: Array<{id: string, name: string, code: string, locations: Array<{lat: number, lng: number}>}> = [];
-    this.data.forEach(project => {
+    data.forEach(project => {
       const locations = parseLocation(project.location || '');
       locations.forEach(loc => {
-      result.push({
-        id: project.id.toString(),
-        name: project.description,
-        code: project.projectCode,
-        locations: [loc]
-      });
+        result.push({
+          id: project.id.toString(),
+          name: project.description,
+          code: project.projectCode,
+          locations: [loc]
+        });
       });
     });
     return result;
   }
 
   // Get activities by project code
-  getActivitiesByProjectCode(projectCode: string): ExcelActivity[] {
-  return this.activitiesData.filter(activity => activity.projectCode.toLocaleString() === projectCode);
+  async getActivitiesByProjectCode(projectCode: string): Promise<ExcelActivity[]> {
+    const activitiesData = await this.getActivitiesData();
+    return activitiesData.filter(activity => activity.projectCode.toLocaleString() === projectCode);
   }
 
   // Get activities by project code and category
-  getActivitiesByCategory(projectCode: string, category: string): ExcelActivity[] {
-    return this.activitiesData.filter(activity =>
+  async getActivitiesByCategory(projectCode: string, category: string): Promise<ExcelActivity[]> {
+    const activitiesData = await this.getActivitiesData();
+    return activitiesData.filter(activity =>
       String(activity.projectCode) === String(projectCode) && activity.category === category
     );
   }
 
   // Get milestones (Workstream category)
-  getMilestonesByProjectCode(projectCode: string): ExcelActivity[] {
+  async getMilestonesByProjectCode(projectCode: string): Promise<ExcelActivity[]> {
     return this.getActivitiesByCategory(projectCode, 'Workstream');
   }
 
   // Get risks (Risk category)
-  getRisksByProjectCode(projectCode: string): ExcelActivity[] {
+  async getRisksByProjectCode(projectCode: string): Promise<ExcelActivity[]> {
     return this.getActivitiesByCategory(projectCode, 'Risk');
   }
 
   // Get upcoming activities (Upcoming category)
-  getUpcomingActivitiesByProjectCode(projectCode: string): ExcelActivity[] {
+  async getUpcomingActivitiesByProjectCode(projectCode: string): Promise<ExcelActivity[]> {
     return this.getActivitiesByCategory(projectCode, 'Upcoming');
   }
 
   // Get late activities (Late category)
-  getLateActivitiesByProjectCode(projectCode: string): ExcelActivity[] {
+  async getLateActivitiesByProjectCode(projectCode: string): Promise<ExcelActivity[]> {
     return this.getActivitiesByCategory(projectCode, 'Late');
   }
 }
 
 // Export singleton instance
 export const excelDataService = new ExcelDataService();
-
-

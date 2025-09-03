@@ -1498,7 +1498,7 @@ export default function ProjectDetailsDashboard() {
                 </div>
 
                 {/* Performance Indicators */}
-                <div className="grid grid-cols-3 gap-3 pt-2 border-t">
+                {/* <div className="grid grid-cols-3 gap-3 pt-2 border-t">
                   <div className="text-center">
                     <p className="text-xs text-muted-foreground">
                       Budget Efficiency
@@ -1549,11 +1549,11 @@ export default function ProjectDetailsDashboard() {
                       {(project.performanceIndex || 0).toFixed(2)}
                     </p>
                   </div>
-                </div>
+                </div> */}
               </div>
 
               {/* Financial Summary */}
-              <div className="grid grid-cols-3 gap-4 pt-4 border-t">
+              {/* <div className="grid grid-cols-3 gap-4 pt-4 border-t">
                 <div className="text-center">
                   <p className="text-xs text-muted-foreground">Budget</p>
                   <p className="text-lg font-bold">
@@ -1577,7 +1577,7 @@ export default function ProjectDetailsDashboard() {
                     )}
                   </p>
                 </div>
-              </div>
+              </div> */}
             </div>
           </CardContent>
         </Card>
