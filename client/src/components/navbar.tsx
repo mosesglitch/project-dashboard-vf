@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, BarChart3, Home, FolderOpen, ArrowLeft, Sun, Moon } from "lucide-react";
+import { Menu, BarChart3, Home, FolderOpen, ArrowLeft, Sun, Moon,AlertTriangle } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useTheme } from "@/components/theme-provider";
 
@@ -19,6 +19,7 @@ export function Navbar({ DisplayTitle, subtitle }: NavbarProps) {
     { href: "/", label: "Dashboard", icon: Home },
     { href: "/projects", label: "Projects", icon: FolderOpen },
     { href: "/analytics", label: "Analytics", icon: BarChart3 },
+    { href: "/risks", label: "Risks", icon: AlertTriangle },
   ];
 
   return (
@@ -77,7 +78,7 @@ export function Navbar({ DisplayTitle, subtitle }: NavbarProps) {
               )}
             </Button>
 
-            {/* {navigationItems.map((item) => {
+            {navigationItems.map((item) => {
               const Icon = item.icon;
               const isActive = location === item.href;
               return (
@@ -91,7 +92,7 @@ export function Navbar({ DisplayTitle, subtitle }: NavbarProps) {
                   </Button>
                 </Link>
               );
-            })} */}
+            })}
           </div>
 
           {/* Mobile Menu */}

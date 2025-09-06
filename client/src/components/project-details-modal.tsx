@@ -96,7 +96,19 @@ const formatCurrency = (amount: number) => {
   }
   return `$${amount.toLocaleString()}`;
 };
-
+const riskOwners = [
+  "Project Manager",
+  "Procurement Manager",
+  "Finance Controller",
+  "Engineering / Design",
+  "Construction / Site Manager",
+  // "Quality Manager",
+  "Health, Safety & Environment (HSE)",
+  "IT",
+  "Client",
+  "Legal Officer",
+  "Subcontractors / Vendors",
+];
 export function ProjectDetailsModal({ isOpen, onClose, projectId }: ProjectDetailsModalProps) {
   const [isAddingRisk, setIsAddingRisk] = useState(false);
   const [editingRisk, setEditingRisk] = useState<Risk | null>(null);
@@ -397,12 +409,21 @@ export function ProjectDetailsModal({ isOpen, onClose, projectId }: ProjectDetai
                       onChange={(e) => setRiskForm({ ...riskForm, title: e.target.value })}
                       data-testid="input-risk-title"
                     />
-                    <Input
-                      placeholder="Owner"
-                      value={riskForm.owner}
-                      onChange={(e) => setRiskForm({ ...riskForm, owner: e.target.value })}
-                      data-testid="input-risk-owner"
-                    />
+                    <Select
+  value={riskForm.owner}
+  onValueChange={(value) => setRiskForm({ ...riskForm, owner: value })}
+>
+  <SelectTrigger data-testid="select-risk-owner">
+    <SelectValue placeholder="Select Owner" />
+  </SelectTrigger>
+  <SelectContent>
+    {riskOwners.map((owner) => (
+      <SelectItem key={owner} value={owner}>
+        {owner}
+      </SelectItem>
+    ))}
+  </SelectContent>
+</Select>
                     <Select
                       value={riskForm.priority}
                       onValueChange={(value: Risk["priority"]) => setRiskForm({ ...riskForm, priority: value })}

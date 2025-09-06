@@ -52,7 +52,19 @@ import { TimelineChart } from "@ui5/webcomponents-react-charts";
 import { Text } from "@ui5/webcomponents-react";
 import { AIInsights } from "@/components/ai-insights";
 import { ProjectAnalytics } from "@/components/project-analytics";
-
+const riskOwners = [
+  "Project Manager",
+  "Procurement Manager",
+  "Finance Controller",
+  "Engineering / Design",
+  "Construction / Site Manager",
+  // "Quality Manager",
+  "Health, Safety & Environment (HSE)",
+  "IT",
+  "Client",
+  "Legal Officer",
+  "Subcontractors / Vendors",
+];
 // Progress Component
 const Progress = ({ value = 0, className = "", ...props }) => {
   const clampedValue = Math.min(Math.max(value, 0), 100);
@@ -171,7 +183,7 @@ export default function ProjectDetailsDashboard() {
     description: "",
     status: "active" as Risk["status"],
     priority: "medium" as Risk["priority"],
-    owner: "",
+    owner: "Project Manager" as Risk["owner"],
   });
 
   const queryClient = useQueryClient();
@@ -1241,14 +1253,21 @@ export default function ProjectDetailsDashboard() {
                     }
                     data-testid="input-risk-title"
                   />
-                  <Input
-                    placeholder="Owner"
-                    value={riskForm.owner}
-                    onChange={(e) =>
-                      setRiskForm({ ...riskForm, owner: e.target.value })
-                    }
-                    data-testid="input-risk-owner"
-                  />
+                 <Select
+  value={riskForm.owner}
+  onValueChange={(value) => setRiskForm({ ...riskForm, owner: value })}
+>
+  <SelectTrigger data-testid="select-risk-owner">
+    <SelectValue placeholder="Select Owner" />
+  </SelectTrigger>
+  <SelectContent>
+    {riskOwners.map((owner) => (
+      <SelectItem key={owner} value={owner}>
+        {owner}
+      </SelectItem>
+    ))}
+  </SelectContent>
+</Select>
                   <Select
                     value={riskForm.priority}
                     onValueChange={(value: Risk["priority"]) =>

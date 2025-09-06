@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/theme-provider";
 import Dashboard from "@/pages/dashboard";
+import RisksPage from "@/pages/risks";
 import ProjectDetailsDashboard from "@/pages/project-details-dashboard";
 import NotFound from "@/pages/not-found";
 // require('dotenv').config();
@@ -13,6 +14,7 @@ function Router() {
     <Switch>
       <Route path="/" component={Dashboard} />
       <Route path="/project/:id" component={ProjectDetailsDashboard} />
+      <Route path="/risks" component={RisksPage} />
       <Route component={NotFound} />
     </Switch>
   );
