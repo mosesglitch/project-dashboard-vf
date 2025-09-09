@@ -794,8 +794,8 @@ console.log(upComingActivities, "upcomingActivities",upcomingActivities);
               </CardTitle>
             </CardHeader> */}
 
-          <div className="flex flex-row items-center justify-between mb-8">
-            <div className="w-[20%] h-full  ml-5">
+          <div className="flex flex-col lg:flex-row items-stretch justify-between mb-8 gap-4">
+            <div className="w-full lg:w-[20%] h-full ml-0 lg:ml-5">
               <Card data-testid="kpi-scope-completion">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0">
                   <CardTitle className="text-sm font-medium">
@@ -819,7 +819,7 @@ console.log(upComingActivities, "upcomingActivities",upcomingActivities);
                         style: {
                           fontSize: "24px",
                           fontWeight: "bold",
-                          fill: "#054d17", // ✅ primary text color
+                          fill: "#054d17",
                         },
                         formatTextValue: (value) => `${value}%`,
                       }}
@@ -829,7 +829,7 @@ console.log(upComingActivities, "upcomingActivities",upcomingActivities);
                 </CardContent>
               </Card>
             </div>
-            <div className=" w-[80%] h-[100%] mx-4 rounded-lg ">
+            <div className="w-full lg:w-[80%] h-full ml-0 lg:ml-5">
               <Card className="h-full">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0">
                   <CardTitle className="text-sm font-medium">
