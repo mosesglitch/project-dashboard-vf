@@ -16,9 +16,9 @@ export function Navbar({ DisplayTitle, subtitle }: NavbarProps) {
   const { theme, setTheme } = useTheme();
 
   const navigationItems = [
-    { href: "/", label: "Dashboard", icon: Home },
-    { href: "/projects", label: "Projects", icon: FolderOpen },
-    { href: "/analytics", label: "Analytics", icon: BarChart3 },
+    // { href: "/", label: "Dashboard", icon: Home },
+    // { href: "/projects", label: "Projects", icon: FolderOpen },
+    // { href: "/analytics", label: "Analytics", icon: BarChart3 },
     { href: "/risks", label: "Risks", icon: AlertTriangle },
   ];
 
@@ -49,6 +49,21 @@ export function Navbar({ DisplayTitle, subtitle }: NavbarProps) {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
             {/* Show Back to Dashboard button if props exist */}
+            {navigationItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = location === item.href;
+              return (
+                <Link key={item.href} href={item.href}>
+                  <Button
+                    variant={isActive ? "default" : "ghost"}
+                    className="flex items-center space-x-2"
+                  >
+                    <Icon className="h-4 w-4" />
+                    <span>{item.label}</span>
+                  </Button>
+                </Link>
+              );
+            })}
             {(DisplayTitle || subtitle) && (
               <Link href="/">
                 <Button
@@ -78,21 +93,7 @@ export function Navbar({ DisplayTitle, subtitle }: NavbarProps) {
               )}
             </Button>
 
-            {navigationItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = location === item.href;
-              return (
-                <Link key={item.href} href={item.href}>
-                  <Button
-                    variant={isActive ? "default" : "ghost"}
-                    className="flex items-center space-x-2"
-                  >
-                    <Icon className="h-4 w-4" />
-                    <span>{item.label}</span>
-                  </Button>
-                </Link>
-              );
-            })}
+            
           </div>
 
           {/* Mobile Menu */}

@@ -59,7 +59,7 @@ export function ProjectAnalytics({ project }: ProjectAnalyticsProps) {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Scope vs Time */}
         <Card>
           <CardHeader>
@@ -68,32 +68,50 @@ export function ProjectAnalytics({ project }: ProjectAnalyticsProps) {
               Scope vs Time Completion
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <BarChart
-              className="h-40"
-              dataset={scopeTimeData}
-              dimensions={[{ accessor: "metric" }]}
-              measures={[
-                {
-                  accessor: "value",
-                  color: "#797c79ff",
-                  formatter: (val: number) => `${val}%`,
-                },
-              ]}
-              noLegend={true}
-              chartConfig={{
-                ...thinBarConfig,
-
-                // xAxisVisible: false,
-                barGap: 12,
-                referenceLine: {
-                  color: "#22c55e",
-                  label: "Target",
-                  value: 100,
-                },
-              }}
-            />
-          </CardContent>
+            <CardContent>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span>Scope Completion</span>
+                  <span className="font-medium text-blue-500 dark:text-gray-200">
+                    {`${Math.round(scopeCompletionPct)}%`}
+                  </span>
+                </div>
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 mt-2">
+                  <div
+                    className={`h-3 rounded-full transition-all duration-300 ${
+                      scopeCompletionPct > 100 ? "bg-yellow-500" : "bg-blue-500"
+                    }`}
+                    style={{
+                      width: `${Math.min(scopeCompletionPct, 100)}%`,
+                    }}
+                  ></div>
+                </div>
+                <div className="flex justify-between text-sm mt-2">
+                  <span>Time Completion</span>
+                  <span
+                    className={`font-medium ${
+                      timeCompletionPct > 100 ? "text-red-600" : "text-green-600"
+                    }`}
+                  >
+                    {`${Math.round(timeCompletionPct)}%`}
+                  </span>
+                </div>
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 mt-2">
+                  <div
+                    className={`h-3 rounded-full transition-all duration-300 ${
+                      timeCompletionPct > 100 ? "bg-red-500" : "bg-green-500"
+                    }`}
+                    style={{
+                      width: `${Math.min(timeCompletionPct, 100)}%`,
+                    }}
+                  ></div>
+                </div>
+                <div className="flex justify-between text-xs mt-1">
+                  <span>0%</span>
+                  <span>100%</span>
+                </div>
+              </div>
+            </CardContent>
         </Card>
 
         {/* Budget */}
@@ -104,29 +122,52 @@ export function ProjectAnalytics({ project }: ProjectAnalyticsProps) {
               Budget vs Actual
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <BarChart
-              className="h-40"
-              dataset={budgetData}
-              dimensions={[{ accessor: "metric" }]}
-              measures={[
-                {
-                  accessor: "value",
-                  color: "#054d17ff",
-                  formatter: (val: number) =>
-                    `KSh ${val.toLocaleString("en-KE")}`,
-                },
-              ]}
-              axis={{ visible: false }}
-              noLegend={true}
-
-              chartConfig={thinBarConfig}
-            />
-          </CardContent>
+            <CardContent>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span>Budget Amount</span>
+                  <span className="font-medium text-gray-700 dark:text-gray-200">
+                    {formatCurrency(project.budgetAmount)}
+                  </span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span>Actual Spent</span>
+                  <span
+                    className={`font-medium ${
+                      project.totalAmountSpent > project.budgetAmount
+                        ? "text-red-600"
+                        : "text-green-600"
+                    }`}
+                  >
+                    {formatCurrency(project.totalAmountSpent)}
+                  </span>
+                </div>
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 mt-2">
+                  <div
+                    className={`h-3 rounded-full transition-all duration-300 ${
+                      project.totalAmountSpent > project.budgetAmount
+                        ? "bg-red-500"
+                        : "bg-green-500"
+                    }`}
+                    style={{
+                      width: `${
+                        project.budgetAmount
+                          ? Math.min((project.totalAmountSpent / project.budgetAmount) * 100, 100)
+                          : 0
+                      }%`,
+                    }}
+                  ></div>
+                </div>
+                <div className="flex justify-between text-xs mt-1">
+                  <span>0%</span>
+                  <span>100%</span>
+                </div>
+              </div>
+            </CardContent>
         </Card>
 
         {/* Margins */}
-        <Card>
+        {/* <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <BarChart3 className="h-5 w-5 text-indigo-600" />
@@ -151,10 +192,10 @@ export function ProjectAnalytics({ project }: ProjectAnalyticsProps) {
 
             />
           </CardContent>
-        </Card>
+        </Card> */}
 
         {/* SPI & CPI */}
-        <Card>
+        {/* <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Target className="h-5 w-5 text-purple-600" />
@@ -178,7 +219,7 @@ export function ProjectAnalytics({ project }: ProjectAnalyticsProps) {
               noLegend={true}
             />
           </CardContent>
-        </Card>
+        </Card> */}
       </div>
     </div>
   );

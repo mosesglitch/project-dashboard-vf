@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams, Link } from "wouter";
-import { useState } from "react";
+import { act, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -46,12 +46,14 @@ import {
   MapPin,
   Activity,
 } from "lucide-react";
-
+import GaugeChart from "react-gauge-chart";
+import GaugeComponent from "react-gauge-component";
 import type { ExcelProject, ExcelActivity } from "@shared/excel-schema";
 import { TimelineChart } from "@ui5/webcomponents-react-charts";
 import { Text } from "@ui5/webcomponents-react";
 import { AIInsights } from "@/components/ai-insights";
 import { ProjectAnalytics } from "@/components/project-analytics";
+import { c } from "node_modules/vite/dist/node/types.d-aGj9QkWt";
 const riskOwners = [
   "Project Manager",
   "Procurement Manager",
@@ -68,11 +70,14 @@ const riskOwners = [
 // Progress Component
 const Progress = ({ value = 0, className = "", ...props }) => {
   const clampedValue = Math.min(Math.max(value, 0), 100);
-  
+
   return (
-    <div className={`relative w-full overflow-hidden rounded-full bg-secondary ${className}`} {...props}>
+    <div
+      className={`relative w-full overflow-hidden rounded-full bg-secondary ${className}`}
+      {...props}
+    >
       <div className="h-2 w-full bg-gray-200 rounded-full">
-        <div 
+        <div
           className="h-2  rounded-full transition-all duration-300 ease-in-out"
           style={{ width: `${clampedValue}%`, backgroundColor: "#054d17ff" }}
         />
@@ -81,25 +86,35 @@ const Progress = ({ value = 0, className = "", ...props }) => {
   );
 };
 
-const formatDate = (excelDate: number | string) => {
-  if (typeof excelDate === "string") {
-    return new Date(excelDate).toLocaleDateString("en-US", {
+const formatDate = (excelDate: number | string | null | undefined): string => {
+  if (!excelDate) return "N/A";
+
+  // Handle numbers (Excel serial dates)
+  if (typeof excelDate === "number") {
+    const excelEpoch = new Date(1899, 11, 30); // Excel base date
+    const jsDate = new Date(
+      excelEpoch.getTime() + excelDate * 24 * 60 * 60 * 1000
+    );
+    return jsDate.toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
       day: "numeric",
     });
   }
-  // Excel date serial number to JavaScript Date
-  const excelEpoch = new Date(1899, 11, 30); // Excel's epoch
-  const jsDate = new Date(
-    excelEpoch.getTime() + excelDate * 24 * 60 * 60 * 1000
-  );
-  return jsDate.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
+
+  // Handle strings (try parsing directly)
+  const parsed = new Date(excelDate);
+  if (!isNaN(parsed.getTime())) {
+    return parsed.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  }
+
+  return "N/A"; // fallback if invalid
 };
+
 interface Risk {
   _id?: string;
   projectCode: string;
@@ -364,80 +379,83 @@ export default function ProjectDetailsDashboard() {
   //   enabled: !!project?.projectCode,
   // });
 
+  // Parse Excel serial or string date into Date | null
+  function parseExcelDate(
+    value: string | number | null | undefined
+  ): Date | null {
+    if (value === null || value === undefined || value === "") return null;
+
+    // If it's a number or a string that looks like a number, treat as Excel serial
+    if (
+      typeof value === "number" ||
+      (typeof value === "string" && /^\d+$/.test(value))
+    ) {
+      const serial = typeof value === "number" ? value : parseInt(value, 10);
+      const excelEpoch = new Date(1899, 11, 30); // Excel's epoch
+      return new Date(excelEpoch.getTime() + serial * 86400000);
+    }
+
+    // Try parsing a normal date string
+    const parsed = new Date(value);
+    if (!isNaN(parsed.getTime())) {
+      return parsed;
+    }
+
+    return null; // invalid
+  }
+
   // Helper to calculate duration in days
   function getDuration(
     start: string | number | null,
     finish: string | number | null
   ): number {
-    const s =
-      typeof start === "number" ? formatDate(start) : formatDate(start || 0);
-    const f =
-      typeof finish === "number" ? formatDate(finish) : formatDate(finish || 0);
-    if (!start || !finish || s === "N/A" || f === "N/A") return 1;
-    const startDate = new Date(s).getTime();
-    const finishDate = new Date(f).getTime();
-    return Math.max(
-      1,
-      Math.round((finishDate - startDate) / (1000 * 60 * 60 * 24))
+    const startDate = parseExcelDate(start);
+    const finishDate = parseExcelDate(finish);
+    console.log({ startDate, finishDate, start, finish });
+    if (!startDate || !finishDate) return 1; // fallback
+
+    const diffDays = Math.round(
+      (finishDate.getTime() - startDate.getTime()) / 86400000
     );
+
+    return Math.max(1, diffDays);
   }
 
+  // Build dataset for TimelineChart
   function getTimelineChartData(activities: ExcelActivity[]): any[] {
-    // Find the earliest and latest dates among activities
+    // Extract valid dates
     const validStartDates = activities
-      .map((a) => {
-        const d = formatDate(a.startDate);
-        return d !== "N/A" && a.startDate
-          ? new Date(
-              typeof a.startDate === "number"
-                ? formatDate(a.startDate)
-                : a.startDate
-            ).getTime()
-          : null;
-      })
-      .filter((t): t is number => t !== null);
-    const validFinishDates = activities
-      .map((a) => {
-        const d = formatDate(a.finishDate);
-        return d !== "N/A" && a.finishDate
-          ? new Date(
-              typeof a.finishDate === "number"
-                ? formatDate(a.finishDate)
-                : a.finishDate
-            ).getTime()
-          : null;
-      })
+      .map((a) => parseExcelDate(a.startDate)?.getTime() ?? null)
       .filter((t): t is number => t !== null);
 
     const minDate =
       validStartDates.length > 0 ? Math.min(...validStartDates) : null;
 
-    // Assign unique IDs for each activity
+    // Assign unique IDs
     const activityIds = activities.map((activity, idx) =>
       activity.id ? String(activity.id) : `ACT-${idx}`
     );
 
     return activities.map((activity, idx) => {
-      const startDateStr = formatDate(activity.startDate);
-      const finishDateStr = formatDate(activity.finishDate);
+      const startDate = parseExcelDate(activity.startDate);
+      const finishDate = parseExcelDate(activity.finishDate);
 
       // Calculate start offset from earliest date
       let startOffset = 0;
-      if (minDate !== null && startDateStr !== "N/A") {
-        const activityStart = new Date(startDateStr).getTime();
-        startOffset = Math.round(
-          (activityStart - minDate) / (1000 * 60 * 60 * 24)
-        );
+      if (minDate !== null && startDate) {
+        startOffset = Math.round((startDate.getTime() - minDate) / 86400000);
       }
 
       // Connect to previous activity if exists
-      const connections = [];
-      if (idx > 0) {
-        connections.push({
-          itemId: activityIds[idx - 1],
-          type: "F2S",
-        });
-      }
+      const connections =
+        idx > 0
+          ? [
+              {
+                itemId: activityIds[idx - 1],
+                type: "F2S",
+              },
+            ]
+          : [];
 
       return {
         color: `var(--sapChart_OrderedColor_${(idx % 11) + 1})`,
@@ -456,17 +474,18 @@ export default function ProjectDetailsDashboard() {
 
   // TimelineChart rendering function
   function renderTimelineChart(activities: ExcelActivity[]) {
+    console.log(activities, "act");
     if (!activities || activities.length === 0)
       return <Text>No timeline data</Text>;
 
-    // Use activities as listed (no sorting)
+    // Build dataset
     const dataset = getTimelineChartData(activities);
 
     // Adjust all activities so the first activity starts at 1
     const firstStart = dataset[0]?.tasks?.[0]?.start ?? 0;
     const offset = firstStart === 0 ? 1 : 0;
 
-    const adjustedDataset = dataset.map((d, idx) => ({
+    const adjustedDataset = dataset.map((d) => ({
       ...d,
       tasks: d.tasks.map((task) => ({
         ...task,
@@ -474,40 +493,22 @@ export default function ProjectDetailsDashboard() {
       })),
     }));
 
-    // Find earliest and latest dates for display (actual dates)
+    // Find earliest and latest dates
     const validStartDates = activities
-      .map((a) => a.startDate)
-      .filter((d): d is string | number => !!d && d !== "N/A");
+      .map((a) => parseExcelDate(a.startDate))
+      .filter((d): d is Date => !!d);
     const validFinishDates = activities
-      .map((a) => a.finishDate)
-      .filter((d): d is string | number => !!d && d !== "N/A");
+      .map((a) => parseExcelDate(a.finishDate))
+      .filter((d): d is Date => !!d);
 
-    let minDate: Date | null = null;
-    let maxDate: Date | null = null;
-    if (validStartDates.length > 0) {
-      minDate = new Date(
-        formatDate(
-          validStartDates.reduce((a, b) =>
-            new Date(formatDate(a)).getTime() <
-            new Date(formatDate(b)).getTime()
-              ? a
-              : b
-          )
-        )
-      );
-    }
-    if (validFinishDates.length > 0) {
-      maxDate = new Date(
-        formatDate(
-          validFinishDates.reduce((a, b) =>
-            new Date(formatDate(a)).getTime() >
-            new Date(formatDate(b)).getTime()
-              ? a
-              : b
-          )
-        )
-      );
-    }
+    const minDate =
+      validStartDates.length > 0
+        ? new Date(Math.min(...validStartDates.map((d) => d.getTime())))
+        : null;
+    const maxDate =
+      validFinishDates.length > 0
+        ? new Date(Math.max(...validFinishDates.map((d) => d.getTime())))
+        : null;
 
     const start = 1; // Start at 1 instead of 0
     const totalDuration = Math.max(
@@ -517,7 +518,7 @@ export default function ProjectDetailsDashboard() {
       1
     );
 
-    // Format actual earliest and latest dates for column title, including day of week
+    // Format labels for earliest and latest dates
     const startDateLabel = minDate
       ? minDate.toLocaleDateString("en-US", {
           weekday: "short",
@@ -534,15 +535,19 @@ export default function ProjectDetailsDashboard() {
           day: "numeric",
         })
       : "";
+
     if (!startDateForUpcoming) {
       setStartDateForUpcoming(startDateLabel);
     }
+
+    console.log({ adjustedDataset, start, totalDuration });
+
     return (
       <TimelineChart
         dataset={adjustedDataset}
         isDiscrete
         start={start}
-        totalDuration={45}
+        totalDuration={totalDuration}
         columnTitle={`Duration (days)`}
         style={{ width: "100%", paddingBottom: "2rem", backgroundColor: "" }}
       />
@@ -584,8 +589,16 @@ export default function ProjectDetailsDashboard() {
   }
   console.log(milestones, "ms");
 
-  const formatDateforMilestones = (timestamp) => {
-    return new Date(timestamp).toLocaleDateString("en-US", {
+  const formatDateforMilestones = (serial) => {
+    if (!serial) return "";
+
+    // Excel's serial date starts on Dec 30, 1899
+    const excelEpoch = new Date(1899, 11, 30);
+    const jsDate = new Date(
+      excelEpoch.getTime() + serial * 24 * 60 * 60 * 1000
+    );
+
+    return jsDate.toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
     });
@@ -643,8 +656,8 @@ export default function ProjectDetailsDashboard() {
         />
       </div>
       {/* KPI Cards Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 mx-5">
-        <Card data-testid="kpi-scope-completion">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mx-5">
+        {/* <Card data-testid="kpi-scope-completion">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0">
             <CardTitle className="text-sm font-medium">
               Scope Completion
@@ -678,7 +691,7 @@ export default function ProjectDetailsDashboard() {
               className="mt-2"
             />
           </CardContent>
-        </Card>
+        </Card> */}
 
         <Card data-testid="kpi-performance-category">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0">
@@ -748,9 +761,58 @@ export default function ProjectDetailsDashboard() {
           <CardContent>
             {project && <ProjectAnalytics project={project} />}
           </CardContent>
-          {milestones !== undefined && [...milestones]?.length > 0 && (
-            <div data-testid="card-milestones" className=" py-3">
-              {/* <CardHeader>
+          <div className="flex flex-row items-center justify-between ">
+            <div className="w-[30%]">
+              <Card data-testid="kpi-scope-completion">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0">
+                  <CardTitle className="text-sm font-medium">
+                    Scope Completion
+                  </CardTitle>
+                  <Target className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  {/* <div className="text-2xl font-bold">
+                    {((project.scopeCompletion || 0) * 100).toFixed(0)}%
+                    <Progress
+                      value={(project.scopeCompletion || 0) * 100}
+                      className="mt-2"
+                    />
+                  </div> */}
+                  <GaugeComponent
+                    arc={{
+                      subArcs: [
+                        { limit: 20, color: "#EA4228", showTick: true },
+                        { limit: 40, color: "#F58B19", showTick: true },
+                        { limit: 60, color: "#F5CD19", showTick: true },
+                        { limit: 100, color: "#5BE12C", showTick: true },
+                      ],
+                    }}
+                    value={((project.scopeCompletion || 0) * 100).toFixed(0)}
+                    valueLabel={{
+                      style: {
+                        fontSize: "30px",
+                        fontWeight: "bold",
+                        color: "#054d17ff",
+                        fill: "green", // <- use fill instead of color
+                      },
+                      formatTextValue: (value) => `${value}%`, // optional formatting
+                    }}
+                  />
+                </CardContent>
+              </Card>
+            </div>
+            <div className=" w-[70%] mx-4">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0">
+                  <CardTitle className="text-sm font-medium">
+                    Milestones
+                  </CardTitle>
+                  <Target className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  {milestones !== undefined && [...milestones]?.length > 0 && (
+                    <div data-testid="card-milestones" className=" py-3">
+                      {/* <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Target className="h-5 w-5" />
               Project Milestones
@@ -759,234 +821,265 @@ export default function ProjectDetailsDashboard() {
             </h2>
             </CardTitle>
           </CardHeader> */}
-              <div className="w-full px-6 pb-3 bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 rounded-xl">
-                {/* Desktop & Tablet: Horizontal Timeline */}
-                <div className="hidden sm:block">
-                  <div className="relative px-4">
-                    {/* Background Timeline Line */}
-                    <div
-                      style={{ top: "20px" }}
-                      className="absolute  left-0 right-0 h-1 bg-gray-200 dark:bg-gray-700 rounded-full"
-                    ></div>
-
-                    {/* Progress Line */}
-                    <div
-                      className="absolute left-0 h-1 bg-gradient-to-r from-green-500 via-blue-500 to-purple-500 rounded-full transition-all duration-1000"
-                      style={{
-                        top: "20px",
-                        width: `${orderedMilestones.reduce((acc, m, idx) => {
-                          const progress = m.percentageComplete || 0;
-                          return (
-                            acc + progress * (100 / orderedMilestones.length)
-                          );
-                        }, 0)}%`,
-                      }}
-                    ></div>
-
-                    <div className="flex justify-between relative">
-                      {orderedMilestones.map((milestone, index) => {
-                        const progress =
-                          typeof milestone.percentageComplete === "string"
-                            ? parseFloat(milestone.percentageComplete) || 0
-                            : milestone.percentageComplete || 0;
-                        const isComplete = progress >= 1;
-                        const isInProgress = progress > 0 && progress < 1;
-
-                        return (
-                          <div
-                            key={index}
-                            className="flex flex-col items-center flex-1 mx-3"
-                          >
-                            {/* Milestone Circle */}
+                      <div className="w-full px-6 pb-3 bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 rounded-xl">
+                        {/* Desktop & Tablet: Horizontal Timeline */}
+                        <div className="hidden sm:block">
+                          <div className="relative px-4">
+                            {/* Background Timeline Line */}
                             <div
-                              className={`relative z-10 w-12 h-12 rounded-full border-4 flex items-center justify-center mb-4 transition-all duration-300 ${
-                                isComplete
-                                  ? "bg-green-500 border-green-400 shadow-lg shadow-green-200"
-                                  : isInProgress
-                                  ? "bg-blue-500 border-blue-400 shadow-lg shadow-blue-200"
-                                  : "bg-gray-400 border-gray-300 shadow-lg shadow-gray-200"
-                              }`}
-                            >
-                              {getStatusIcon(progress)}
-                            </div>
+                              style={{ top: "20px" }}
+                              className="absolute  left-0 right-0 h-1 bg-gray-200 dark:bg-gray-700 rounded-full"
+                            ></div>
 
-                            {/* Connection Arrow (except for last item) */}
-                            {index < orderedMilestones.length - 1 && (
-                              <div className="absolute top-20 left-1/2 transform translate-x-8 z-20">
-                                <ArrowRight
-                                  className={`w-4 h-4 ${
-                                    isComplete
-                                      ? "text-green-500"
-                                      : isInProgress
-                                      ? "text-blue-500"
-                                      : "text-gray-400"
-                                  }`}
-                                />
-                              </div>
-                            )}
-
-                            {/* Content div */}
+                            {/* Progress Line */}
                             <div
-                              className={`w-full max-w-full p-3 lg:p-4 rounded-lg shadow-md transition-all duration-300 hover:shadow-lg transform hover:-translate-y-1 ${
-                                isComplete
-                                  ? "bg-green-50 dark:bg-green-950/30 border-2 border-green-200"
-                                  : isInProgress
-                                  ? "bg-blue-50 dark:bg-blue-950/30 border-2 border-blue-200"
-                                  : "bg-white dark:bg-gray-800 border-2 border-gray-200"
-                              }`}
-                            >
-                              <div className="text-center">
-                                <h3
-                                  className={`font-bold text-xs sm:text-sm mb-1 leading-tight ${
-                                    isComplete
-                                      ? "text-green-800 dark:text-green-200"
-                                      : isInProgress
-                                      ? "text-blue-800 dark:text-blue-200"
-                                      : "text-gray-700 dark:text-gray-300"
-                                  }`}
-                                >
-                                  {milestone.item}
-                                </h3>
+                              className="absolute left-0 h-1 bg-gradient-to-r from-green-500 via-blue-500 to-purple-500 rounded-full transition-all duration-1000"
+                              style={{
+                                top: "20px",
+                                width: `${orderedMilestones.reduce(
+                                  (acc, m, idx) => {
+                                    const progress = m.percentageComplete || 0;
+                                    return (
+                                      acc +
+                                      progress *
+                                        (100 / orderedMilestones.length)
+                                    );
+                                  },
+                                  0
+                                )}%`,
+                              }}
+                            ></div>
 
-                                <p className="text-xs text-gray-600 dark:text-gray-400 mb-2 hidden sm:block">
-                                  {milestone.description}
-                                </p>
-
-                                <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 sm:mb-3">
-                                  {formatDateforMilestones(milestone.startDate)}{" "}
-                                  -{" "}
-                                  {formatDateforMilestones(
-                                    milestone.finishDate
-                                  )}
-                                </p>
-
-                                <div className="relative w-full">
-                                  <Progress
-                                    value={progress * 100}
-                                    className="w-full h-1.5 sm:h-2"
-                                  />
-                                  <span
-                                    className={`absolute -top-5 right-0 text-xs font-medium ${
-                                      isComplete
-                                        ? "text-green-600"
-                                        : isInProgress
-                                        ? "text-blue-600"
-                                        : "text-gray-500"
-                                    }`}
+                            <div className="flex justify-between relative">
+                              {orderedMilestones.map((milestone, index) => {
+                                const progress =
+                                  typeof milestone.percentageComplete ===
+                                  "string"
+                                    ? parseFloat(
+                                        milestone.percentageComplete
+                                      ) || 0
+                                    : milestone.percentageComplete || 0;
+                                const isComplete = progress >= 1;
+                                const isInProgress =
+                                  progress > 0 && progress < 1;
+                                console.log(
+                                  "hahaha",
+                                  milestone.startDate,
+                                  milestone.finishDate
+                                );
+                                return (
+                                  <div
+                                    key={index}
+                                    className="flex flex-col items-center flex-1 mx-3"
                                   >
-                                    {(progress * 100).toFixed(0)}%
-                                  </span>
-                                </div>
-                              </div>
+                                    {/* Milestone Circle */}
+                                    <div
+                                      className={`relative z-10 w-12 h-12 rounded-full border-4 flex items-center justify-center mb-4 transition-all duration-300 ${
+                                        isComplete
+                                          ? "bg-green-500 border-green-400 shadow-lg shadow-green-200"
+                                          : isInProgress
+                                          ? "bg-blue-500 border-blue-400 shadow-lg shadow-blue-200"
+                                          : "bg-gray-400 border-gray-300 shadow-lg shadow-gray-200"
+                                      }`}
+                                    >
+                                      {getStatusIcon(progress)}
+                                    </div>
+
+                                    {/* Connection Arrow (except for last item) */}
+                                    {index < orderedMilestones.length - 1 && (
+                                      <div className="absolute top-20 left-1/2 transform translate-x-8 z-20">
+                                        <ArrowRight
+                                          className={`w-4 h-4 ${
+                                            isComplete
+                                              ? "text-green-500"
+                                              : isInProgress
+                                              ? "text-blue-500"
+                                              : "text-gray-400"
+                                          }`}
+                                        />
+                                      </div>
+                                    )}
+
+                                    {/* Content div */}
+                                    <div
+                                      className={`w-full max-w-full p-3 lg:p-4 rounded-lg shadow-md transition-all duration-300 hover:shadow-lg transform hover:-translate-y-1 ${
+                                        isComplete
+                                          ? "bg-green-50 dark:bg-green-950/30 border-2 border-green-200"
+                                          : isInProgress
+                                          ? "bg-blue-50 dark:bg-blue-950/30 border-2 border-blue-200"
+                                          : "bg-white dark:bg-gray-800 border-2 border-gray-200"
+                                      }`}
+                                    >
+                                      <div className="text-center">
+                                        <h3
+                                          className={`font-bold text-xs sm:text-sm mb-1 leading-tight ${
+                                            isComplete
+                                              ? "text-green-800 dark:text-green-200"
+                                              : isInProgress
+                                              ? "text-blue-800 dark:text-blue-200"
+                                              : "text-gray-700 dark:text-gray-300"
+                                          }`}
+                                        >
+                                          {milestone.item}
+                                        </h3>
+
+                                        <p className="text-xs text-gray-600 dark:text-gray-400 mb-2 hidden sm:block">
+                                          {milestone.description}
+                                        </p>
+
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 sm:mb-3">
+                                          {formatDateforMilestones(
+                                            milestone.startDate
+                                          )}{" "}
+                                          -{" "}
+                                          {formatDateforMilestones(
+                                            milestone.finishDate
+                                          )}
+                                        </p>
+
+                                        <div className="relative w-full">
+                                          <Progress
+                                            value={progress * 100}
+                                            className="w-full h-1.5 sm:h-2"
+                                          />
+                                          <span
+                                            className={`absolute -top-5 right-0 text-xs font-medium ${
+                                              isComplete
+                                                ? "text-green-600"
+                                                : isInProgress
+                                                ? "text-blue-600"
+                                                : "text-gray-500"
+                                            }`}
+                                          >
+                                            {(progress * 100).toFixed(0)}%
+                                          </span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              })}
                             </div>
                           </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
+                        </div>
 
-                {/* Mobile: Vertical Timeline */}
-                <div className="sm:hidden">
-                  <div className="relative">
-                    {/* Vertical line */}
-                    <div className="absolute left-6 top-7 bottom-0 w-1 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                        {/* Mobile: Vertical Timeline */}
+                        <div className="sm:hidden">
+                          <div className="relative">
+                            {/* Vertical line */}
+                            <div className="absolute left-6 top-7 bottom-0 w-1 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
 
-                    {/* Progress Line */}
-                    <div
-                      className="absolute left-6 top-10 w-1 bg-gradient-to-b from-green-500 via-blue-500 to-purple-500 rounded-full transition-all duration-1000"
-                      style={{
-                        height: `${orderedMilestones.reduce((acc, m, idx) => {
-                          const progress = m.percentageComplete || 0;
-                          return (
-                            acc + progress * (100 / orderedMilestones.length)
-                          );
-                        }, 0)}%`,
-                      }}
-                    ></div>
-
-                    <div className="space-y-6">
-                      {orderedMilestones.map((milestone, index) => {
-                        const progress =
-                          typeof milestone.percentageComplete === "string"
-                            ? parseFloat(milestone.percentageComplete) || 0
-                            : milestone.percentageComplete || 0;
-                        const isComplete = progress >= 1;
-                        const isInProgress = progress > 0 && progress < 1;
-
-                        return (
-                          <div key={index} className="flex items-start gap-4">
-                            {/* Milestone Circle */}
+                            {/* Progress Line */}
                             <div
-                              className={`relative z-10 w-12 h-12 rounded-full border-4 flex items-center justify-center flex-shrink-0 transition-all duration-300 ${
-                                isComplete
-                                  ? "bg-green-500 border-green-400 shadow-lg shadow-green-200"
-                                  : isInProgress
-                                  ? "bg-blue-500 border-blue-400 shadow-lg shadow-blue-200"
-                                  : "bg-gray-400 border-gray-300 shadow-lg shadow-gray-200"
-                              }`}
-                            >
-                              {getStatusIcon(progress)}
-                            </div>
+                              className="absolute left-6 top-10 w-1 bg-gradient-to-b from-green-500 via-blue-500 to-purple-500 rounded-full transition-all duration-1000"
+                              style={{
+                                height: `${orderedMilestones.reduce(
+                                  (acc, m, idx) => {
+                                    const progress = m.percentageComplete || 0;
+                                    return (
+                                      acc +
+                                      progress *
+                                        (100 / orderedMilestones.length)
+                                    );
+                                  },
+                                  0
+                                )}%`,
+                              }}
+                            ></div>
 
-                            {/* Content div */}
-                            <div
-                              className={`flex-1 p-4 rounded-lg shadow-md transition-all duration-300 hover:shadow-lg ${
-                                isComplete
-                                  ? "bg-green-50 dark:bg-green-950/30 border-2 border-green-200"
-                                  : isInProgress
-                                  ? "bg-blue-50 dark:bg-blue-950/30 border-2 border-blue-200"
-                                  : "bg-white dark:bg-gray-800 border-2 border-gray-200"
-                              }`}
-                            >
-                              <h3
-                                className={`font-bold text-sm mb-1 ${
-                                  isComplete
-                                    ? "text-green-800 dark:text-green-200"
-                                    : isInProgress
-                                    ? "text-blue-800 dark:text-blue-200"
-                                    : "text-gray-700 dark:text-gray-300"
-                                }`}
-                              >
-                                {milestone.item}
-                              </h3>
+                            <div className="space-y-6">
+                              {orderedMilestones.map((milestone, index) => {
+                                const progress =
+                                  typeof milestone.percentageComplete ===
+                                  "string"
+                                    ? parseFloat(
+                                        milestone.percentageComplete
+                                      ) || 0
+                                    : milestone.percentageComplete || 0;
+                                const isComplete = progress >= 1;
+                                const isInProgress =
+                                  progress > 0 && progress < 1;
 
-                              <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
-                                {milestone.description}
-                              </p>
+                                return (
+                                  <div
+                                    key={index}
+                                    className="flex items-start gap-4"
+                                  >
+                                    {/* Milestone Circle */}
+                                    <div
+                                      className={`relative z-10 w-12 h-12 rounded-full border-4 flex items-center justify-center flex-shrink-0 transition-all duration-300 ${
+                                        isComplete
+                                          ? "bg-green-500 border-green-400 shadow-lg shadow-green-200"
+                                          : isInProgress
+                                          ? "bg-blue-500 border-blue-400 shadow-lg shadow-blue-200"
+                                          : "bg-gray-400 border-gray-300 shadow-lg shadow-gray-200"
+                                      }`}
+                                    >
+                                      {getStatusIcon(progress)}
+                                    </div>
 
-                              <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
-                                {formatDate(milestone.startDate)} -{" "}
-                                {formatDate(milestone.finishDate)}
-                              </p>
+                                    {/* Content div */}
+                                    <div
+                                      className={`flex-1 p-4 rounded-lg shadow-md transition-all duration-300 hover:shadow-lg ${
+                                        isComplete
+                                          ? "bg-green-50 dark:bg-green-950/30 border-2 border-green-200"
+                                          : isInProgress
+                                          ? "bg-blue-50 dark:bg-blue-950/30 border-2 border-blue-200"
+                                          : "bg-white dark:bg-gray-800 border-2 border-gray-200"
+                                      }`}
+                                    >
+                                      <h3
+                                        className={`font-bold text-sm mb-1 ${
+                                          isComplete
+                                            ? "text-green-800 dark:text-green-200"
+                                            : isInProgress
+                                            ? "text-blue-800 dark:text-blue-200"
+                                            : "text-gray-700 dark:text-gray-300"
+                                        }`}
+                                      >
+                                        {milestone.item}
+                                      </h3>
 
-                              <div className="flex items-center gap-3">
-                                <Progress
-                                  value={progress * 100}
-                                  className="flex-1 h-2"
-                                />
-                                <span
-                                  className={`text-xs font-medium min-w-12 ${
-                                    isComplete
-                                      ? "text-green-600"
-                                      : isInProgress
-                                      ? "text-blue-600"
-                                      : "text-gray-500"
-                                  }`}
-                                >
-                                  {(progress * 100).toFixed(0)}%
-                                </span>
-                              </div>
+                                      <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
+                                        {milestone.description}
+                                      </p>
+
+                                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+                                        {formatDate(milestone.startDate)} -{" "}
+                                        {formatDate(milestone.finishDate)}
+                                      </p>
+
+                                      <div className="flex items-center gap-3">
+                                        <Progress
+                                          value={progress * 100}
+                                          className="flex-1 h-2"
+                                        />
+                                        <span
+                                          className={`text-xs font-medium min-w-12 ${
+                                            isComplete
+                                              ? "text-green-600"
+                                              : isInProgress
+                                              ? "text-blue-600"
+                                              : "text-gray-500"
+                                          }`}
+                                        >
+                                          {(progress * 100).toFixed(0)}%
+                                        </span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              })}
                             </div>
                           </div>
-                        );
-                      })}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              </div>
+                  )}{" "}
+                </CardContent>
+              </Card>
             </div>
-          )}
+          </div>
         </div>
       </div>
       {/* Milestones Section */}
@@ -1229,8 +1322,7 @@ export default function ProjectDetailsDashboard() {
                     owner: "",
                   });
                 }}
-                  style={{ backgroundColor: "#054d17ff" }}
-
+                style={{ backgroundColor: "#054d17ff" }}
                 data-testid="button-add-risk"
               >
                 <Plus className="h-4 w-4 mr-2" />
@@ -1253,21 +1345,23 @@ export default function ProjectDetailsDashboard() {
                     }
                     data-testid="input-risk-title"
                   />
-                 <Select
-  value={riskForm.owner}
-  onValueChange={(value) => setRiskForm({ ...riskForm, owner: value })}
->
-  <SelectTrigger data-testid="select-risk-owner">
-    <SelectValue placeholder="Select Owner" />
-  </SelectTrigger>
-  <SelectContent>
-    {riskOwners.map((owner) => (
-      <SelectItem key={owner} value={owner}>
-        {owner}
-      </SelectItem>
-    ))}
-  </SelectContent>
-</Select>
+                  <Select
+                    value={riskForm.owner}
+                    onValueChange={(value) =>
+                      setRiskForm({ ...riskForm, owner: value })
+                    }
+                  >
+                    <SelectTrigger data-testid="select-risk-owner">
+                      <SelectValue placeholder="Select Owner" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {riskOwners.map((owner) => (
+                        <SelectItem key={owner} value={owner}>
+                          {owner}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <Select
                     value={riskForm.priority}
                     onValueChange={(value: Risk["priority"]) =>
