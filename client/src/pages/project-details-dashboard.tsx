@@ -1073,8 +1073,8 @@ console.log(upComingActivities, "upcomingActivities",upcomingActivities);
                                       </p>
 
                                       <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
-                                        {formatDate(milestone.startDate)} -{" "}
-                                        {formatDate(milestone.finishDate)}
+                                        {formatDateforMilestones(milestone.startDate)} -{" "}
+                                        {formatDateforMilestones(milestone.finishDate)}
                                       </p>
 
                                       <div className="flex items-center gap-3">
