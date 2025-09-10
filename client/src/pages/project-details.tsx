@@ -632,13 +632,13 @@ export default function ProjectDetails() {
         </ObjectPageSection>
 
         {/* Section 1.5: AI Insights */}
-        <ObjectPageSection id="ai-insights-section" titleText="AI Insights">
+        {/* <ObjectPageSection id="ai-insights-section" titleText="AI Insights">
           <ObjectPageSubSection id="ai-insights-subsection" titleText="">
             <div style={{ padding: "1rem" }}>
               <AIInsights type="project" projectCode={project?.projectCode} />
             </div>
           </ObjectPageSubSection>
-        </ObjectPageSection>
+        </ObjectPageSection> */}
 
         {/* Section 1.7: Project Analytics */}
         <ObjectPageSection id="analytics-section" titleText="Project Analytics">

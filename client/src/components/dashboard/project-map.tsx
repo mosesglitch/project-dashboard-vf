@@ -195,7 +195,7 @@ export function ProjectMap({ projects }: ProjectMapProps) {
           </div>
 
           {/* Map */}
-          <div className="h-96 rounded-lg overflow-hidden border">
+          <div className="h-96  rounded-lg overflow-hidden border">
             <MapContainer
               center={[0, 0]}
               zoom={2}

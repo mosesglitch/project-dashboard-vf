@@ -116,11 +116,11 @@ export default function UI5Dashboard() {
 
   const formatCurrency = (amount: number) => {
     if (amount >= 1000000) {
-      return `$${(amount / 1000000).toFixed(1)}M`;
+      return `Ksh ${(amount / 1000000).toFixed(1)}M`;
     } else if (amount >= 1000) {
-      return `$${(amount / 1000).toFixed(0)}K`;
+      return `Ksh ${(amount / 1000).toFixed(0)}K`;
     }
-    return `$${amount.toLocaleString()}`;
+    return `Ksh ${amount.toLocaleString()}`;
   };
 
   // Function to reload Excel data

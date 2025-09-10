@@ -151,11 +151,11 @@ console.log("projects",projects)
       typeof amount === "number" && !isNaN(amount) ? amount : 0;
 
     if (validAmount >= 1000000) {
-      return `$${(validAmount / 1000000).toFixed(1)}M`;
+      return `Ksh ${(validAmount / 1000000).toFixed(1)}M`;
     } else if (validAmount >= 1000) {
-      return `$${(validAmount / 1000).toFixed(0)}K`;
+      return `Ksh ${(validAmount / 1000).toFixed(0)}K`;
     }
-    return `$${validAmount.toLocaleString()}`;
+    return `Ksh ${validAmount.toLocaleString()}`;
   };
 
   const getStatusBadge = (status: string) => {
@@ -883,7 +883,7 @@ console.log("projects",projects)
           </div>
         </div>
         <div className="lg:col-span-4 mb-6">
-          <AIInsights type="portfolio" />
+          {/* <AIInsights type="portfolio" /> */}
         </div>
         {/* Project Locations Map */}
         <div className="mt-6">

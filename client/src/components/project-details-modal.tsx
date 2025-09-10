@@ -70,13 +70,7 @@ interface ProjectDetailsModalProps {
 }
 
 const formatDate = (excelDate: number | string) => {
-  if (typeof excelDate === "string") {
-    return new Date(excelDate).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  }
+ 
   const excelEpoch = new Date(1899, 11, 30);
   const jsDate = new Date(
     excelEpoch.getTime() + excelDate * 24 * 60 * 60 * 1000
@@ -90,11 +84,11 @@ const formatDate = (excelDate: number | string) => {
 
 const formatCurrency = (amount: number) => {
   if (amount >= 1000000) {
-    return `Ksh${(amount / 1000000).toFixed(1)}M`;
+    return `Ksh ${(amount / 1000000).toFixed(1)}M`;
   } else if (amount >= 1000) {
-    return `Ksh${(amount / 1000).toFixed(0)}K`;
+    return `Ksh ${(amount / 1000).toFixed(0)}K`;
   }
-  return `Ksh${amount.toLocaleString()}`;
+  return `Ksh ${amount.toLocaleString()}`;
 };
 const riskOwners = [
   "Project Manager",

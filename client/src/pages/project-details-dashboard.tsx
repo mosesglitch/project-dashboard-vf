@@ -46,7 +46,7 @@ import {
   MapPin,
   Activity,
 } from "lucide-react";
-import GaugeChart from "react-gauge-chart";
+import GanttChartView from "@/components/gantt-chart-view";
 import GaugeComponent from "react-gauge-component";
 import type { ExcelProject, ExcelActivity } from "@shared/excel-schema";
 import { TimelineChart } from "@ui5/webcomponents-react-charts";
@@ -204,7 +204,6 @@ export default function ProjectDetailsDashboard() {
   const queryClient = useQueryClient();
 
   const { id } = useParams();
-
   // Fetch project data
   const { data: project, isLoading: projectLoading } = useQuery<ExcelProject>({
     queryKey: ["/api/projects", id],
@@ -553,7 +552,20 @@ export default function ProjectDetailsDashboard() {
       />
     );
   }
+  const formatDateforMilestones = (serial) => {
+    if (!serial) return "";
 
+    // Excel's serial date starts on Dec 30, 1899
+    const excelEpoch = new Date(1899, 11, 30);
+    const jsDate = new Date(
+      excelEpoch.getTime() + serial * 24 * 60 * 60 * 1000
+    );
+
+    return jsDate.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    });
+  };
   const { data: upcomingActivities } = useQuery<ExcelActivity[]>({
     queryKey: ["/api/projects", project?.projectCode, "upcoming"],
     queryFn: async () => {
@@ -565,6 +577,42 @@ export default function ProjectDetailsDashboard() {
     },
     enabled: !!project?.projectCode,
   });
+  console.log(upcomingActivities, "upcomingActivities");  
+  // Transform upcomingActivities to Gantt chart format
+  const upComingActivities =
+    upcomingActivities && upcomingActivities.length > 0
+      ? upcomingActivities.map((activity, idx) => {
+          // Convert Excel serial date to JS Date object
+          const excelSerialToDate = (serial: number | string | undefined) => {
+            if (!serial) return undefined;
+            const serialNum =
+              typeof serial === "string" ? parseInt(serial, 10) : serial;
+            if (isNaN(serialNum)) return undefined;
+            const excelEpoch = new Date(1899, 11, 30);
+            return new Date(excelEpoch.getTime() + serialNum * 24 * 60 * 60 * 1000);
+          };
+          console.log(activity, "act");
+          const startDate = excelSerialToDate(activity.startDate);
+          const endDate = excelSerialToDate(activity.finishDate);
+
+          return {
+            start: startDate ?? new Date(),
+            end: endDate ?? new Date(),
+            name: activity.item,
+            id: `Task-${activity.id ?? idx}`,
+            progress:
+              typeof activity.percentageComplete === "string"
+                ? parseFloat(activity.percentageComplete) * 100
+                : (activity.percentageComplete ?? 0) * 100,
+            type: "task",
+            project: activity.projectCode ? `Project-${activity.projectCode}` : undefined,
+            dependencies: activity.predecessor ? [activity.predecessor] : undefined,
+            hideChildren: false,
+          };
+        })
+      : [];
+
+console.log(upComingActivities, "upcomingActivities",upcomingActivities);
 
   const { data: lateActivities } = useQuery<ExcelActivity[]>({
     queryKey: ["/api/projects", project?.projectCode, "late"],
@@ -589,20 +637,7 @@ export default function ProjectDetailsDashboard() {
   }
   console.log(milestones, "ms");
 
-  const formatDateforMilestones = (serial) => {
-    if (!serial) return "";
 
-    // Excel's serial date starts on Dec 30, 1899
-    const excelEpoch = new Date(1899, 11, 30);
-    const jsDate = new Date(
-      excelEpoch.getTime() + serial * 24 * 60 * 60 * 1000
-    );
-
-    return jsDate.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-    });
-  };
 
   const getStatusIcon = (progress) => {
     if (progress >= 1) {
@@ -758,11 +793,9 @@ export default function ProjectDetailsDashboard() {
                 Project Analytics
               </CardTitle>
             </CardHeader> */}
-          <CardContent>
-            {project && <ProjectAnalytics project={project} />}
-          </CardContent>
-          <div className="flex flex-row items-center justify-between ">
-            <div className="w-[30%]">
+
+          <div className="flex flex-col lg:flex-row items-stretch justify-between mb-8 gap-4">
+            <div className="w-full lg:w-[20%] h-full ml-0 lg:ml-5">
               <Card data-testid="kpi-scope-completion">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0">
                   <CardTitle className="text-sm font-medium">
@@ -771,38 +804,33 @@ export default function ProjectDetailsDashboard() {
                   <Target className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  {/* <div className="text-2xl font-bold">
-                    {((project.scopeCompletion || 0) * 100).toFixed(0)}%
-                    <Progress
-                      value={(project.scopeCompletion || 0) * 100}
-                      className="mt-2"
+                  <div style={{ display: "flex", justifyContent: "center" }}>
+                    <GaugeComponent
+                      arc={{
+                        subArcs: [
+                          { limit: 20, color: "#EA4228", showTick: true },
+                          { limit: 40, color: "#F58B19", showTick: true },
+                          { limit: 60, color: "#F5CD19", showTick: true },
+                          { limit: 100, color: "#5BE12C", showTick: true },
+                        ],
+                      }}
+                      value={((project.scopeCompletion || 0) * 100).toFixed(0)}
+                      valueLabel={{
+                        style: {
+                          fontSize: "24px",
+                          fontWeight: "bold",
+                          fill: "#054d17",
+                        },
+                        formatTextValue: (value) => `${value}%`,
+                      }}
+                      style={{ width: "320px", height: "200px" }}
                     />
-                  </div> */}
-                  <GaugeComponent
-                    arc={{
-                      subArcs: [
-                        { limit: 20, color: "#EA4228", showTick: true },
-                        { limit: 40, color: "#F58B19", showTick: true },
-                        { limit: 60, color: "#F5CD19", showTick: true },
-                        { limit: 100, color: "#5BE12C", showTick: true },
-                      ],
-                    }}
-                    value={((project.scopeCompletion || 0) * 100).toFixed(0)}
-                    valueLabel={{
-                      style: {
-                        fontSize: "30px",
-                        fontWeight: "bold",
-                        color: "#054d17ff",
-                        fill: "green", // <- use fill instead of color
-                      },
-                      formatTextValue: (value) => `${value}%`, // optional formatting
-                    }}
-                  />
+                  </div>
                 </CardContent>
               </Card>
             </div>
-            <div className=" w-[70%] mx-4">
-              <Card>
+            <div className="w-full lg:w-[80%] h-full ml-0 lg:ml-5">
+              <Card className="h-full">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0">
                   <CardTitle className="text-sm font-medium">
                     Milestones
@@ -1045,8 +1073,8 @@ export default function ProjectDetailsDashboard() {
                                       </p>
 
                                       <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
-                                        {formatDate(milestone.startDate)} -{" "}
-                                        {formatDate(milestone.finishDate)}
+                                        {formatDateforMilestones(milestone.startDate)} -{" "}
+                                        {formatDateforMilestones(milestone.finishDate)}
                                       </p>
 
                                       <div className="flex items-center gap-3">
@@ -1080,12 +1108,15 @@ export default function ProjectDetailsDashboard() {
               </Card>
             </div>
           </div>
+          <CardContent>
+            {project && <ProjectAnalytics project={project} />}
+          </CardContent>
         </div>
       </div>
       {/* Milestones Section */}
 
       {/* Activities Section - Full Width */}
-      <div className="mt-6">
+      <div className="mt-6 mb-6">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Upcoming Activities - 3/4 width */}
           <Card
@@ -1106,10 +1137,11 @@ export default function ProjectDetailsDashboard() {
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto">
-                {upcomingActivities &&
+                {/* {upcomingActivities &&
                   upcomingActivities.length > 0 &&
-                  renderTimelineChart(upcomingActivities || [])}
-                {upcomingActivities && upcomingActivities.length === 0 && (
+                  renderTimelineChart(upcomingActivities || [])} */}
+                  <GanttChartView activities={upComingActivities || []} />
+                {upComingActivities && upComingActivities.length === 0 && (
                   <p className="text-center text-muted-foreground text-sm">
                     No upcoming activities
                   </p>
@@ -1140,7 +1172,7 @@ export default function ProjectDetailsDashboard() {
                         </p>
                         <div className="flex items-center justify-between text-xs text-muted-foreground">
                           <div>
-                            <span>{formatDate(activity.finishDate || 0)}</span>
+                            <span>{formatDateforMilestones(activity.finishDate || 0)}</span>
                             <div className="text-red-600 font-medium mt-1">
                               Late by:{" "}
                               {(() => {
@@ -1497,7 +1529,11 @@ export default function ProjectDetailsDashboard() {
             )}
           </CardContent>
         </Card>
-        <Card>
+         {/* Project Location Map */}
+      <div className="">
+        <ProjectMap projects={project ? [project] : []} />
+      </div>
+        {/* <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Activity className="h-5 w-5" />
@@ -1507,12 +1543,12 @@ export default function ProjectDetailsDashboard() {
           <CardContent>
             <AIInsights type="project" projectCode={project?.projectCode} />
           </CardContent>
-        </Card>
+        </Card> */}
 
         {/* Budget Consumption Chart */}
       </div>
 
-      <div className="mt-6">
+      {/* <div className="mt-6">
         <Card data-testid="card-budget-chart" className="lg:col-span-2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -1522,13 +1558,11 @@ export default function ProjectDetailsDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
-              {/* Performance Comparison Chart */}
               <div className="space-y-4">
                 <h4 className="text-sm font-medium text-muted-foreground">
                   Performance Comparison
                 </h4>
 
-                {/* Budget vs Expected Progress */}
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span>Budget Consumption</span>
@@ -1561,7 +1595,6 @@ export default function ProjectDetailsDashboard() {
                   </div>
                 </div>
 
-                {/* Scope Completion */}
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span>Scope Completion</span>
@@ -1579,7 +1612,6 @@ export default function ProjectDetailsDashboard() {
                   </div>
                 </div>
 
-                {/* Time Completion */}
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span>Time Elapsed</span>
@@ -1609,8 +1641,6 @@ export default function ProjectDetailsDashboard() {
                     ></div>
                   </div>
                 </div>
-
-                {/* Performance Indicators */}
                 <div className="grid grid-cols-3 gap-3 pt-2 border-t">
                   <div className="text-center">
                     <p className="text-xs text-muted-foreground">
@@ -1665,7 +1695,6 @@ export default function ProjectDetailsDashboard() {
                 </div>
               </div>
 
-              {/* Financial Summary */}
               <div className="grid grid-cols-3 gap-4 pt-4 border-t">
                 <div className="text-center">
                   <p className="text-xs text-muted-foreground">Budget</p>
@@ -1694,12 +1723,12 @@ export default function ProjectDetailsDashboard() {
             </div>
           </CardContent>
         </Card>
-      </div>
+      </div> */}
 
       {/* Project Location Map */}
-      <div className="mt-6">
+      {/* <div className="mt-6">
         <ProjectMap projects={project ? [project] : []} />
-      </div>
+      </div> */}
     </div>
     // </div>
   );
