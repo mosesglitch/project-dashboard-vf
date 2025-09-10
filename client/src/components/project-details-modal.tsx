@@ -90,11 +90,11 @@ const formatDate = (excelDate: number | string) => {
 
 const formatCurrency = (amount: number) => {
   if (amount >= 1000000) {
-    return `$${(amount / 1000000).toFixed(1)}M`;
+    return `Ksh${(amount / 1000000).toFixed(1)}M`;
   } else if (amount >= 1000) {
-    return `$${(amount / 1000).toFixed(0)}K`;
+    return `Ksh${(amount / 1000).toFixed(0)}K`;
   }
-  return `$${amount.toLocaleString()}`;
+  return `Ksh${amount.toLocaleString()}`;
 };
 const riskOwners = [
   "Project Manager",
@@ -242,7 +242,7 @@ export function ProjectDetailsModal({ isOpen, onClose, projectId }: ProjectDetai
   const getPriorityBadge = (priority: Risk["priority"]) => {
     const variants = {
       low: "bg-blue-100 text-blue-800",
-      medium: "bg-yellow-100 text-yellow-800", 
+      medium: "bg-yellow-100 text-yellow-800",
       high: "bg-orange-100 text-orange-800",
       critical: "bg-red-100 text-red-800",
     };
@@ -269,7 +269,10 @@ export function ProjectDetailsModal({ isOpen, onClose, projectId }: ProjectDetai
               <DialogTitle className="text-2xl font-bold">
                 Project {project.projectCode}
               </DialogTitle>
-              <DialogDescription className="text-lg mt-1">
+              <DialogDescription
+                className="text-lg mt-1 truncate"
+                title={project.description} // optional: show full text on hover
+              >
                 {project.description}
               </DialogDescription>
             </div>
@@ -385,10 +388,15 @@ export function ProjectDetailsModal({ isOpen, onClose, projectId }: ProjectDetai
                   onClick={() => {
                     setIsAddingRisk(true);
                     setEditingRisk(null);
-                    setRiskForm({ title: "", description: "", status: "active", priority: "medium", owner: "" });
+                    setRiskForm({
+                      title: "",
+                      description: "",
+                      status: "active",
+                      priority: "medium",
+                      owner: "",
+                    });
                   }}
                   style={{ backgroundColor: "#054d17ff" }}
-
                   data-testid="button-add-risk"
                 >
                   <Plus className="h-4 w-4 mr-2" />
@@ -396,6 +404,7 @@ export function ProjectDetailsModal({ isOpen, onClose, projectId }: ProjectDetai
                 </Button>
               </div>
             </CardHeader>
+
             <CardContent>
               {isAddingRisk && (
                 <div className="border rounded-lg p-4 mb-4 bg-gray-50 dark:bg-gray-800">
@@ -406,27 +415,33 @@ export function ProjectDetailsModal({ isOpen, onClose, projectId }: ProjectDetai
                     <Input
                       placeholder="Risk title"
                       value={riskForm.title}
-                      onChange={(e) => setRiskForm({ ...riskForm, title: e.target.value })}
+                      onChange={(e) =>
+                        setRiskForm({ ...riskForm, title: e.target.value })
+                      }
                       data-testid="input-risk-title"
                     />
                     <Select
-  value={riskForm.owner}
-  onValueChange={(value) => setRiskForm({ ...riskForm, owner: value })}
->
-  <SelectTrigger data-testid="select-risk-owner">
-    <SelectValue placeholder="Select Owner" />
-  </SelectTrigger>
-  <SelectContent>
-    {riskOwners.map((owner) => (
-      <SelectItem key={owner} value={owner}>
-        {owner}
-      </SelectItem>
-    ))}
-  </SelectContent>
-</Select>
+                      value={riskForm.owner}
+                      onValueChange={(value) =>
+                        setRiskForm({ ...riskForm, owner: value })
+                      }
+                    >
+                      <SelectTrigger data-testid="select-risk-owner">
+                        <SelectValue placeholder="Select Owner" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {riskOwners.map((owner) => (
+                          <SelectItem key={owner} value={owner}>
+                            {owner}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <Select
                       value={riskForm.priority}
-                      onValueChange={(value: Risk["priority"]) => setRiskForm({ ...riskForm, priority: value })}
+                      onValueChange={(value: Risk["priority"]) =>
+                        setRiskForm({ ...riskForm, priority: value })
+                      }
                     >
                       <SelectTrigger data-testid="select-risk-priority">
                         <SelectValue />
@@ -440,7 +455,9 @@ export function ProjectDetailsModal({ isOpen, onClose, projectId }: ProjectDetai
                     </Select>
                     <Select
                       value={riskForm.status}
-                      onValueChange={(value: Risk["status"]) => setRiskForm({ ...riskForm, status: value })}
+                      onValueChange={(value: Risk["status"]) =>
+                        setRiskForm({ ...riskForm, status: value })
+                      }
                     >
                       <SelectTrigger data-testid="select-risk-status">
                         <SelectValue />
@@ -455,7 +472,9 @@ export function ProjectDetailsModal({ isOpen, onClose, projectId }: ProjectDetai
                   <Textarea
                     placeholder="Risk description"
                     value={riskForm.description}
-                    onChange={(e) => setRiskForm({ ...riskForm, description: e.target.value })}
+                    onChange={(e) =>
+                      setRiskForm({ ...riskForm, description: e.target.value })
+                    }
                     className="mt-4"
                     data-testid="textarea-risk-description"
                   />
@@ -463,7 +482,9 @@ export function ProjectDetailsModal({ isOpen, onClose, projectId }: ProjectDetai
                     <Button
                       size="sm"
                       onClick={editingRisk ? handleUpdateRisk : handleCreateRisk}
-                      disabled={createRiskMutation.isPending || updateRiskMutation.isPending}
+                      disabled={
+                        createRiskMutation.isPending || updateRiskMutation.isPending
+                      }
                       data-testid="button-save-risk"
                     >
                       {editingRisk ? "Update Risk" : "Add Risk"}
@@ -474,7 +495,13 @@ export function ProjectDetailsModal({ isOpen, onClose, projectId }: ProjectDetai
                       onClick={() => {
                         setIsAddingRisk(false);
                         setEditingRisk(null);
-                        setRiskForm({ title: "", description: "", status: "active", priority: "medium", owner: "" });
+                        setRiskForm({
+                          title: "",
+                          description: "",
+                          status: "active",
+                          priority: "medium",
+                          owner: "",
+                        });
                       }}
                       data-testid="button-cancel-risk"
                     >
@@ -491,9 +518,9 @@ export function ProjectDetailsModal({ isOpen, onClose, projectId }: ProjectDetai
                   <TableHeader>
                     <TableRow>
                       <TableHead>Title</TableHead>
-                      <TableHead>Priority</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Owner</TableHead>
+                      <TableHead className="hidden sm:table-cell">Priority</TableHead>
+                      <TableHead className="hidden md:table-cell">Status</TableHead>
+                      <TableHead className="hidden lg:table-cell">Owner</TableHead>
                       <TableHead>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -503,12 +530,20 @@ export function ProjectDetailsModal({ isOpen, onClose, projectId }: ProjectDetai
                         <TableCell>
                           <div>
                             <p className="font-medium">{risk.title}</p>
-                            <p className="text-sm text-muted-foreground">{risk.description}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {risk.description}
+                            </p>
                           </div>
                         </TableCell>
-                        <TableCell>{getPriorityBadge(risk.priority)}</TableCell>
-                        <TableCell>{getStatusBadge(risk.status)}</TableCell>
-                        <TableCell>{risk.owner}</TableCell>
+                        <TableCell className="hidden sm:table-cell">
+                          {getPriorityBadge(risk.priority)}
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell">
+                          {getStatusBadge(risk.status)}
+                        </TableCell>
+                        <TableCell className="hidden lg:table-cell">
+                          {risk.owner}
+                        </TableCell>
                         <TableCell>
                           <div className="flex gap-2">
                             <Button
@@ -534,10 +569,13 @@ export function ProjectDetailsModal({ isOpen, onClose, projectId }: ProjectDetai
                   </TableBody>
                 </Table>
               ) : (
-                <p className="text-muted-foreground">No risks recorded for this project.</p>
+                <p className="text-muted-foreground">
+                  No risks recorded for this project.
+                </p>
               )}
             </CardContent>
           </Card>
+
 
           {/* Recent Activities */}
           {activities && activities.length > 0 && (

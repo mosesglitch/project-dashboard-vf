@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, BarChart3, Home, FolderOpen, ArrowLeft, Sun, Moon,AlertTriangle } from "lucide-react";
+import { Menu, BarChart3, Home, FolderOpen, ArrowLeft, Sun, Moon, AlertTriangle } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useTheme } from "@/components/theme-provider";
+import { DialogDescription } from "@/components/ui/dialog";
 
 interface NavbarProps {
   DisplayTitle?: string;
@@ -32,7 +33,7 @@ export function Navbar({ DisplayTitle, subtitle }: NavbarProps) {
               <div className="flex items-center space-x-3 cursor-pointer">
                 <div className="w-16 h-16 mr-1  flex items-center justify-center">
                   {/* <BarChart3 className="h-5 w-5 text-white" /> */}
-                  <img src="/logo.png" alt="Logo" className="w-15 h-15"/>
+                  <img src="/logo.png" alt="Logo" className="w-15 h-15" />
                 </div>
                 <div>
                   <h1 className="text-xl font-bold text-gray-900 dark:text-white">
@@ -70,7 +71,7 @@ export function Navbar({ DisplayTitle, subtitle }: NavbarProps) {
                   variant="outline"
                   size="sm"
                   className="flex items-center gap-2"
-                        style={{backgroundColor:"#054d17ff",color:"white"}}
+                  style={{ backgroundColor: "#054d17ff", color: "white" }}
 
                 >
                   <ArrowLeft className="h-4 w-4" />
@@ -78,7 +79,7 @@ export function Navbar({ DisplayTitle, subtitle }: NavbarProps) {
                 </Button>
               </Link>
             )}
-            
+
             {/* Dark Mode Toggle */}
             <Button
               variant="outline"
@@ -93,7 +94,7 @@ export function Navbar({ DisplayTitle, subtitle }: NavbarProps) {
               )}
             </Button>
 
-            
+
           </div>
 
           {/* Mobile Menu */}
@@ -116,7 +117,12 @@ export function Navbar({ DisplayTitle, subtitle }: NavbarProps) {
                         {DisplayTitle || "Burhani Engineers"}
                       </h2>
                       <p className="text-xs text-gray-500 dark:text-gray-400">
-                        {subtitle || "Project Performance Dashboard"}
+                        {subtitle ? <DialogDescription
+                          className="text-lg mt-1 truncate"
+                          title={subtitle} // optional: show full text on hover
+                        >
+                          {subtitle}
+                        </DialogDescription> : "Project Performance Dashboard"}
                       </p>
                     </div>
                   </div>
@@ -127,7 +133,7 @@ export function Navbar({ DisplayTitle, subtitle }: NavbarProps) {
                       <Button
                         variant="outline"
                         size="sm"
-                        style={{backgroundColor:"#22c55e"}}
+                        style={{ backgroundColor: "#22c55e" }}
                         className="flex items-center gap-2 "
                         onClick={() => setIsOpen(false)}
                       >
@@ -136,7 +142,7 @@ export function Navbar({ DisplayTitle, subtitle }: NavbarProps) {
                       </Button>
                     </Link>
                   )}
-                  
+
                   {/* Dark Mode Toggle (mobile) */}
                   <Button
                     variant="outline"
