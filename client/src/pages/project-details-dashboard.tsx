@@ -1130,8 +1130,7 @@ console.log(upComingActivities, "upcomingActivities",upcomingActivities);
               </CardTitle>
               <p>
                 <span className="text-xs text-muted-foreground">
-                  Next 14 days of activities (from{" "}
-                  {startDateForUpcoming || "N/A"})
+                  Upcoming tasks to keep an eye on
                 </span>
               </p>
             </CardHeader>

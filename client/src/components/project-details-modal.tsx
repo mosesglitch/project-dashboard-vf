@@ -70,7 +70,7 @@ interface ProjectDetailsModalProps {
 }
 
 const formatDate = (excelDate: number | string) => {
- 
+
   const excelEpoch = new Date(1899, 11, 30);
   const jsDate = new Date(
     excelEpoch.getTime() + excelDate * 24 * 60 * 60 * 1000
@@ -258,21 +258,24 @@ export function ProjectDetailsModal({ isOpen, onClose, projectId }: ProjectDetai
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <div className="flex items-center justify-between">
-            <div>
+          <div className="flex flex-col md:flex-row items-start  justify-between gap-3">
+            <div className="max-w-full md:max-w-xl">
               <DialogTitle className="text-2xl font-bold">
                 Project {project.projectCode}
               </DialogTitle>
               <DialogDescription
-                className="text-lg mt-1 truncate"
-                title={project.description} // optional: show full text on hover
+                className="text-lg mt-1 overflow-hidden text-ellipsis whitespace-nowrap w-[370px] md:w-[800px] lg:w-[800px]"
+                title={project.description}
               >
                 {project.description}
               </DialogDescription>
             </div>
+
             <div className="flex gap-2">
-              <Link href={`/project/${projectId}`}>
-                <Button variant="outline" size="sm">
+              <Link href={`/project/${projectId}`}
+              
+              >
+                <Button variant="custom" size="sm" >
                   <ExternalLink className="h-4 w-4 mr-2" />
                   Full View
                 </Button>
@@ -282,6 +285,7 @@ export function ProjectDetailsModal({ isOpen, onClose, projectId }: ProjectDetai
               </Button>
             </div>
           </div>
+
         </DialogHeader>
 
         <div className="grid gap-6">
@@ -390,7 +394,7 @@ export function ProjectDetailsModal({ isOpen, onClose, projectId }: ProjectDetai
                       owner: "",
                     });
                   }}
-                  style={{ backgroundColor: "#054d17ff" }}
+                  style={{ backgroundColor: "#054d17ff",color:"white" }}
                   data-testid="button-add-risk"
                 >
                   <Plus className="h-4 w-4 mr-2" />
