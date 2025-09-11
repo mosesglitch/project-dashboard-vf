@@ -390,7 +390,7 @@ export default function ProjectDetails() {
             <div style={{ marginBottom: "1rem" }}>
               <Link href="/">
                 <Button icon="arrow-left" design="Transparent">
-                  Back to Dashboar
+                  Back to Dashboard
                 </Button>
               </Link>
             </div>

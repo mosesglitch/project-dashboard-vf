@@ -1691,7 +1691,7 @@ console.log(upComingActivities, "upcomingActivities",upcomingActivities);
                       {(project.performanceIndex || 0).toFixed(2)}
                     </p>
                   </div>
-                </div>
+                </div> */}
               </div>
 
               <div className="grid grid-cols-3 gap-4 pt-4 border-t">
@@ -1718,7 +1718,7 @@ console.log(upComingActivities, "upcomingActivities",upcomingActivities);
                     )}
                   </p>
                 </div>
-              </div>
+              </div> */}
             </div>
           </CardContent>
         </Card>
