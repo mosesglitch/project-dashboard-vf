@@ -137,7 +137,7 @@ const formatCurrency = (amount: number) => {
   } else if (amount >= 1000) {
     return `$${(amount / 1000).toFixed(0)}K`;
   }
-  return `$${amount.toLocaleString()}`;
+  return `$${amount?.toLocaleString()}`;
 };
 
 const getStatusBadge = (status: string) => {
