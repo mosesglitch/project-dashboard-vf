@@ -730,7 +730,7 @@ export default function ProjectDetails() {
                                             ? "bg-green-100"
                                             : isOngoing
                                             ? "bg-yellow-100"
-                                            : "bg-blue-100"
+                                            : "bg-blue-150"
                                         }`}
                                       >
                                         {getPhaseIcon(milestone!.item)}
