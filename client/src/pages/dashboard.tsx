@@ -75,7 +75,7 @@ export default function Dashboard() {
       return response.json();
     },
   });
-console.log("projects",projects)
+  console.log("projects", projects)
   const { data: kpiData } = useQuery<any>({
     queryKey: ["/api/projects/stats/overview"],
   });
@@ -194,16 +194,16 @@ console.log("projects",projects)
         <div className="mb-3 flex justify-between items-center">
           <div className="flex items-center gap-4">
             {/* Filter indicator */}
-            {(filters.division !== "all" || 
-              filters.status !== "all" || 
-              filters.budgetStatus !== "all" || 
+            {(filters.division !== "all" ||
+              filters.status !== "all" ||
+              filters.budgetStatus !== "all" ||
               filters.performanceStatus !== "all" ||
-              filters.dateFrom || 
+              filters.dateFrom ||
               filters.dateTo) && (
-              <div className="text-sm text-muted-foreground">
-                Filters applied
-              </div>
-            )}
+                <div className="text-sm text-muted-foreground">
+                  Filters applied
+                </div>
+              )}
           </div>
           <Button
             variant="outline"
@@ -415,7 +415,7 @@ console.log("projects",projects)
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                   {divisionStats ? (
+                  {divisionStats ? (
                     <BarChart
                       dataset={Object.entries(divisionStats).map(
                         ([division, value]) => ({
@@ -426,9 +426,9 @@ console.log("projects",projects)
                       dimensions={[{ accessor: "division" }]}
                       measures={[{ accessor: "value", label: "Projects" }]}
                       style={{ height: "220px" }}
-                      onClick={() => {}}
-                      onDataPointClick={() => {}}
-                      onLegendClick={() => {}}
+                      onClick={() => { }}
+                      onDataPointClick={() => { }}
+                      onLegendClick={() => { }}
                     />
                   ) : (
                     <span className="text-sm text-muted-foreground">
@@ -504,9 +504,9 @@ console.log("projects",projects)
                       )}
                       dimension={{ accessor: "category" }}
                       measure={{ accessor: "value" }}
-                      onClick={() => {}}
-                      onDataPointClick={() => {}}
-                      onLegendClick={() => {}}
+                      onClick={() => { }}
+                      onDataPointClick={() => { }}
+                      onLegendClick={() => { }}
                       style={{ height: "220px" }}
                     />
                   ) : (
@@ -543,9 +543,9 @@ console.log("projects",projects)
                       )}
                       dimension={{ accessor: "status" }}
                       measure={{ accessor: "value" }}
-                      onClick={() => {}}
-                      onDataPointClick={() => {}}
-                      onLegendClick={() => {}}
+                      onClick={() => { }}
+                      onDataPointClick={() => { }}
+                      onLegendClick={() => { }}
                       style={{ height: "220px" }}
                     />
                   ) : (
@@ -639,7 +639,7 @@ console.log("projects",projects)
                 </CardTitle>
               </CardHeader>
               <CardContent>
-               <ColumnChart
+                <ColumnChart
                   dataset={topProjects.map((p) => ({
                     projectCode: p.projectCode.toString(),
                     coAmount: p.coAmount || 0,
@@ -656,7 +656,7 @@ console.log("projects",projects)
                     },
                   ]}
                   measures={[
-                     {
+                    {
                       accessor: "coAmount",
                       label: "CO Amount",
                       formatter: (val) => formatCurrency(val),
@@ -671,7 +671,7 @@ console.log("projects",projects)
                       label: "Actual Spent",
                       formatter: (val) => formatCurrency(val),
                     },
-                   
+
                   ]}
                   tooltipConfig={{
                     formatter: (value: any, name: string, props: any) => {
@@ -788,7 +788,7 @@ console.log("projects",projects)
                                 }}
                                 data-testid={`row-project-${project.projectCode}`}
                               >
-                                <TableCell 
+                                <TableCell
                                   className="font-medium sticky left-0 bg-white dark:bg-gray-900 z-10 text-blue-600 hover:underline cursor-pointer"
                                   onClick={(e) => {
                                     e.stopPropagation();
@@ -825,15 +825,15 @@ console.log("projects",projects)
                                 <TableCell>
                                   {project.performanceCategory
                                     ? getStatusBadge(
-                                        project.performanceCategory
-                                      )
+                                      project.performanceCategory
+                                    )
                                     : "-"}
                                 </TableCell>
                                 <TableCell>
                                   {project.budgetStatusCategory
                                     ? getBudgetStatusBadge(
-                                        project.budgetStatusCategory
-                                      )
+                                      project.budgetStatusCategory
+                                    )
                                     : "-"}
                                 </TableCell>
                                 <TableCell>

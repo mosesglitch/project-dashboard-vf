@@ -437,12 +437,12 @@ export default function UI5Dashboard() {
               >
               <div style={{ flex: 1, padding: "1rem", minHeight: 0 }}>
                 {divisionStats ? (
-                <BarChart
-                  dataset={formatChartData(divisionStats)}
-                  dimensions={[{ accessor: "name", label: "Division" }]}
-                  measures={[{ accessor: "value", label: "Projects" }]}
-                  chartConfig={{ height: 250 }}
-                />
+                // <BarChart
+                //   dataset={formatChartData(divisionStats)}
+                //   dimensions={[{ accessor: "name", label: "Division",color:"#22c55e" }]}
+                //   measures={[{ accessor: "value", label: "Projects" }]}
+                //   chartConfig={{ height: 250 }}
+                // />
                 ) : (
                 <Text>Loading...</Text>
                 )}

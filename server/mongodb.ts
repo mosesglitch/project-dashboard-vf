@@ -40,3 +40,6 @@ export async function connectToDatabase() {
     PortfolioCollection: cachedDb.collection("portfolio"),
   };
 }
+// ["#f5cb04","#295a01","#060c04","#f15f06","#112f08","#f5f9dc","#9a4a0a"]
+
+// ["#1c2a18","#6eea8e","#826cf6","#006600","#f6fcf6ff"]
