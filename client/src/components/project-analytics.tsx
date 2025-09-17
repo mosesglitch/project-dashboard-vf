@@ -243,7 +243,7 @@ export function ProjectAnalytics({ project }: ProjectAnalyticsProps) {
                     measures={[
                       {
                         accessor: "value",
-                        color: "#054d17ff",
+                        // color: "#054d17ff",
                         formatter: (val: number) => formatCurrency(val),
                       },
                     ]}

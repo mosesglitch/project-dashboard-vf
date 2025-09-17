@@ -32,11 +32,11 @@ export function Navbar({ DisplayTitle, subtitle }: NavbarProps) {
               <div className="flex items-center space-x-3 cursor-pointer">
                 <div className="w-16 h-16 mr-1  flex items-center justify-center">
                   {/* <BarChart3 className="h-5 w-5 text-white" /> */}
-                  <img src="/logo.png" alt="Logo" className="w-15 h-15"/>
+                  <img src="/samplelogo.png" alt="Logo" className="w-15 h-15"/>
                 </div>
                 <div>
                   <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-                    {DisplayTitle || "Burhani Engineers"}
+                    {DisplayTitle || "Sample Dashboard"}
                   </h1>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
                     {subtitle || "Project Performance Dashboard"}
@@ -70,7 +70,7 @@ export function Navbar({ DisplayTitle, subtitle }: NavbarProps) {
                   variant="outline"
                   size="sm"
                   className="flex items-center gap-2"
-                        style={{backgroundColor:"#054d17ff",color:"white"}}
+                        style={{backgroundColor:"rgb(22,142,255)",color:"white"}}
 
                 >
                   <ArrowLeft className="h-4 w-4" />
@@ -113,7 +113,7 @@ export function Navbar({ DisplayTitle, subtitle }: NavbarProps) {
                     </div>
                     <div>
                       <h2 className="font-bold text-gray-900 dark:text-white">
-                        {DisplayTitle || "Burhani Engineers"}
+                        {DisplayTitle || "Sample Dashboard"}
                       </h2>
                       <p className="text-xs text-gray-500 dark:text-gray-400">
                         {subtitle || "Project Performance Dashboard"}
@@ -127,7 +127,7 @@ export function Navbar({ DisplayTitle, subtitle }: NavbarProps) {
                       <Button
                         variant="outline"
                         size="sm"
-                        style={{backgroundColor:"#22c55e"}}
+                        style={{backgroundColor:"rgb(22,142,255)"}}
                         className="flex items-center gap-2 "
                         onClick={() => setIsOpen(false)}
                       >

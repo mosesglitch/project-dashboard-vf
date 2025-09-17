@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,6 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { NumericSideIndicator, AnalyticalCardHeader } from '@ui5/webcomponents-react';
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import {
@@ -251,7 +252,7 @@ export default function Dashboard() {
                 <CardContent>
                   <div className="text-2xl font-bold">
                     {kpiData
-                      ? formatCurrency(kpiData.totalBudget) + " (est)"
+                      ? formatCurrency(kpiData.totalBudget) 
                       : "$0"}
                   </div>
                   <p className="text-xs text-muted-foreground">
@@ -270,7 +271,7 @@ export default function Dashboard() {
                 <CardContent>
                   <div className="text-2xl font-bold text-orange-600">
                     {kpiData
-                      ? formatCurrency(kpiData.actualSpend) + " (est)"
+                      ? formatCurrency(kpiData.actualSpend)
                       : "$0"}
                   </div>
                   <p className="text-xs text-muted-foreground">
@@ -289,7 +290,7 @@ export default function Dashboard() {
                 <CardContent>
                   <div className="text-2xl font-bold text-blue-600">
                     {kpiData
-                      ? formatCurrency(kpiData.amountReceived) + " (est)"
+                      ? formatCurrency(kpiData.amountReceived)
                       : "$0"}
                   </div>
                   <p className="text-xs text-muted-foreground">
@@ -629,15 +630,72 @@ export default function Dashboard() {
 </Card> */}
             </div>
           </div>
+          {/* currentMargin: (p.coAmount || 0) - (p.totalAmountSpent || 0),
+          targetMargin: (p.coAmount || 0) - (p.budgetAmount || 0),
+          deviationPercentage:
+          p.coAmount && p.budgetAmount && p.totalAmountSpent
+          ? (
+          (((p.coAmount - p.totalAmountSpent) -
+          (p.coAmount - p.budgetAmount)) /
+          Math.max(1, p.coAmount - p.budgetAmount)) *
+          100
+          ).toFixed(1)
+          : "0", */}
           <div className="lg:col-span-4">
-            <Card data-testid="card-projects-table">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+            <Card data-testid="card-projects-table"
+            >
+              {topProjects.length > 0 && (
+                <AnalyticalCardHeader
+                  description="Q3,2025"
+                  onClick={() => {}}
+                  // scale="K"
+                  state="Good"
+                  subtitleText="Current Profit Margin"
+                  titleText={<CardTitle className="flex items-center gap-2">
                   <DollarSign className="h-4 w-4 text-muted-foreground" />
                   {/* <BarChart3 className="h-5 w-5" /> */}
                   Top 15 Projects by CO amount
-                </CardTitle>
-              </CardHeader>
+                </CardTitle>}
+                  trend="Up"
+                  unitOfMeasurement="| Ksh"
+                  value={
+                    formatCurrency(
+                      Number(topProjects[0].coAmount || 0) -
+                      Number(topProjects[0].totalAmountSpent || 0)
+                    )
+                  }
+                >
+                  <React.Fragment>
+                    <NumericSideIndicator
+                      number={
+                        formatCurrency(
+                          Number(topProjects[0].coAmount || 0) -
+                          Number(topProjects[0].budgetAmount || 0)
+                        )
+                      }
+                      titleText="Target Margin"
+                      // unit="k"
+                    />
+                    <NumericSideIndicator
+                      number={
+                        topProjects[0].coAmount && topProjects[0].budgetAmount && topProjects[0].totalAmountSpent
+                          ? (
+                              (
+                                ((topProjects[0].coAmount - topProjects[0].totalAmountSpent) -
+                                  (topProjects[0].coAmount - topProjects[0].budgetAmount)) /
+                                Math.max(1, topProjects[0].coAmount - topProjects[0].budgetAmount)
+                              ) *
+                              100
+                            ).toFixed(1) + "%"
+                          : "0%"
+                      }
+                      state="Critical"
+                      titleText="Deviation"
+                    />
+                  </React.Fragment>
+                </AnalyticalCardHeader>
+              )}
+             
               <CardContent>
                 <ColumnChart
                   dataset={topProjects.map((p) => ({
@@ -717,12 +775,13 @@ export default function Dashboard() {
                   <div className="overflow-x-auto">
                     <div className="max-h-[500px] overflow-y-auto ">
                       {/* limit table height */}
-                      <Table data-testid="table-projects ">
-                        <TableHeader className="sticky top-0 bg-white z-10 shadow-sm">
+                      <Table data-testid="table-projects " alternateRowColor={true} filterable={true} sortable={true}>
+                        <TableHeader className="sticky top-0 bg-white z-10 shadow-sm"  >
                           <TableRow>
                             <TableHead
                               className="sticky top-0 left-0 bg-white dark:bg-gray-900 z-20 cursor-pointer"
                               onClick={() => handleSort("code")}
+                              filterable={true}
                             >
                               Project Code{" "}
                               {sortField === "code" && (sortAsc ? "↑" : "↓")}

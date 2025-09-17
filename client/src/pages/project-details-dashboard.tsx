@@ -1,11 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams, Link } from "wouter";
-import { act, useState } from "react";
+import React, { act, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 // import { Progress } from "@/components/ui/progress";
+import { NumericSideIndicator, AnalyticalCardHeader } from '@ui5/webcomponents-react';
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
@@ -449,11 +450,11 @@ export default function ProjectDetailsDashboard() {
       const connections =
         idx > 0
           ? [
-              {
-                itemId: activityIds[idx - 1],
-                type: "F2S",
-              },
-            ]
+            {
+              itemId: activityIds[idx - 1],
+              type: "F2S",
+            },
+          ]
           : [];
 
       return {
@@ -520,19 +521,19 @@ export default function ProjectDetailsDashboard() {
     // Format labels for earliest and latest dates
     const startDateLabel = minDate
       ? minDate.toLocaleDateString("en-US", {
-          weekday: "short",
-          year: "numeric",
-          month: "short",
-          day: "numeric",
-        })
+        weekday: "short",
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      })
       : "";
     const finishDateLabel = maxDate
       ? maxDate.toLocaleDateString("en-US", {
-          weekday: "short",
-          year: "numeric",
-          month: "short",
-          day: "numeric",
-        })
+        weekday: "short",
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      })
       : "";
 
     if (!startDateForUpcoming) {
@@ -561,10 +562,16 @@ export default function ProjectDetailsDashboard() {
       excelEpoch.getTime() + serial * 24 * 60 * 60 * 1000
     );
 
-    return jsDate.toLocaleDateString("en-US", {
+    const options: Intl.DateTimeFormatOptions = {
       month: "short",
       day: "numeric",
-    });
+    };
+
+    if (jsDate.getFullYear() === 2024) {
+      options.year = "numeric";
+    }
+
+    return jsDate.toLocaleDateString("en-US", options);
   };
   const { data: upcomingActivities } = useQuery<ExcelActivity[]>({
     queryKey: ["/api/projects", project?.projectCode, "upcoming"],
@@ -577,42 +584,42 @@ export default function ProjectDetailsDashboard() {
     },
     enabled: !!project?.projectCode,
   });
-  console.log(upcomingActivities, "upcomingActivities");  
+  console.log(upcomingActivities, "upcomingActivities");
   // Transform upcomingActivities to Gantt chart format
   const upComingActivities =
     upcomingActivities && upcomingActivities.length > 0
       ? upcomingActivities.map((activity, idx) => {
-          // Convert Excel serial date to JS Date object
-          const excelSerialToDate = (serial: number | string | undefined) => {
-            if (!serial) return undefined;
-            const serialNum =
-              typeof serial === "string" ? parseInt(serial, 10) : serial;
-            if (isNaN(serialNum)) return undefined;
-            const excelEpoch = new Date(1899, 11, 30);
-            return new Date(excelEpoch.getTime() + serialNum * 24 * 60 * 60 * 1000);
-          };
-          console.log(activity, "act");
-          const startDate = excelSerialToDate(activity.startDate);
-          const endDate = excelSerialToDate(activity.finishDate);
+        // Convert Excel serial date to JS Date object
+        const excelSerialToDate = (serial: number | string | undefined) => {
+          if (!serial) return undefined;
+          const serialNum =
+            typeof serial === "string" ? parseInt(serial, 10) : serial;
+          if (isNaN(serialNum)) return undefined;
+          const excelEpoch = new Date(1899, 11, 30);
+          return new Date(excelEpoch.getTime() + serialNum * 24 * 60 * 60 * 1000);
+        };
+        console.log(activity, "act");
+        const startDate = excelSerialToDate(activity.startDate);
+        const endDate = excelSerialToDate(activity.finishDate);
 
-          return {
-            start: startDate ?? new Date(),
-            end: endDate ?? new Date(),
-            name: activity.item,
-            id: `Task-${activity.id ?? idx}`,
-            progress:
-              typeof activity.percentageComplete === "string"
-                ? parseFloat(activity.percentageComplete) * 100
-                : (activity.percentageComplete ?? 0) * 100,
-            type: "task",
-            project: activity.projectCode ? `Project-${activity.projectCode}` : undefined,
-            dependencies: activity.predecessor ? [activity.predecessor] : undefined,
-            hideChildren: false,
-          };
-        })
+        return {
+          start: startDate ?? new Date(),
+          end: endDate ?? new Date(),
+          name: activity.item,
+          id: `Task-${activity.id ?? idx}`,
+          progress:
+            typeof activity.percentageComplete === "string"
+              ? parseFloat(activity.percentageComplete) * 100
+              : (activity.percentageComplete ?? 0) * 100,
+          type: "task",
+          project: activity.projectCode ? `Project-${activity.projectCode}` : undefined,
+          dependencies: activity.predecessor ? [activity.predecessor] : undefined,
+          hideChildren: false,
+        };
+      })
       : [];
 
-console.log(upComingActivities, "upcomingActivities",upcomingActivities);
+  console.log(upComingActivities, "upcomingActivities", upcomingActivities);
 
   const { data: lateActivities } = useQuery<ExcelActivity[]>({
     queryKey: ["/api/projects", project?.projectCode, "late"],
@@ -794,42 +801,114 @@ console.log(upComingActivities, "upcomingActivities",upcomingActivities);
               </CardTitle>
             </CardHeader> */}
 
-          <div className="flex flex-col lg:flex-row items-stretch justify-between mb-8 gap-4">
-            <div className="w-full lg:w-[20%] h-full ml-0 lg:ml-5">
-              <Card data-testid="kpi-scope-completion">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0">
+          <div className="flex flex-col lg:flex-row items-stretch justify-between mb-8 ">
+            <div className="w-full lg:w-[25%] h-full ml-0 lg:ml-5">
+              <Card data-testid="kpi-scope-completion ">
+                {/* <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0">
                   <CardTitle className="text-sm font-medium">
                     Scope Completion
                   </CardTitle>
                   <Target className="h-4 w-4 text-muted-foreground" />
+                </CardHeader> */}
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Target className="h-5 w-5 text-green-600" />
+                    Project Scope
+                  </CardTitle>
                 </CardHeader>
+                <AnalyticalCardHeader
+                  // titleText={project.projectCode}
+                  subtitleText={"Time Completion"}
+                  description={
+                    `Start: ${formatDateforMilestones(project.startDate)} | Finish: ${formatDateforMilestones(project.finishDate)}`
+                  }
+                  // unitOfMeasurement="%"
+                  value={project.timeCompletion?.toFixed(2)*100 ?? "N/A"}
+                  scale="%"
+                  state={
+                    project.performanceIndex == null
+                      ? "None"
+                      : project.performanceIndex > 1
+                        ? "Good"
+                        : project.performanceIndex < 0.95
+                          ? "Error"
+                          : project.performanceIndex < 1
+                            ? "Critical"
+                            : "Neutral"
+                  }
+                  trend="Down"
+
+                >
+                  <React.Fragment>
+                    <NumericSideIndicator
+                      number={
+                        (() => {
+                          // Calculate days remaining
+                          const today = new Date();
+                          const finish = parseExcelDate(project.finishDate);
+                          if (!finish) return "N/A";
+                          const diff = Math.ceil((finish.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+                          return diff >= 0 ? diff : 0;
+                        })()
+                      }
+                      titleText="Days Remaining"
+                      unit="days"
+                    />
+
+                    <NumericSideIndicator
+                      number={project.performanceIndex.toFixed(2) || "0%"}
+                      titleText="Performance Index"
+                      unit=""
+                      state="Error"
+                    />
+                  </React.Fragment>
+                </AnalyticalCardHeader>
+
+                {/* <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0">
+                  <CardTitle className="text-sm font-medium">
+                    Scope Completion
+                  </CardTitle>
+                  <Target className="h-4 w-4 text-muted-foreground" />
+                </CardHeader> */}
                 <CardContent>
-                  <div style={{ display: "flex", justifyContent: "center" }}>
+                  <div style={{ display: "flex", justifyContent: "center", alignItems: "center", width: "100%", minHeight: "370px", position: "relative", padding: "24px 0" }}>
                     <GaugeComponent
                       arc={{
                         subArcs: [
-                          { limit: 20, color: "#EA4228", showTick: true },
-                          { limit: 40, color: "#F58B19", showTick: true },
-                          { limit: 60, color: "#F5CD19", showTick: true },
-                          { limit: 100, color: "#5BE12C", showTick: true },
+                          { limit: 20, color: "#E5E7EB", showTick: true },
+                          { limit: 40, color: "#93C5FD", showTick: true },
+                          { limit: 60, color: "#60A5FA", showTick: true },
+                          { limit: 100, color: "#2563EB", showTick: true },
                         ],
                       }}
+                      type="radial"
                       value={((project.scopeCompletion || 0) * 100).toFixed(0)}
                       valueLabel={{
                         style: {
-                          fontSize: "24px",
-                          fontWeight: "bold",
-                          fill: "#054d17",
+                          fontSize: "45px",
+                          fill: "#fff",
+                          textShadow: "black 1px 1px 0px, black 0px 0px 2.5em, black 0px 0px 0.2em",
                         },
                         formatTextValue: (value) => `${value}%`,
                       }}
-                      style={{ width: "320px", height: "200px" }}
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        position: "relative",
+                        minHeight: "320px",
+                        maxHeight: "340px",
+                        margin: "0 auto",
+                        display: "block",
+                      }}
                     />
                   </div>
                 </CardContent>
               </Card>
             </div>
-            <div className="w-full lg:w-[80%] h-full ml-0 lg:ml-5">
+            <div className="w-full lg:w-[75%] h-full ml-0 lg:ml-5">
+              <div className="mb-4">
+                {project && <ProjectAnalytics project={project} />}
+              </div>
               <Card className="h-full">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0">
                   <CardTitle className="text-sm font-medium">
@@ -870,7 +949,7 @@ console.log(upComingActivities, "upcomingActivities",upcomingActivities);
                                     return (
                                       acc +
                                       progress *
-                                        (100 / orderedMilestones.length)
+                                      (100 / orderedMilestones.length)
                                     );
                                   },
                                   0
@@ -882,10 +961,10 @@ console.log(upComingActivities, "upcomingActivities",upcomingActivities);
                               {orderedMilestones.map((milestone, index) => {
                                 const progress =
                                   typeof milestone.percentageComplete ===
-                                  "string"
+                                    "string"
                                     ? parseFloat(
-                                        milestone.percentageComplete
-                                      ) || 0
+                                      milestone.percentageComplete
+                                    ) || 0
                                     : milestone.percentageComplete || 0;
                                 const isComplete = progress >= 1;
                                 const isInProgress =
@@ -902,13 +981,12 @@ console.log(upComingActivities, "upcomingActivities",upcomingActivities);
                                   >
                                     {/* Milestone Circle */}
                                     <div
-                                      className={`relative z-10 w-12 h-12 rounded-full border-4 flex items-center justify-center mb-4 transition-all duration-300 ${
-                                        isComplete
-                                          ? "bg-green-500 border-green-400 shadow-lg shadow-green-200"
-                                          : isInProgress
+                                      className={`relative z-10 w-12 h-12 rounded-full border-4 flex items-center justify-center mb-4 transition-all duration-300 ${isComplete
+                                        ? "bg-green-500 border-green-400 shadow-lg shadow-green-200"
+                                        : isInProgress
                                           ? "bg-blue-500 border-blue-400 shadow-lg shadow-blue-200"
                                           : "bg-gray-400 border-gray-300 shadow-lg shadow-gray-200"
-                                      }`}
+                                        }`}
                                     >
                                       {getStatusIcon(progress)}
                                     </div>
@@ -917,36 +995,33 @@ console.log(upComingActivities, "upcomingActivities",upcomingActivities);
                                     {index < orderedMilestones.length - 1 && (
                                       <div className="absolute top-20 left-1/2 transform translate-x-8 z-20">
                                         <ArrowRight
-                                          className={`w-4 h-4 ${
-                                            isComplete
-                                              ? "text-green-500"
-                                              : isInProgress
+                                          className={`w-4 h-4 ${isComplete
+                                            ? "text-green-500"
+                                            : isInProgress
                                               ? "text-blue-500"
                                               : "text-gray-400"
-                                          }`}
+                                            }`}
                                         />
                                       </div>
                                     )}
 
                                     {/* Content div */}
                                     <div
-                                      className={`w-full max-w-full p-3 lg:p-4 rounded-lg shadow-md transition-all duration-300 hover:shadow-lg transform hover:-translate-y-1 ${
-                                        isComplete
-                                          ? "bg-green-50 dark:bg-green-950/30 border-2 border-green-200"
-                                          : isInProgress
+                                      className={`w-full max-w-full p-3 lg:p-4 rounded-lg shadow-md transition-all duration-300 hover:shadow-lg transform hover:-translate-y-1 ${isComplete
+                                        ? "bg-green-50 dark:bg-green-950/30 border-2 border-green-200"
+                                        : isInProgress
                                           ? "bg-blue-50 dark:bg-blue-950/30 border-2 border-blue-200"
                                           : "bg-white dark:bg-gray-800 border-2 border-gray-200"
-                                      }`}
+                                        }`}
                                     >
                                       <div className="text-center">
                                         <h3
-                                          className={`font-bold text-xs sm:text-sm mb-1 leading-tight ${
-                                            isComplete
-                                              ? "text-green-800 dark:text-green-200"
-                                              : isInProgress
+                                          className={`font-bold text-xs sm:text-sm mb-1 leading-tight ${isComplete
+                                            ? "text-green-800 dark:text-green-200"
+                                            : isInProgress
                                               ? "text-blue-800 dark:text-blue-200"
                                               : "text-gray-700 dark:text-gray-300"
-                                          }`}
+                                            }`}
                                         >
                                           {milestone.item}
                                         </h3>
@@ -971,13 +1046,12 @@ console.log(upComingActivities, "upcomingActivities",upcomingActivities);
                                             className="w-full h-1.5 sm:h-2"
                                           />
                                           <span
-                                            className={`absolute -top-5 right-0 text-xs font-medium ${
-                                              isComplete
-                                                ? "text-green-600"
-                                                : isInProgress
+                                            className={`absolute -top-5 right-0 text-xs font-medium ${isComplete
+                                              ? "text-green-600"
+                                              : isInProgress
                                                 ? "text-blue-600"
                                                 : "text-gray-500"
-                                            }`}
+                                              }`}
                                           >
                                             {(progress * 100).toFixed(0)}%
                                           </span>
@@ -1007,7 +1081,7 @@ console.log(upComingActivities, "upcomingActivities",upcomingActivities);
                                     return (
                                       acc +
                                       progress *
-                                        (100 / orderedMilestones.length)
+                                      (100 / orderedMilestones.length)
                                     );
                                   },
                                   0
@@ -1019,10 +1093,10 @@ console.log(upComingActivities, "upcomingActivities",upcomingActivities);
                               {orderedMilestones.map((milestone, index) => {
                                 const progress =
                                   typeof milestone.percentageComplete ===
-                                  "string"
+                                    "string"
                                     ? parseFloat(
-                                        milestone.percentageComplete
-                                      ) || 0
+                                      milestone.percentageComplete
+                                    ) || 0
                                     : milestone.percentageComplete || 0;
                                 const isComplete = progress >= 1;
                                 const isInProgress =
@@ -1035,35 +1109,32 @@ console.log(upComingActivities, "upcomingActivities",upcomingActivities);
                                   >
                                     {/* Milestone Circle */}
                                     <div
-                                      className={`relative z-10 w-12 h-12 rounded-full border-4 flex items-center justify-center flex-shrink-0 transition-all duration-300 ${
-                                        isComplete
-                                          ? "bg-green-500 border-green-400 shadow-lg shadow-green-200"
-                                          : isInProgress
+                                      className={`relative z-10 w-12 h-12 rounded-full border-4 flex items-center justify-center flex-shrink-0 transition-all duration-300 ${isComplete
+                                        ? "bg-green-500 border-green-400 shadow-lg shadow-green-200"
+                                        : isInProgress
                                           ? "bg-blue-500 border-blue-400 shadow-lg shadow-blue-200"
                                           : "bg-gray-400 border-gray-300 shadow-lg shadow-gray-200"
-                                      }`}
+                                        }`}
                                     >
                                       {getStatusIcon(progress)}
                                     </div>
 
                                     {/* Content div */}
                                     <div
-                                      className={`flex-1 p-4 rounded-lg shadow-md transition-all duration-300 hover:shadow-lg ${
-                                        isComplete
-                                          ? "bg-green-50 dark:bg-green-950/30 border-2 border-green-200"
-                                          : isInProgress
+                                      className={`flex-1 p-4 rounded-lg shadow-md transition-all duration-300 hover:shadow-lg ${isComplete
+                                        ? "bg-green-50 dark:bg-green-950/30 border-2 border-green-200"
+                                        : isInProgress
                                           ? "bg-blue-50 dark:bg-blue-950/30 border-2 border-blue-200"
                                           : "bg-white dark:bg-gray-800 border-2 border-gray-200"
-                                      }`}
+                                        }`}
                                     >
                                       <h3
-                                        className={`font-bold text-sm mb-1 ${
-                                          isComplete
-                                            ? "text-green-800 dark:text-green-200"
-                                            : isInProgress
+                                        className={`font-bold text-sm mb-1 ${isComplete
+                                          ? "text-green-800 dark:text-green-200"
+                                          : isInProgress
                                             ? "text-blue-800 dark:text-blue-200"
                                             : "text-gray-700 dark:text-gray-300"
-                                        }`}
+                                          }`}
                                       >
                                         {milestone.item}
                                       </h3>
@@ -1083,13 +1154,12 @@ console.log(upComingActivities, "upcomingActivities",upcomingActivities);
                                           className="flex-1 h-2"
                                         />
                                         <span
-                                          className={`text-xs font-medium min-w-12 ${
-                                            isComplete
-                                              ? "text-green-600"
-                                              : isInProgress
+                                          className={`text-xs font-medium min-w-12 ${isComplete
+                                            ? "text-green-600"
+                                            : isInProgress
                                               ? "text-blue-600"
                                               : "text-gray-500"
-                                          }`}
+                                            }`}
                                         >
                                           {(progress * 100).toFixed(0)}%
                                         </span>
@@ -1106,11 +1176,10 @@ console.log(upComingActivities, "upcomingActivities",upcomingActivities);
                   )}{" "}
                 </CardContent>
               </Card>
+
             </div>
           </div>
-          <CardContent>
-            {project && <ProjectAnalytics project={project} />}
-          </CardContent>
+
         </div>
       </div>
       {/* Milestones Section */}
@@ -1140,7 +1209,7 @@ console.log(upComingActivities, "upcomingActivities",upcomingActivities);
                 {/* {upcomingActivities &&
                   upcomingActivities.length > 0 &&
                   renderTimelineChart(upcomingActivities || [])} */}
-                  <GanttChartView activities={upComingActivities || []} />
+                <GanttChartView activities={upComingActivities || []} />
                 {upComingActivities && upComingActivities.length === 0 && (
                   <p className="text-center text-muted-foreground text-sm">
                     No upcoming activities
@@ -1179,11 +1248,11 @@ console.log(upComingActivities, "upcomingActivities",upcomingActivities);
                                 const finishDate = new Date(1899, 11, 30);
                                 finishDate.setTime(
                                   finishDate.getTime() +
-                                    (activity.finishDate || 0) *
-                                      24 *
-                                      60 *
-                                      60 *
-                                      1000
+                                  (activity.finishDate || 0) *
+                                  24 *
+                                  60 *
+                                  60 *
+                                  1000
                                 );
                                 const today = new Date();
                                 const diffTime =
@@ -1202,7 +1271,7 @@ console.log(upComingActivities, "upcomingActivities",upcomingActivities);
                               value={
                                 typeof activity.percentageComplete === "string"
                                   ? (parseFloat(activity.percentageComplete) ||
-                                      0) * 100
+                                    0) * 100
                                   : (activity.percentageComplete || 0) * 100
                               }
                               className="w-8 h-1"
@@ -1210,12 +1279,12 @@ console.log(upComingActivities, "upcomingActivities",upcomingActivities);
                             <span>
                               {typeof activity.percentageComplete === "string"
                                 ? (
-                                    (parseFloat(activity.percentageComplete) ||
-                                      0) * 100
-                                  ).toFixed(0)
+                                  (parseFloat(activity.percentageComplete) ||
+                                    0) * 100
+                                ).toFixed(0)
                                 : (
-                                    (activity.percentageComplete || 0) * 100
-                                  ).toFixed(0)}
+                                  (activity.percentageComplete || 0) * 100
+                                ).toFixed(0)}
                               %
                             </span>
                           </div>
@@ -1354,7 +1423,7 @@ console.log(upComingActivities, "upcomingActivities",upcomingActivities);
                     owner: "",
                   });
                 }}
-                style={{ backgroundColor: "#054d17ff" }}
+                style={{ backgroundColor: "rgb(22,142,255)" }}
                 data-testid="button-add-risk"
               >
                 <Plus className="h-4 w-4 mr-2" />
@@ -1529,10 +1598,10 @@ console.log(upComingActivities, "upcomingActivities",upcomingActivities);
             )}
           </CardContent>
         </Card>
-         {/* Project Location Map */}
-      <div className="">
-        <ProjectMap projects={project ? [project] : []} />
-      </div>
+        {/* Project Location Map */}
+        <div className="">
+          <ProjectMap projects={project ? [project] : []} />
+        </div>
         {/* <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
