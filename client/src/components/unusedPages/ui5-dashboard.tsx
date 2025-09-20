@@ -190,7 +190,7 @@ export default function UI5Dashboard() {
                       ? Math.round(kpiData.totalProjects).toString()
                       : "0"}
                   </Title>
-                  <Text>Total Projects</Text>
+                  {/* <Text>Total Projects</Text> */}
                 </div>
               </Card>
               <Card

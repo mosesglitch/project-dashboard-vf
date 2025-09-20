@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams, Link } from "wouter";
-import React, { act, useState } from "react";
+import React, { act, useState,useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -55,6 +55,7 @@ import { Text } from "@ui5/webcomponents-react";
 import { AIInsights } from "@/components/ai-insights";
 import { ProjectAnalytics } from "@/components/project-analytics";
 import { c } from "node_modules/vite/dist/node/types.d-aGj9QkWt";
+import { dataService } from "@/lib/dataService";
 const riskOwners = [
   "Project Manager",
   "Procurement Manager",
@@ -190,7 +191,7 @@ const getProgressColor = (percentageComplete: number | string) => {
   return "bg-blue-500";
 };
 
-export default function ProjectDetailsDashboard() {
+export default function ProjectDetailsDashboard({id,setSelectedProjectId}: {id: string | number,setSelectedProjectId: (id: string) => void}) {
   const [startDateForUpcoming, setStartDateForUpcoming] = useState<string>("");
   const [isAddingRisk, setIsAddingRisk] = useState(false);
   const [editingRisk, setEditingRisk] = useState<Risk | null>(null);
@@ -201,46 +202,62 @@ export default function ProjectDetailsDashboard() {
     priority: "medium" as Risk["priority"],
     owner: "Project Manager" as Risk["owner"],
   });
-
+console.log(id, "id");
   const queryClient = useQueryClient();
-
-  const { id } = useParams();
+const projectLoading = false;
+  // const { id } = useParams();
   // Fetch project data
-  const { data: project, isLoading: projectLoading } = useQuery<ExcelProject>({
-    queryKey: ["/api/projects", id],
-    queryFn: async () => {
-      const response = await fetch(`/api/projects/${id}`);
-      if (!response.ok) throw new Error("Failed to fetch project");
-      return response.json();
-    },
-  });
-
+  const project = useMemo(() => {
+      return id ? dataService.getProjectById(id) : undefined;
+    }, [id]);
+console.log(project, "proj");
   // Fetch activities data
-  const { data: milestones } = useQuery<ExcelActivity[]>({
-    queryKey: ["/api/projects", project?.projectCode, "milestones"],
-    queryFn: async () => {
-      const response = await fetch(
-        `/api/projects/${project?.projectCode}/milestones`
-      );
-      if (!response.ok) throw new Error("Failed to fetch milestones");
-      return response.json();
-    },
-    enabled: !!project?.projectCode,
-  });
+   // Get activities data from local service
+  const milestones = useMemo(() => {
+    return project?.projectCode ? dataService.getMilestonesByProjectCode(project.projectCode.toString()) : [];
+  }, [project?.projectCode]);
+
 
   // Fetch risks
-  const { data: risks, isLoading: risksLoading } = useQuery<Risk[]>({
-    queryKey: ["/api/risks", project?.projectCode],
-    queryFn: async () => {
-      const response = await fetch(
-        `/api/risks?projectCode=${project?.projectCode}`
-      );
-      if (!response.ok) throw new Error("Failed to fetch risks");
-      return response.json();
-    },
-    // enabled: isOpen && !!project?.projectCode,
-    enabled: !!project?.projectCode,
-  });
+  
+    // const risks = useMemo(() => {
+    //   return project?.projectCode ? dataService.getRisksByProjectCode(project.projectCode.toString()) : [];
+    // }, [project?.projectCode]);
+
+  const risks=[
+  {
+    "_id": "651a23b0d1e5f4c6a2e9b1d2",
+    "title": "Supply Chain Delays",
+    "description": "Risk of critical components arriving late, impacting the project timeline.",
+    "priority": "high",
+    "status": "active",
+    "owner": "John Doe"
+  },
+  {
+    "_id": "651a23b0d1e5f4c6a2e9b1d3",
+    "title": "Budget Overrun",
+    "description": "Potential for project costs to exceed the allocated budget due to unforeseen expenses.",
+    "priority": "medium",
+    "status": "mitigated",
+    "owner": "Jane Doe"
+  },
+  {
+    "_id": "651a23b0d1e5f4c6a2e9b1d4",
+    "title": "Resource Unavailability",
+    "description": "Key personnel might not be available for critical project phases.",
+    "priority": "high",
+    "status": "active",
+    "owner": "John Doe"
+  },
+  {
+    "_id": "651a23b0d1e5f4c6a2e9b1d6",
+    "title": "Scope Creep",
+    "description": "Additional client requests beyond the initial project scope could extend the timeline.",
+    "priority": "medium",
+    "status": "active",
+    "owner": "John Doe"
+  }
+]
 
   // Create risk mutation
   const createRiskMutation = useMutation({
@@ -573,65 +590,82 @@ export default function ProjectDetailsDashboard() {
 
     return jsDate.toLocaleDateString("en-US", options);
   };
-  const { data: upcomingActivities } = useQuery<ExcelActivity[]>({
-    queryKey: ["/api/projects", project?.projectCode, "upcoming"],
-    queryFn: async () => {
-      const response = await fetch(
-        `/api/projects/${project?.projectCode}/upcoming`
-      );
-      if (!response.ok) throw new Error("Failed to fetch upcoming activities");
-      return response.json();
-    },
-    enabled: !!project?.projectCode,
-  });
+  // const { data: upcomingActivities } = useQuery<ExcelActivity[]>({
+  //   queryKey: ["/api/projects", project?.projectCode, "upcoming"],
+  //   queryFn: async () => {
+  //     const response = await fetch(
+  //       `/api/projects/${project?.projectCode}/upcoming`
+  //     );
+  //     if (!response.ok) throw new Error("Failed to fetch upcoming activities");
+  //     return response.json();
+  //   },
+  //   enabled: !!project?.projectCode,
+  // });
+  const upcomingActivities = useMemo(() => {
+      return project?.projectCode ? dataService.getUpcomingActivitiesByProjectCode(project?.projectCode) : undefined;
+    }, [project?.projectCode]);
+
   console.log(upcomingActivities, "upcomingActivities");
   // Transform upcomingActivities to Gantt chart format
   const upComingActivities =
     upcomingActivities && upcomingActivities.length > 0
       ? upcomingActivities.map((activity, idx) => {
-        // Convert Excel serial date to JS Date object
-        const excelSerialToDate = (serial: number | string | undefined) => {
-          if (!serial) return undefined;
-          const serialNum =
-            typeof serial === "string" ? parseInt(serial, 10) : serial;
-          if (isNaN(serialNum)) return undefined;
-          const excelEpoch = new Date(1899, 11, 30);
-          return new Date(excelEpoch.getTime() + serialNum * 24 * 60 * 60 * 1000);
-        };
-        console.log(activity, "act");
-        const startDate = excelSerialToDate(activity.startDate);
-        const endDate = excelSerialToDate(activity.finishDate);
+          // Convert Excel serial date to JS Date object
+          const excelSerialToDate = (serial: number | string | undefined) => {
+            if (!serial) return undefined;
+            const serialNum =
+              typeof serial === "string" ? parseInt(serial, 10) : serial;
+            if (isNaN(serialNum)) return undefined;
+            const excelEpoch = new Date(1899, 11, 30);
+            return new Date(excelEpoch.getTime() + serialNum * 24 * 60 * 60 * 1000);
+          };
+          const startDate = excelSerialToDate(activity.startDate);
+          const endDate = excelSerialToDate(activity.finishDate);
 
-        return {
-          start: startDate ?? new Date(),
-          end: endDate ?? new Date(),
-          name: activity.item,
-          id: `Task-${activity.id ?? idx}`,
-          progress:
-            typeof activity.percentageComplete === "string"
-              ? parseFloat(activity.percentageComplete) * 100
-              : (activity.percentageComplete ?? 0) * 100,
-          type: "task",
-          project: activity.projectCode ? `Project-${activity.projectCode}` : undefined,
-          dependencies: activity.predecessor ? [activity.predecessor] : undefined,
-          hideChildren: false,
-        };
-      })
+          // Set predecessor as the previous activity's id, if exists
+          const dependencies =
+            idx > 0
+              ? [
+                  `Task-${
+                    upcomingActivities[idx - 1].id ??
+                    (idx - 1)
+                  }`,
+                ]
+              : undefined;
+
+          return {
+            start: startDate ?? new Date(),
+            end: endDate ?? new Date(),
+            name: activity.item,
+            id: `Task-${activity.id ?? idx}`,
+            progress:
+              typeof activity.percentageComplete === "string"
+                ? parseFloat(activity.percentageComplete) * 100
+                : (activity.percentageComplete ?? 0) * 100,
+            type: "task",
+            project: activity.projectCode ? `Project-${activity.projectCode}` : undefined,
+            dependencies,
+            hideChildren: false,
+          };
+        })
       : [];
 
   console.log(upComingActivities, "upcomingActivities", upcomingActivities);
 
-  const { data: lateActivities } = useQuery<ExcelActivity[]>({
-    queryKey: ["/api/projects", project?.projectCode, "late"],
-    queryFn: async () => {
-      const response = await fetch(
-        `/api/projects/${project?.projectCode}/late`
-      );
-      if (!response.ok) throw new Error("Failed to fetch late activities");
-      return response.json();
-    },
-    enabled: !!project?.projectCode,
-  });
+  // const { data: lateActivities } = useQuery<ExcelActivity[]>({
+  //   queryKey: ["/api/projects", project?.projectCode, "late"],
+  //   queryFn: async () => {
+  //     const response = await fetch(
+  //       `/api/projects/${project?.projectCode}/late`
+  //     );
+  //     if (!response.ok) throw new Error("Failed to fetch late activities");
+  //     return response.json();
+  //   },
+  //   enabled: !!project?.projectCode,
+  // });
+const lateActivities = useMemo(() => {
+      return project?.projectCode ? dataService.getLateActivitiesByProjectCode(project?.projectCode) : undefined;
+    }, [project?.projectCode]);
 
   if (projectLoading || !project) {
     return (
@@ -689,13 +723,19 @@ export default function ProjectDetailsDashboard() {
       if (bPhase === -1) return -1;
       return aPhase - bPhase;
     });
+    console.log(project,"adii project")
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      {/* Scroll to top on mount */}
+      {React.useEffect(() => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      }, [])}
       <div className="mb-2 ">
-        <Navbar
-          DisplayTitle={project.projectCode}
-          subtitle={project.description}
-        />
+      <Navbar
+        DisplayTitle={project.projectCode}
+        subtitle={project.description}
+        setSelectedProjectId={setSelectedProjectId}
+      />
       </div>
       {/* KPI Cards Row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mx-5">
@@ -785,7 +825,7 @@ export default function ProjectDetailsDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-red-600">
-              {project.issuesRisks || 0}
+              {4 }
             </div>
             <p className="text-xs text-muted-foreground">Issues & risks</p>
           </CardContent>
@@ -818,13 +858,22 @@ export default function ProjectDetailsDashboard() {
                 </CardHeader>
                 <AnalyticalCardHeader
                   // titleText={project.projectCode}
-                  subtitleText={"Time Completion"}
-                  description={
-                    `Start: ${formatDateforMilestones(project.startDate)} | Finish: ${formatDateforMilestones(project.finishDate)}`
-                  }
+                  subtitleText={"Remaining"}
+                  // description={
+                  //   `Start: ${formatDateforMilestones(project.startDate)} | Finish: ${formatDateforMilestones(project.finishDate)}`
+                  // }
                   // unitOfMeasurement="%"
-                  value={project.timeCompletion?.toFixed(2)*100 ?? "N/A"}
-                  scale="%"
+                  value={
+                        (() => {
+                          // Calculate days remaining
+                          const today = new Date();
+                          const finish = parseExcelDate(project.finishDate);
+                          if (!finish) return "N/A";
+                          const diff = Math.ceil((finish.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+                          return diff >= 0 ? diff : 0;
+                        })()
+                      }
+                  scale="days"
                   state={
                     project.performanceIndex == null
                       ? "None"
@@ -840,7 +889,7 @@ export default function ProjectDetailsDashboard() {
 
                 >
                   <React.Fragment>
-                    <NumericSideIndicator
+                    {/* <NumericSideIndicator
                       number={
                         (() => {
                           // Calculate days remaining
@@ -853,13 +902,13 @@ export default function ProjectDetailsDashboard() {
                       }
                       titleText="Days Remaining"
                       unit="days"
-                    />
+                    /> */}
 
                     <NumericSideIndicator
-                      number={project.performanceIndex.toFixed(2) || "0%"}
-                      titleText="Performance Index"
+                      number={ `Start: ${formatDateforMilestones(project.startDate)} | Finish: ${formatDateforMilestones(project.finishDate)}`}
+                      titleText="Project Duration"
                       unit=""
-                      state="Error"
+                      // state="Error"
                     />
                   </React.Fragment>
                 </AnalyticalCardHeader>
@@ -1538,9 +1587,7 @@ export default function ProjectDetailsDashboard() {
               </div>
             )}
 
-            {risksLoading ? (
-              <p>Loading risks...</p>
-            ) : risks && risks.length > 0 ? (
+            { risks && risks.length > 0 ? (
               <Table>
                 <TableHeader>
                   <TableRow>

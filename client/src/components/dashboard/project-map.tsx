@@ -117,24 +117,53 @@ function MapBounds({ locations }: { locations: ParsedLocation[] }) {
 export function ProjectMap({ projects }: ProjectMapProps) {
   const locations = useMemo(() => {
     const parsedLocations: ParsedLocation[] = [];
-    
+
     projects.forEach(project => {
       if (project.location) {
-        const coords = parseLocationString(project.location);
-        coords.forEach(coord => {
-          parsedLocations.push({
-            lat: coord.lat,
-            lng: coord.lng,
-            projectCode: project.projectCode,
-            division: project.division || 'default',
-            description: project.description
+        // project.location is a string like "[[-1.2921,36.8219]]"
+        try {
+          const arr = JSON.parse(project.location);
+          // arr can be [[lat, lng]] or [lat, lng]
+          if (Array.isArray(arr) && Array.isArray(arr[0])) {
+            arr.forEach((coords: number[]) => {
+              if (coords.length === 2 && !isNaN(coords[0]) && !isNaN(coords[1])) {
+                parsedLocations.push({
+                  lat: coords[0],
+                  lng: coords[1],
+                  projectCode: Number(project.projectCode),
+                  division: project.division || 'default',
+                  description: project.description
+                });
+              }
+            });
+          } else if (Array.isArray(arr) && arr.length === 2 && !isNaN(arr[0]) && !isNaN(arr[1])) {
+            parsedLocations.push({
+              lat: arr[0],
+              lng: arr[1],
+              projectCode: Number(project.projectCode),
+              division: project.division || 'default',
+              description: project.description
+            });
+          }
+        } catch (e) {
+          // fallback to parseLocationString if not valid JSON
+          const coords = parseLocationString(project.location);
+          coords.forEach(coord => {
+            parsedLocations.push({
+              lat: coord.lat,
+              lng: coord.lng,
+              projectCode: Number(project.projectCode),
+              division: project.division || 'default',
+              description: project.description
+            });
           });
-        });
+        }
       }
     });
-    
+
     return parsedLocations;
   }, [projects]);
+  // console.log('Parsed Locations:', locations);
 
   const divisionCounts = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -197,8 +226,8 @@ export function ProjectMap({ projects }: ProjectMapProps) {
           {/* Map */}
           <div className="h-96  rounded-lg overflow-hidden border">
             <MapContainer
-              center={[0, 0]}
-              zoom={2}
+              center={[locations[0].lat, locations[0].lng]}
+              zoom={6}
               style={{ height: '100%', width: '100%' }}
               data-testid="leaflet-map"
             >

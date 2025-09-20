@@ -85,23 +85,35 @@ const getBgColor = (percentageComplete) => {
   if (percentageComplete > 0) return "bg-yellow-50 border-yellow-200";
   return "bg-blue-50 border-blue-200";
 };
-export default function ProjectDetails() {
-  const { id } = useParams();
 
+export default function ProjectDetails({
+  id,
+  setSelectedProjectId,
+}: {
+  id?: string | number;
+  setSelectedProjectId: (id: string | number | null) => void;
+}) {
+  // const { id } = useParams();
+  console.log("ProjectDetails received id:", id);
   // Get project data from local service
   const project = useMemo(() => {
     return id ? dataService.getProjectById(id as string) : undefined;
   }, [id]);
-  
+
+  console.log("Loaded project:", project);
   const projectLoading = false;
 
   // Get activities data from local service
   const milestones = useMemo(() => {
-    return project?.projectCode ? dataService.getMilestonesByProjectCode(project.projectCode.toString()) : [];
+    return project?.projectCode
+      ? dataService.getMilestonesByProjectCode(project.projectCode.toString())
+      : [];
   }, [project?.projectCode]);
 
   const risks = useMemo(() => {
-    return project?.projectCode ? dataService.getRisksByProjectCode(project.projectCode.toString()) : [];
+    return project?.projectCode
+      ? dataService.getRisksByProjectCode(project.projectCode.toString())
+      : [];
   }, [project?.projectCode]);
 
   function getTimelineChartData(activities: ExcelActivity[]): any[] {
@@ -265,16 +277,24 @@ export default function ProjectDetails() {
         start={start}
         totalDuration={totalDuration}
         columnTitle={`Duration (${startDateLabel} - ${finishDateLabel})`}
-        style={{  width: "100%",paddingBottom: "2rem" }}
+        style={{ width: "100%", paddingBottom: "2rem" }}
       />
     );
   }
   const upcomingActivities = useMemo(() => {
-    return project?.projectCode ? dataService.getUpcomingActivitiesByProjectCode(project.projectCode.toString()) : [];
+    return project?.projectCode
+      ? dataService.getUpcomingActivitiesByProjectCode(
+          project.projectCode.toString()
+        )
+      : [];
   }, [project?.projectCode]);
 
   const lateActivities = useMemo(() => {
-    return project?.projectCode ? dataService.getLateActivitiesByProjectCode(project.projectCode.toString()) : [];
+    return project?.projectCode
+      ? dataService.getLateActivitiesByProjectCode(
+          project.projectCode.toString()
+        )
+      : [];
   }, [project?.projectCode]);
 
   const formatCurrency = (amount: number | null | undefined) => {
@@ -339,9 +359,9 @@ export default function ProjectDetails() {
       <div style={{ padding: "2rem", textAlign: "center" }}>
         <Text>Project not found</Text>
         <div style={{ marginTop: "1rem" }}>
-          <Link href="/">
-            <Button icon="arrow-left">Back to Dashboard</Button>
-          </Link>
+          <div onClick={() => setSelectedProjectId(null)}>
+            <Button icon="arrow-left">Back to Sample Dashboard</Button>
+          </div>
         </div>
       </div>
     );
@@ -354,11 +374,9 @@ export default function ProjectDetails() {
           <ObjectPageHeader>
             {/* Back Button */}
             <div style={{ marginBottom: "1rem" }}>
-              <Link href="/">
-                <Button icon="arrow-left" design="Transparent">
-                  Back to Dashboar
-                </Button>
-              </Link>
+              <div onClick={() => setSelectedProjectId(null)}>
+                <Button icon="arrow-left">Back to Sample Dashboard</Button>
+              </div>
             </div>
 
             {/* KPI Cards in Header Area */}
@@ -893,29 +911,28 @@ export default function ProjectDetails() {
                   }
                 >
                   {lateActivities.map((activity, index) => {
-                  
                     // Handle Excel serial date or ISO string for finishDate
                     let finishDate: Date | null = null;
                     if (activity.finishDate) {
                       if (/^\d+$/.test(activity.finishDate)) {
-                      // Excel serial date: days since 1899-12-30
-                      const excelEpoch = new Date(Date.UTC(1899, 11, 30));
-                      finishDate = new Date(
-                        excelEpoch.getTime() +
-                        Number(activity.finishDate) * 24 * 60 * 60 * 1000
-                      );
+                        // Excel serial date: days since 1899-12-30
+                        const excelEpoch = new Date(Date.UTC(1899, 11, 30));
+                        finishDate = new Date(
+                          excelEpoch.getTime() +
+                            Number(activity.finishDate) * 24 * 60 * 60 * 1000
+                        );
                       } else {
-                      finishDate = new Date(activity.finishDate);
+                        finishDate = new Date(activity.finishDate);
                       }
                     }
                     const today = new Date();
                     // Remove time part for accurate day comparison
                     const finishDateOnly = finishDate
                       ? new Date(
-                        finishDate.getFullYear(),
-                        finishDate.getMonth(),
-                        finishDate.getDate()
-                      )
+                          finishDate.getFullYear(),
+                          finishDate.getMonth(),
+                          finishDate.getDate()
+                        )
                       : null;
                     const todayOnly = new Date(
                       today.getFullYear(),
@@ -924,11 +941,11 @@ export default function ProjectDetails() {
                     );
                     const daysOverdue =
                       finishDateOnly && finishDateOnly < todayOnly
-                      ? Math.ceil(
-                        (todayOnly.getTime() - finishDateOnly.getTime()) /
-                          (1000 * 60 * 60 * 24)
-                        )
-                      : 0;
+                        ? Math.ceil(
+                            (todayOnly.getTime() - finishDateOnly.getTime()) /
+                              (1000 * 60 * 60 * 24)
+                          )
+                        : 0;
 
                     return (
                       <TableRow key={index}>

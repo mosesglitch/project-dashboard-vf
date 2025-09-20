@@ -126,7 +126,7 @@ export function ChartsSection({
             className="text-lg font-semibold text-gray-900 dark:text-white"
             data-testid="text-division-chart-title"
           >
-            Projects by Division
+            {/* Projects by Division */}
           </CardTitle>
         </CardHeader>
         <CardContent>

@@ -8,18 +8,19 @@ import { useTheme } from "@/components/theme-provider";
 interface NavbarProps {
   DisplayTitle?: string;
   subtitle?: string;
+  setSelectedProjectId?: (id: string) => void;
 }
 
-export function Navbar({ DisplayTitle, subtitle }: NavbarProps) {
+export function Navbar({ DisplayTitle, subtitle, setSelectedProjectId   }: NavbarProps) {
   const [location] = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const { theme, setTheme } = useTheme();
-
+console.log(theme)
   const navigationItems = [
     // { href: "/", label: "Dashboard", icon: Home },
     // { href: "/projects", label: "Projects", icon: FolderOpen },
     // { href: "/analytics", label: "Analytics", icon: BarChart3 },
-    { href: "/risks", label: "Risks", icon: AlertTriangle },
+    // { href: "/risks", label: "Risks", icon: AlertTriangle },
   ];
 
   return (
@@ -48,35 +49,37 @@ export function Navbar({ DisplayTitle, subtitle }: NavbarProps) {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            {/* Show Back to Dashboard button if props exist */}
+            {/* Show Back to Sample Dashboard button if props exist */}
             {navigationItems.map((item) => {
               const Icon = item.icon;
               const isActive = location === item.href;
               return (
-                <Link key={item.href} href={item.href}>
+                // <Link key={item.href} href={item.href}>
                   <Button
+                  onClick={() => setSelectedProjectId(null)}
                     variant={isActive ? "default" : "ghost"}
                     className="flex items-center space-x-2"
                   >
                     <Icon className="h-4 w-4" />
                     <span>{item.label}</span>
                   </Button>
-                </Link>
+                // </Link>
               );
             })}
             {(DisplayTitle || subtitle) && (
-              <Link href="/">
+              // <Link href="/">
                 <Button
                   variant="outline"
+                  onClick={() => setSelectedProjectId(null)}
                   size="sm"
                   className="flex items-center gap-2"
                         style={{backgroundColor:"rgb(22,142,255)",color:"white"}}
 
                 >
                   <ArrowLeft className="h-4 w-4" />
-                  Back to Dashboard
+                  Back to Sample Dashboard
                 </Button>
-              </Link>
+              // </Link>
             )}
             
             {/* Dark Mode Toggle */}
@@ -121,20 +124,20 @@ export function Navbar({ DisplayTitle, subtitle }: NavbarProps) {
                     </div>
                   </div>
 
-                  {/* Back to Dashboard button (mobile) */}
+                  {/* Back to Sample Dashboard button (mobile) */}
                   {(DisplayTitle || subtitle) && (
-                    <Link href="/">
+                    // <Link href="/">
                       <Button
                         variant="outline"
                         size="sm"
-                        style={{backgroundColor:"rgb(22,142,255)"}}
+                        style={{backgroundColor:"rgb(22,142,255)",color:"white"}}
                         className="flex items-center gap-2 "
-                        onClick={() => setIsOpen(false)}
+                        onClick={() =>{ setIsOpen(false); setSelectedProjectId(null)}}
                       >
                         <ArrowLeft className="h-4 w-4" />
-                        Back to Dashboard
+                        Back to Sample Dashboard
                       </Button>
-                    </Link>
+                    // </Link>
                   )}
                   
                   {/* Dark Mode Toggle (mobile) */}

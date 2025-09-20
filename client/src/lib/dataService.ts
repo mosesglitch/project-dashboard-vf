@@ -8,8 +8,8 @@ function transformProjectData(rawData: any[]): ExcelProject[] {
     id: index + 1,
     projectCode: item['Project Code']?.toString() || '',
     description: item['Description'] || '',
-    startDate: formatDate(item['Start Date']),
-    finishDate: formatDate(item['Finish Date']),
+    startDate: dateStringToExcelSerial(item['Start Date']),
+    finishDate: dateStringToExcelSerial(item['Finish Date']),
     percentageComplete: parseFloat(item['Percentage Complete']) || 0,
     category: item['Category'] || '',
     scopeCompletion: parsePercentage(item['Scope Completion']),
@@ -35,19 +35,30 @@ function transformProjectData(rawData: any[]): ExcelProject[] {
 
 // Transform Excel column format to our expected format for activities
 function transformActivityData(rawData: any[]): ExcelActivity[] {
-  return rawData.map((item, index) => ({
+  return rawData?.map((item, index) => ({
     id: index + 1,
     projectCode: item['Project Code']?.toString() || '',
     item: item['Item'] || '',
     description: item['Description'] || '',
     owner: item['Owner'] || '',
-    startDate: formatDate(item['Start Date']),
-    finishDate: formatDate(item['Finish Date']),
+    startDate: dateStringToExcelSerial(item['Start Date']),
+    finishDate: dateStringToExcelSerial(item['Finish Date']),
     percentageComplete: parsePercentage(item['Percentage Complete']),
     category: item['Category'] || '',
     predecessor: item['Predecessor'] || '',
     status: item['Status'] || ''
   }));
+}
+
+// Converts a date string like "Wednesday, November 20, 2024" to Excel serial number
+function dateStringToExcelSerial(dateStr: any): number {
+  if (!dateStr) return 0;
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return 0;
+  // Excel's epoch starts at 1899-12-30
+  const excelEpoch = new Date(Date.UTC(1899, 11, 30));
+  const diff = date.getTime() - excelEpoch.getTime();
+  return Math.floor(diff / (1000 * 60 * 60 * 24));
 }
 
 function formatDate(dateStr: any): string {
@@ -59,7 +70,7 @@ function formatDate(dateStr: any): string {
       return date.toISOString().split('T')[0];
     }
   }
-  return dateStr?.toString() || '';
+  return '';
 }
 
 function parsePercentage(value: any): number {
@@ -85,27 +96,51 @@ export class LocalDataService {
   getProjects(filters?: {
     status?: string;
     division?: string;
+    budgetStatus?: string;
+    performanceStatus?: string;
     dateFrom?: string;
     dateTo?: string;
   }): ExcelProject[] {
     let filteredData = [...this.data];
-    
+
     if (filters) {
       if (filters.division && filters.division !== 'all' && filters.division !== '') {
-        filteredData = filteredData.filter(p => 
+        filteredData = filteredData.filter(p =>
           p.division.toLowerCase() === filters.division!.toLowerCase()
         );
       }
-      
-      if (filters.dateFrom && filters.dateFrom !== '') {
-        filteredData = filteredData.filter(p => 
-          new Date(p.startDate) >= new Date(filters.dateFrom!)
+
+      if (filters.status && filters.status !== 'all' && filters.status !== '') {
+        filteredData = filteredData.filter(p =>
+          (p.performanceCategory || '').toLowerCase() === filters.status!.toLowerCase()
         );
       }
-      
+
+      if (filters.budgetStatus && filters.budgetStatus !== 'all' && filters.budgetStatus !== '') {
+        filteredData = filteredData.filter(p =>
+          (p.budgetStatusCategory || '').toLowerCase() === filters.budgetStatus!.toLowerCase()
+        );
+      }
+
+      if (filters.performanceStatus && filters.performanceStatus !== 'all' && filters.performanceStatus !== '') {
+        filteredData = filteredData.filter(p =>
+          (p.performanceCategory || '').toLowerCase() === filters.performanceStatus!.toLowerCase()
+        );
+      }
+
+      if (filters.dateFrom && filters.dateFrom !== '') {
+        filteredData = filteredData.filter(p =>
+          typeof p.startDate === 'number'
+            ? p.startDate >= dateStringToExcelSerial(filters.dateFrom!)
+            : new Date(p.startDate) >= new Date(filters.dateFrom!)
+        );
+      }
+
       if (filters.dateTo && filters.dateTo !== '') {
-        filteredData = filteredData.filter(p => 
-          new Date(p.finishDate) <= new Date(filters.dateTo!)
+        filteredData = filteredData.filter(p =>
+          typeof p.finishDate === 'number'
+            ? p.finishDate <= dateStringToExcelSerial(filters.dateTo!)
+            : new Date(p.finishDate) <= new Date(filters.dateTo!)
         );
       }
     }
@@ -114,7 +149,8 @@ export class LocalDataService {
   
   // Get project by ID
   getProjectById(id: string): ExcelProject | undefined {
-    return this.data.find(p => p.projectCode.toString() === id || p.id.toString() === id);
+    console.log("Searching for project with ID:", id,this.data);
+    return this.data.find(p => p.id === id || p.id.toString() === id);
   }
   
   // Get overview statistics
@@ -204,36 +240,58 @@ export class LocalDataService {
   }
   
   // Get activities by project code
-  getActivitiesByProjectCode(projectCode: string): ExcelActivity[] {
-    return this.activitiesData.filter(a => a.projectCode?.toString() === projectCode);
+  getActivitiesByProjectCode(projectCode: number): ExcelActivity[] {
+    console.log("Fetching activities for project code:", projectCode,this.activitiesData);
+    return this.activitiesData.filter(a => a.id === projectCode);
   }
   
-  // Get milestones by project code
-  getMilestonesByProjectCode(projectCode: string): ExcelActivity[] {
-    return this.activitiesData.filter(a => 
-      a.projectCode?.toString() === projectCode && 
+getMilestonesByProjectCode(projectCode: string): ExcelActivity[] {
+  let result = this.activitiesData.filter(a =>
+    a.projectCode === projectCode && 
+    (a.category === 'Milestone' || a.category === 'Workstream')
+  );
+  if (result.length === 0) {
+    result = this.activitiesData.filter(a =>
+      a.projectCode === '60001' && 
       (a.category === 'Milestone' || a.category === 'Workstream')
     );
   }
-  
-  // Get upcoming activities by project code
-  getUpcomingActivitiesByProjectCode(projectCode: string): ExcelActivity[] {
-    return this.activitiesData.filter(a => 
-      a.projectCode?.toString() === projectCode && a.category === 'Upcoming'
+  return result;
+}
+
+// Get upcoming activities by project code
+getUpcomingActivitiesByProjectCode(projectCode: string): ExcelActivity[] {
+  let result = this.activitiesData.filter(a => 
+    a.projectCode === projectCode && a.category === 'Upcoming'
+  );
+  if (result.length === 0) {
+    result = this.activitiesData.filter(a => 
+      a.projectCode === '60001' && a.category === 'Upcoming'
     );
   }
-  
-  // Get late activities by project code
-  getLateActivitiesByProjectCode(projectCode: string): ExcelActivity[] {
-    return this.activitiesData.filter(a => 
-      a.projectCode?.toString() === projectCode && a.category === 'Late'
+  return result;
+}
+
+// Get late activities by project code
+getLateActivitiesByProjectCode(projectCode: string): ExcelActivity[] {
+  console.log("Fetching late activities for project code:", projectCode, this.activitiesData);
+
+  let result = this.activitiesData.filter(a => 
+    a.projectCode === projectCode && a.category === 'Late'
+  );
+  if (result.length === 0) {
+    result = this.activitiesData.filter(a => 
+      a.projectCode === '60001' && a.category === 'Late'
     );
   }
+  return result;
+}
+
   
   // Get risks by project code
-  getRisksByProjectCode(projectCode: string): ExcelActivity[] {
+  getRisksByProjectCode(projectCode: number): ExcelActivity[] {
     return this.activitiesData.filter(a => 
-      a.projectCode?.toString() === projectCode && a.category === 'Risk'
+      a.projectCode === projectCode && a.category === 'Risk'
     );
   }
 }

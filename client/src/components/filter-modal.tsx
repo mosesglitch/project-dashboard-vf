@@ -84,7 +84,7 @@ export function FilterModal({ isOpen, onClose, filters, onFiltersChange }: Filte
               </div>
             </div>
           </div>
-
+   
           <Separator />
 
           {/* Division Filter */}

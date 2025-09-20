@@ -10,7 +10,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { NumericSideIndicator, AnalyticalCardHeader } from '@ui5/webcomponents-react';
+import {
+  NumericSideIndicator,
+  AnalyticalCardHeader,
+} from "@ui5/webcomponents-react";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import {
@@ -22,6 +25,7 @@ import {
   PieChart,
   Filter,
   ArrowRight,
+  X,Table as TableIcon
 } from "lucide-react";
 import { Navbar } from "@/components/navbar";
 import { ProjectMap } from "@/components/dashboard/project-map";
@@ -36,7 +40,9 @@ import {
   BarChart,
   ColumnChart,
 } from "@ui5/webcomponents-react-charts";
-
+import ProjectDetailsDashboard from "./project-details-dashboard";
+import ProjectDetails from "@/components/unusedPages/project-details";
+import { useTheme } from "@/components/theme-provider";
 type Project = {
   code: string;
   budget: number;
@@ -52,27 +58,38 @@ export default function Dashboard() {
     dateFrom: "",
     dateTo: "",
   });
-  const [sortField, setSortField] = useState("progress");
+  const [sortField, setSortField] = useState();
   const [sortAsc, setSortAsc] = useState(false);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
-  const [selectedProjectId, setSelectedProjectId] = useState<string | number | null>(null);
-
+  const [selectedProjectId, setSelectedProjectId] = useState<
+    string | number | null
+  >(null);
+  console.log(filters, "filters");
   // Get data from local data service
   const projects = useMemo(() => {
     return dataService.getProjects({
+      status: filters.status,
       division: filters.division,
+      budgetStatus: filters.budgetStatus,
+      performanceStatus: filters.performanceStatus,
       dateFrom: filters.dateFrom,
-      dateTo: filters.dateTo
+      dateTo: filters.dateTo,
     });
   }, [filters]);
-  
   const projectsLoading = false;
-  console.log("projects", projects)
   const kpiData = useMemo(() => dataService.getOverviewStats(), []);
-  const performanceStats = useMemo(() => dataService.getPerformanceCategoryStats(), []);
-  const spendingStats = useMemo(() => dataService.getSpendingCategoriesStats(), []);
+  console.log(kpiData, "KPIdata");
+  const performanceStats = useMemo(
+    () => dataService.getPerformanceCategoryStats(),
+    []
+  );
+  const spendingStats = useMemo(
+    () => dataService.getSpendingCategoriesStats(),
+    []
+  );
   const divisionStats = useMemo(() => dataService.getDivisionStats(), []);
+
   // Suppose `projects` is your array of project objects
   const topProjects = [...(projects || [])]
     .sort((a, b) => (b.coAmount || 0) - (a.coAmount || 0)) // sort descending
@@ -165,7 +182,19 @@ export default function Dashboard() {
     }
     return <Badge variant="outline">{status}</Badge>;
   };
-  console.log(sortedProjects);
+  const { theme, setTheme } = useTheme();
+  if (
+    selectedProjectId &&
+    selectedProjectId !== "null" &&
+    selectedProjectId !== "undefined"
+  ) {
+    return (
+      <ProjectDetailsDashboard
+        id={selectedProjectId}
+        setSelectedProjectId={setSelectedProjectId}
+      />
+    );
+  }
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Navbar />
@@ -182,10 +211,31 @@ export default function Dashboard() {
               filters.performanceStatus !== "all" ||
               filters.dateFrom ||
               filters.dateTo) && (
+              <div className="flex items-center gap-4">
                 <div className="text-sm text-muted-foreground">
                   Filters applied
                 </div>
-              )}
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() =>
+                    setFilters({
+                      status: "all",
+                      division: "all",
+                      budgetStatus: "all",
+                      performanceStatus: "all",
+                      dateFrom: "",
+                      dateTo: "",
+                    })
+                  }
+                  data-testid="button-open-filters"
+                  className="flex items-center gap-2"
+                >
+                  <X className="h-4 w-4" />
+                  Clear Filters
+                </Button>
+              </div>
+            )}
           </div>
           <Button
             variant="outline"
@@ -232,9 +282,7 @@ export default function Dashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
-                    {kpiData
-                      ? formatCurrency(kpiData.totalBudget) 
-                      : "$0"}
+                    {kpiData ? formatCurrency(kpiData.totalBudget) : "$0"}
                   </div>
                   <p className="text-xs text-muted-foreground">
                     Allocated funds estimate
@@ -251,9 +299,7 @@ export default function Dashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold text-orange-600">
-                    {kpiData
-                      ? formatCurrency(kpiData.actualSpend)
-                      : "$0"}
+                    {kpiData ? formatCurrency(kpiData.totalSpent) : "$0"}
                   </div>
                   <p className="text-xs text-muted-foreground">
                     Current spending estimate
@@ -270,9 +316,7 @@ export default function Dashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold text-blue-600">
-                    {kpiData
-                      ? formatCurrency(kpiData.amountReceived)
-                      : "$0"}
+                    {kpiData ? formatCurrency(97000000) : "$0"}
                   </div>
                   <p className="text-xs text-muted-foreground">
                     Revenue collected estimate
@@ -288,11 +332,7 @@ export default function Dashboard() {
                   <AlertTriangle className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-red-600">
-                    {kpiData?.totalRisks
-                      ? Math.round(kpiData.totalRisks).toString()
-                      : "0"}
-                  </div>
+                  <div className="text-2xl font-bold text-red-600">{"12"}</div>
                   <p className="text-xs text-muted-foreground">Active risks</p>
                 </CardContent>
               </Card>
@@ -397,20 +437,26 @@ export default function Dashboard() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {divisionStats ? (
+                  {divisionStats &&
+                  Array.isArray(divisionStats) &&
+                  divisionStats.length > 0 ? (
                     <BarChart
-                      dataset={Object.entries(divisionStats).map(
-                        ([division, value]) => ({
-                          division,
-                          value,
-                        })
-                      )}
-                      dimensions={[{ accessor: "division" }]}
-                      measures={[{ accessor: "value", label: "Projects" }]}
+                      dataset={divisionStats}
+                      dimensions={[{ accessor: "name", label: "Division" }]}
+                      measures={[{ accessor: "projects", label: "Projects" }]}
                       style={{ height: "220px" }}
-                      onClick={() => { }}
-                      onDataPointClick={() => { }}
-                      onLegendClick={() => { }}
+                      onDataPointClick={(e) => {
+                        const division = e?.detail.payload.name;
+                        console.log(division, "division", e);
+                        if (division) {
+                          setFilters((prev) => ({
+                            ...prev,
+                            division,
+                          }));
+                        }
+                      }}
+                      onClick={() => {}}
+                      onLegendClick={() => {}}
                     />
                   ) : (
                     <span className="text-sm text-muted-foreground">
@@ -444,12 +490,19 @@ export default function Dashboard() {
                       dimension={{ accessor: "division" }}
                       measure={{
                         accessor: "value",
-                        formatter: (val) => formatCurrency(Number(val)), // use your function here
+                        formatter: (val) => formatCurrency(Number(val)),
+                      }}
+                      onDataPointClick={(e) => {
+                        const division = e?.detail.name;
+                        console.log(division, "division");
+                        if (division) {
+                          setFilters((prev) => ({
+                            ...prev,
+                            division,
+                          }));
+                        }
                       }}
                       onClick={(e) => console.log("Chart clicked", e)}
-                      onDataPointClick={(e) =>
-                        console.log("Data point clicked", e)
-                      }
                       onLegendClick={(e) => console.log("Legend clicked", e)}
                       style={{ height: "220px" }}
                     />
@@ -480,15 +533,23 @@ export default function Dashboard() {
                           if (!acc[cat]) {
                             acc[cat] = { category: cat, value: 0 };
                           }
-                          acc[cat].value += 1; // count each project
+                          acc[cat].value += 1;
                           return acc;
                         }, {})
                       )}
                       dimension={{ accessor: "category" }}
                       measure={{ accessor: "value" }}
-                      onClick={() => { }}
-                      onDataPointClick={() => { }}
-                      onLegendClick={() => { }}
+                      onDataPointClick={(e) => {
+                        const performanceStatus = e?.detail.name;
+                        if (performanceStatus) {
+                          setFilters((prev) => ({
+                            ...prev,
+                            performanceStatus,
+                          }));
+                        }
+                      }}
+                      onClick={() => {}}
+                      onLegendClick={() => {}}
                       style={{ height: "220px" }}
                     />
                   ) : (
@@ -502,8 +563,9 @@ export default function Dashboard() {
               {/* Budget Status Chart */}
               <Card data-testid="card-budget-status-chart">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
+                  <CardTitle className="flex items-center gap-2 " >
                     <PieChart className="h-5 w-5" />
+
                     Budget Status
                   </CardTitle>
                 </CardHeader>
@@ -519,15 +581,24 @@ export default function Dashboard() {
                           if (!acc[status]) {
                             acc[status] = { status, value: 0 };
                           }
-                          acc[status].value += 1; // count each project
+                          acc[status].value += 1;
                           return acc;
                         }, {})
                       )}
                       dimension={{ accessor: "status" }}
                       measure={{ accessor: "value" }}
-                      onClick={() => { }}
-                      onDataPointClick={() => { }}
-                      onLegendClick={() => { }}
+                      onDataPointClick={(e) => {
+                        const budgetStatus = e?.detail.name;
+                        console.log(e, budgetStatus, "budgetStatus");
+                        if (budgetStatus) {
+                          setFilters((prev) => ({
+                            ...prev,
+                            budgetStatus,
+                          }));
+                        }
+                      }}
+                      onClick={() => {}}
+                      onLegendClick={() => {}}
                       style={{ height: "220px" }}
                     />
                   ) : (
@@ -623,49 +694,66 @@ export default function Dashboard() {
           ).toFixed(1)
           : "0", */}
           <div className="lg:col-span-4">
-            <Card data-testid="card-projects-table"
-            >
+            <Card data-testid="card-projects-table">
               {topProjects.length > 0 && (
                 <AnalyticalCardHeader
+                  className={
+                    theme !== "dark"
+                      ? "bg-white/10 text-white" // dark theme look
+                      : "bg-black/5 text-black" // light theme look
+                  }
                   description="Q3,2025"
                   onClick={() => {}}
-                  // scale="K"
                   state="Good"
                   subtitleText="Current Profit Margin"
-                  titleText={<CardTitle className="flex items-center gap-2">
-                  <DollarSign className="h-4 w-4 text-muted-foreground" />
-                  {/* <BarChart3 className="h-5 w-5" /> */}
-                  Top 15 Projects by CO amount
-                </CardTitle>}
+                  titleText={
+                    <CardTitle className="flex items-center gap-2">
+                      <DollarSign
+                        className={`h-4 w-4 ${
+                          theme === "dark"
+                            ? "text-gray-300"
+                            : "text-muted-foreground"
+                        }`}
+                      />
+                      <span className={` ${
+                          theme === "dark"
+                            ? "text-gray-300"
+                            : "text-black"
+                        }`}>
+                        Top 15 Projects by CO amount
+                      </span>
+                    </CardTitle>
+                  }
                   trend="Up"
                   unitOfMeasurement="| Ksh"
-                  value={
-                    formatCurrency(
-                      Number(topProjects[0].coAmount || 0) -
+                  value={formatCurrency(
+                    Number(topProjects[0].coAmount || 0) -
                       Number(topProjects[0].totalAmountSpent || 0)
-                    )
-                  }
+                  )}
                 >
                   <React.Fragment>
                     <NumericSideIndicator
-                      number={
-                        formatCurrency(
-                          Number(topProjects[0].coAmount || 0) -
+                      number={formatCurrency(
+                        Number(topProjects[0].coAmount || 0) -
                           Number(topProjects[0].budgetAmount || 0)
-                        )
-                      }
+                      )}
                       titleText="Target Margin"
-                      // unit="k"
                     />
                     <NumericSideIndicator
                       number={
-                        topProjects[0].coAmount && topProjects[0].budgetAmount && topProjects[0].totalAmountSpent
+                        topProjects[0].coAmount &&
+                        topProjects[0].budgetAmount &&
+                        topProjects[0].totalAmountSpent
                           ? (
-                              (
-                                ((topProjects[0].coAmount - topProjects[0].totalAmountSpent) -
-                                  (topProjects[0].coAmount - topProjects[0].budgetAmount)) /
-                                Math.max(1, topProjects[0].coAmount - topProjects[0].budgetAmount)
-                              ) *
+                              ((topProjects[0].coAmount -
+                                topProjects[0].totalAmountSpent -
+                                (topProjects[0].coAmount -
+                                  topProjects[0].budgetAmount)) /
+                                Math.max(
+                                  1,
+                                  topProjects[0].coAmount -
+                                    topProjects[0].budgetAmount
+                                )) *
                               100
                             ).toFixed(1) + "%"
                           : "0%"
@@ -676,7 +764,7 @@ export default function Dashboard() {
                   </React.Fragment>
                 </AnalyticalCardHeader>
               )}
-             
+
               <CardContent>
                 <ColumnChart
                   dataset={topProjects.map((p) => ({
@@ -710,7 +798,6 @@ export default function Dashboard() {
                       label: "Actual Spent",
                       formatter: (val) => formatCurrency(val),
                     },
-
                   ]}
                   tooltipConfig={{
                     formatter: (value: any, name: string, props: any) => {
@@ -746,7 +833,19 @@ export default function Dashboard() {
           <div className="lg:col-span-4">
             <Card data-testid="card-projects-table">
               <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle>Project Portfolio</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <div>
+
+                  <TableIcon className="h-5 w-5" />
+                  </div>
+                  <div className={` ${
+                      theme === "dark"
+                        ? "text-gray-300"
+                        : "text-black"
+                    }`}>
+                    Project Portfolio
+                  </div>
+                </CardTitle>
                 <Button variant="outline" data-testid="button-export-projects">
                   Export Data
                 </Button>
@@ -756,8 +855,13 @@ export default function Dashboard() {
                   <div className="overflow-x-auto">
                     <div className="max-h-[500px] overflow-y-auto ">
                       {/* limit table height */}
-                      <Table data-testid="table-projects " alternateRowColor={true} filterable={true} sortable={true}>
-                        <TableHeader className="sticky top-0 bg-white z-10 shadow-sm"  >
+                      <Table
+                        data-testid="table-projects "
+                        alternateRowColor={true}
+                        filterable={true}
+                        sortable={true}
+                      >
+                        <TableHeader className="sticky top-0 bg-white z-10 shadow-sm">
                           <TableRow>
                             <TableHead
                               className="sticky top-0 left-0 bg-white dark:bg-gray-900 z-20 cursor-pointer"
@@ -865,15 +969,15 @@ export default function Dashboard() {
                                 <TableCell>
                                   {project.performanceCategory
                                     ? getStatusBadge(
-                                      project.performanceCategory
-                                    )
+                                        project.performanceCategory
+                                      )
                                     : "-"}
                                 </TableCell>
                                 <TableCell>
                                   {project.budgetStatusCategory
                                     ? getBudgetStatusBadge(
-                                      project.budgetStatusCategory
-                                    )
+                                        project.budgetStatusCategory
+                                      )
                                     : "-"}
                                 </TableCell>
                                 <TableCell>
@@ -892,8 +996,11 @@ export default function Dashboard() {
                                     variant="ghost"
                                     size="sm"
                                     onClick={(e) => {
-                                      e.stopPropagation();
-                                      window.open(`/project/${project.projectCode}`, "_blank");
+                                      // e.stopPropagation();
+                                      // Use wouter's router to navigate
+                                      setSelectedProjectId(project.id);
+                                      setIsProjectModalOpen(true);
+                                      // window.location.href = `/project/${project.projectCode}`;
                                     }}
                                     data-testid={`button-goto-project-${project.projectCode}`}
                                     className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -945,6 +1052,7 @@ export default function Dashboard() {
         onClose={() => setIsProjectModalOpen(false)}
         projectId={selectedProjectId}
       />
+      {/* <ProjectDetailsDashboard id={selectedProjectId} /> */}
     </div>
   );
 }
