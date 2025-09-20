@@ -856,7 +856,7 @@ export default function Dashboard() {
                     <div className="max-h-[500px] overflow-y-auto ">
                       {/* limit table height */}
                       <Table
-                        data-testid="table-projects "
+                        data-testid="table-projects"
                         alternateRowColor={true}
                         filterable={true}
                         sortable={true}
