@@ -2,5 +2,6 @@
   "builds": [
     { "src": "package.json", "use": "@vercel/static-build" }
   ],
+  "buildCommand": "vite build",
   "outputDirectory": "dist"
 }
