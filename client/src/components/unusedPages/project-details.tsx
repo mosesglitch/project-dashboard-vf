@@ -375,7 +375,7 @@ export default function ProjectDetails({
             {/* Back Button */}
             <div style={{ marginBottom: "1rem" }}>
               <div onClick={() => setSelectedProjectId(null)}>
-                <Button icon="arrow-left">Back to Sample Dashboard</Button>
+                <Button icon="arrow-left">Back to Sample Dashboard </Button>
               </div>
             </div>
 
