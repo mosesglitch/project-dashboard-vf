@@ -373,7 +373,7 @@ export default function ProjectDetails({
         headerArea={
           <ObjectPageHeader>
             {/* Back Button */}
-            <div style={{ marginBottom: "1rem" }}>
+            <div style={{ marginBottom: "4rem" }}>
               <div onClick={() => setSelectedProjectId(null)}>
                 <Button icon="arrow-left">Back to Sample Dashboard </Button>
               </div>
