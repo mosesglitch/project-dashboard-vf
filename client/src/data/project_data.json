@@ -1,0 +1,760 @@
+{
+  "project_data": [
+    {
+      "Project Code": 60004,
+      "Item": "Preliminaries",
+      "Start Date": "Thursday, September 5, 2024",
+      "Finish Date": "Sunday, September 15, 2024",
+      "Percentage Complete": "100%",
+      "Category": "Workstream",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60004,
+      "Item": "Procurement",
+      "Start Date": "Monday, September 16, 2024",
+      "Finish Date": "Saturday, November 30, 2024",
+      "Percentage Complete": "85%",
+      "Category": "Workstream",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60004,
+      "Item": "Construction",
+      "Start Date": "Sunday, December 1, 2024",
+      "Finish Date": "Thursday, May 15, 2025",
+      "Percentage Complete": "25%",
+      "Category": "Workstream",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60004,
+      "Item": "Commissioning",
+      "Start Date": "Friday, May 16, 2025",
+      "Finish Date": "Sunday, May 25, 2025",
+      "Percentage Complete": "0%",
+      "Category": "Workstream",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60004,
+      "Item": "Installation of Safety Sensors",
+      "Start Date": "Saturday, May 10, 2025",
+      "Finish Date": "Monday, May 12, 2025",
+      "Percentage Complete": "0%",
+      "Category": "Upcoming",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60004,
+      "Item": "Emergency Shutdown System Test",
+      "Start Date": "Tuesday, May 13, 2025",
+      "Finish Date": "Wednesday, May 14, 2025",
+      "Percentage Complete": "0%",
+      "Category": "Upcoming",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60004,
+      "Item": "Fire Alarm Integration",
+      "Start Date": "Thursday, May 15, 2025",
+      "Finish Date": "Thursday, May 15, 2025",
+      "Percentage Complete": "0%",
+      "Category": "Upcoming",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60004,
+      "Item": "Operator Training",
+      "Start Date": "Tuesday, May 20, 2025",
+      "Finish Date": "Wednesday, May 21, 2025",
+      "Percentage Complete": "0%",
+      "Category": "Upcoming",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60004,
+      "Item": "Documentation and Certification",
+      "Start Date": "Thursday, May 22, 2025",
+      "Finish Date": "Sunday, May 25, 2025",
+      "Percentage Complete": "0%",
+      "Category": "Upcoming",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60004,
+      "Item": "Valve Delivery Delay",
+      "Start Date": "Tuesday, December 10, 2024",
+      "Finish Date": "Friday, December 20, 2024",
+      "Percentage Complete": "0%",
+      "Category": "Late",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60004,
+      "Item": "Cabling Works",
+      "Start Date": "Sunday, January 5, 2025",
+      "Finish Date": "Monday, January 20, 2025",
+      "Percentage Complete": "40%",
+      "Category": "Late",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60004,
+      "Item": "System Integration",
+      "Start Date": "Saturday, February 1, 2025",
+      "Finish Date": "Saturday, February 15, 2025",
+      "Percentage Complete": "25%",
+      "Category": "Late",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60005,
+      "Item": "Preliminaries",
+      "Start Date": "Thursday, June 20, 2024",
+      "Finish Date": "Tuesday, June 25, 2024",
+      "Percentage Complete": "100%",
+      "Category": "Workstream",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60005,
+      "Item": "Procurement",
+      "Start Date": "Wednesday, June 26, 2024",
+      "Finish Date": "Monday, July 15, 2024",
+      "Percentage Complete": "100%",
+      "Category": "Workstream",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60005,
+      "Item": "Construction",
+      "Start Date": "Tuesday, July 16, 2024",
+      "Finish Date": "Thursday, September 5, 2024",
+      "Percentage Complete": "100%",
+      "Category": "Workstream",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60005,
+      "Item": "Commissioning",
+      "Start Date": "Friday, September 6, 2024",
+      "Finish Date": "Sunday, September 15, 2024",
+      "Percentage Complete": "100%",
+      "Category": "Workstream",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60005,
+      "Item": "Pressure Testing of Valves",
+      "Start Date": "Tuesday, September 10, 2024",
+      "Finish Date": "Thursday, September 12, 2024",
+      "Percentage Complete": "0%",
+      "Category": "Upcoming",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60005,
+      "Item": "Quality Certification",
+      "Start Date": "Friday, September 13, 2024",
+      "Finish Date": "Saturday, September 14, 2024",
+      "Percentage Complete": "0%",
+      "Category": "Upcoming",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60005,
+      "Item": "Operator Training",
+      "Start Date": "Saturday, September 14, 2024",
+      "Finish Date": "Sunday, September 15, 2024",
+      "Percentage Complete": "0%",
+      "Category": "Upcoming",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60005,
+      "Item": "Documentation Handover",
+      "Start Date": "Sunday, September 15, 2024",
+      "Finish Date": "Sunday, September 15, 2024",
+      "Percentage Complete": "0%",
+      "Category": "Upcoming",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60005,
+      "Item": "Final Acceptance",
+      "Start Date": "Sunday, September 15, 2024",
+      "Finish Date": "Sunday, September 15, 2024",
+      "Percentage Complete": "0%",
+      "Category": "Upcoming",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60005,
+      "Item": "Valve Packaging",
+      "Start Date": "Friday, June 28, 2024",
+      "Finish Date": "Sunday, June 30, 2024",
+      "Percentage Complete": "50%",
+      "Category": "Late",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60005,
+      "Item": "Logistics Arrangement",
+      "Start Date": "Monday, July 1, 2024",
+      "Finish Date": "Friday, July 5, 2024",
+      "Percentage Complete": "70%",
+      "Category": "Late",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60005,
+      "Item": "Customs Clearance",
+      "Start Date": "Wednesday, July 10, 2024",
+      "Finish Date": "Monday, July 15, 2024",
+      "Percentage Complete": "0%",
+      "Category": "Late",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60006,
+      "Item": "Preliminaries",
+      "Start Date": "Thursday, January 2, 2025",
+      "Finish Date": "Sunday, January 5, 2025",
+      "Percentage Complete": "100%",
+      "Category": "Workstream",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60006,
+      "Item": "Procurement",
+      "Start Date": "Monday, January 6, 2025",
+      "Finish Date": "Monday, January 20, 2025",
+      "Percentage Complete": "70%",
+      "Category": "Workstream",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60006,
+      "Item": "Construction",
+      "Start Date": "Tuesday, January 21, 2025",
+      "Finish Date": "Sunday, April 20, 2025",
+      "Percentage Complete": "15%",
+      "Category": "Workstream",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60006,
+      "Item": "Commissioning",
+      "Start Date": "Monday, April 21, 2025",
+      "Finish Date": "Wednesday, April 30, 2025",
+      "Percentage Complete": "0%",
+      "Category": "Workstream",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60006,
+      "Item": "Insulation Resistance Testing",
+      "Start Date": "Tuesday, April 22, 2025",
+      "Finish Date": "Thursday, April 24, 2025",
+      "Percentage Complete": "0%",
+      "Category": "Upcoming",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60006,
+      "Item": "Transformer Oil Replacement",
+      "Start Date": "Friday, April 25, 2025",
+      "Finish Date": "Saturday, April 26, 2025",
+      "Percentage Complete": "0%",
+      "Category": "Upcoming",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60006,
+      "Item": "Heat Run Test",
+      "Start Date": "Sunday, April 27, 2025",
+      "Finish Date": "Monday, April 28, 2025",
+      "Percentage Complete": "0%",
+      "Category": "Upcoming",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60006,
+      "Item": "Protection Relay Calibration",
+      "Start Date": "Tuesday, April 29, 2025",
+      "Finish Date": "Tuesday, April 29, 2025",
+      "Percentage Complete": "0%",
+      "Category": "Upcoming",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60006,
+      "Item": "Final Acceptance & Handover",
+      "Start Date": "Wednesday, April 30, 2025",
+      "Finish Date": "Wednesday, April 30, 2025",
+      "Percentage Complete": "0%",
+      "Category": "Upcoming",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60006,
+      "Item": "Core Dismantling Delay",
+      "Start Date": "Friday, January 10, 2025",
+      "Finish Date": "Sunday, January 12, 2025",
+      "Percentage Complete": "0%",
+      "Category": "Late",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60006,
+      "Item": "Spare Parts Delivery",
+      "Start Date": "Wednesday, January 15, 2025",
+      "Finish Date": "Monday, January 20, 2025",
+      "Percentage Complete": "0%",
+      "Category": "Late",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60006,
+      "Item": "Winding Resistance Test",
+      "Start Date": "Saturday, February 1, 2025",
+      "Finish Date": "Wednesday, February 5, 2025",
+      "Percentage Complete": "10%",
+      "Category": "Late",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60007,
+      "Item": "Preliminaries",
+      "Start Date": "Saturday, March 15, 2025",
+      "Finish Date": "Thursday, March 20, 2025",
+      "Percentage Complete": "100%",
+      "Category": "Workstream",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60007,
+      "Item": "Procurement",
+      "Start Date": "Friday, March 21, 2025",
+      "Finish Date": "Monday, March 31, 2025",
+      "Percentage Complete": "95%",
+      "Category": "Workstream",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60007,
+      "Item": "Construction",
+      "Start Date": "Tuesday, April 1, 2025",
+      "Finish Date": "Sunday, June 15, 2025",
+      "Percentage Complete": "50%",
+      "Category": "Workstream",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60007,
+      "Item": "Commissioning",
+      "Start Date": "Monday, June 16, 2025",
+      "Finish Date": "Monday, June 30, 2025",
+      "Percentage Complete": "0%",
+      "Category": "Workstream",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60007,
+      "Item": "Preparation of Training Materials",
+      "Start Date": "Friday, June 20, 2025",
+      "Finish Date": "Sunday, June 22, 2025",
+      "Percentage Complete": "0%",
+      "Category": "Upcoming",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60007,
+      "Item": "Simulation Session",
+      "Start Date": "Monday, June 23, 2025",
+      "Finish Date": "Wednesday, June 25, 2025",
+      "Percentage Complete": "0%",
+      "Category": "Upcoming",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60007,
+      "Item": "Operator Certification Exam",
+      "Start Date": "Thursday, June 26, 2025",
+      "Finish Date": "Friday, June 27, 2025",
+      "Percentage Complete": "0%",
+      "Category": "Upcoming",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60007,
+      "Item": "Feedback & Evaluation",
+      "Start Date": "Saturday, June 28, 2025",
+      "Finish Date": "Sunday, June 29, 2025",
+      "Percentage Complete": "0%",
+      "Category": "Upcoming",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60007,
+      "Item": "Final Reporting",
+      "Start Date": "Monday, June 30, 2025",
+      "Finish Date": "Monday, June 30, 2025",
+      "Percentage Complete": "0%",
+      "Category": "Upcoming",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60007,
+      "Item": "Trainer Mobilization Delay",
+      "Start Date": "Tuesday, April 1, 2025",
+      "Finish Date": "Saturday, April 5, 2025",
+      "Percentage Complete": "0%",
+      "Category": "Late",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60007,
+      "Item": "Equipment Setup Delay",
+      "Start Date": "Thursday, April 10, 2025",
+      "Finish Date": "Tuesday, April 15, 2025",
+      "Percentage Complete": "0%",
+      "Category": "Late",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60007,
+      "Item": "Simulator Software Bug Fix",
+      "Start Date": "Tuesday, May 20, 2025",
+      "Finish Date": "Sunday, May 25, 2025",
+      "Percentage Complete": "25%",
+      "Category": "Late",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60003,
+      "Item": "Preliminaries",
+      "Start Date": "Thursday, October 10, 2024",
+      "Finish Date": "Sunday, October 20, 2024",
+      "Percentage Complete": "100%",
+      "Category": "Workstream",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60003,
+      "Item": "Procurement",
+      "Start Date": "Monday, October 21, 2024",
+      "Finish Date": "Friday, November 15, 2024",
+      "Percentage Complete": "90%",
+      "Category": "Workstream",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60003,
+      "Item": "Construction",
+      "Start Date": "Saturday, November 16, 2024",
+      "Finish Date": "Thursday, February 20, 2025",
+      "Percentage Complete": "40%",
+      "Category": "Workstream",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60003,
+      "Item": "Commissioning",
+      "Start Date": "Friday, February 21, 2025",
+      "Finish Date": "Friday, February 28, 2025",
+      "Percentage Complete": "0%",
+      "Category": "Workstream",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60003,
+      "Item": "Calibration of Flow Meters",
+      "Start Date": "Saturday, February 22, 2025",
+      "Finish Date": "Monday, February 24, 2025",
+      "Percentage Complete": "0%",
+      "Category": "Upcoming",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60003,
+      "Item": "Integration with Control System",
+      "Start Date": "Tuesday, February 25, 2025",
+      "Finish Date": "Thursday, February 27, 2025",
+      "Percentage Complete": "0%",
+      "Category": "Upcoming",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60003,
+      "Item": "Performance Testing",
+      "Start Date": "Friday, February 28, 2025",
+      "Finish Date": "Friday, February 28, 2025",
+      "Percentage Complete": "0%",
+      "Category": "Upcoming",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60003,
+      "Item": "Training Session for Operators",
+      "Start Date": "Wednesday, February 26, 2025",
+      "Finish Date": "Thursday, February 27, 2025",
+      "Percentage Complete": "0%",
+      "Category": "Upcoming",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60003,
+      "Item": "Final Acceptance",
+      "Start Date": "Friday, February 28, 2025",
+      "Finish Date": "Friday, February 28, 2025",
+      "Percentage Complete": "0%",
+      "Category": "Upcoming",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60003,
+      "Item": "Delivery of Flow Meters",
+      "Start Date": "Tuesday, November 5, 2024",
+      "Finish Date": "Tuesday, November 12, 2024",
+      "Percentage Complete": "0%",
+      "Category": "Late",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60003,
+      "Item": "Customs Clearance",
+      "Start Date": "Friday, November 15, 2024",
+      "Finish Date": "Monday, November 18, 2024",
+      "Percentage Complete": "0%",
+      "Category": "Late",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60003,
+      "Item": "Cable Trenching Works",
+      "Start Date": "Saturday, February 1, 2025",
+      "Finish Date": "Monday, February 10, 2025",
+      "Percentage Complete": "30%",
+      "Category": "Late",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60001,
+      "Item": "Preliminaries",
+      "Start Date": "Thursday, August 15, 2024",
+      "Finish Date": "Saturday, August 31, 2024",
+      "Percentage Complete": "100%",
+      "Category": "Workstream",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60001,
+      "Item": "Procurement",
+      "Start Date": "Sunday, September 1, 2024",
+      "Finish Date": "Monday, September 30, 2024",
+      "Percentage Complete": "100%",
+      "Category": "Workstream",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60001,
+      "Item": "Construction",
+      "Start Date": "Tuesday, October 1, 2024",
+      "Finish Date": "Wednesday, January 15, 2025",
+      "Percentage Complete": "82%",
+      "Category": "Workstream",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60001,
+      "Item": "Commissioning",
+      "Start Date": "Thursday, January 16, 2025",
+      "Finish Date": "Thursday, January 30, 2025",
+      "Percentage Complete": "0%",
+      "Category": "Workstream",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60001,
+      "Item": "Testing of RTUs",
+      "Start Date": "Sunday, January 5, 2025",
+      "Finish Date": "Friday, January 10, 2025",
+      "Percentage Complete": "0%",
+      "Category": "Upcoming",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60001,
+      "Item": "Control Room Configuration",
+      "Start Date": "Sunday, January 12, 2025",
+      "Finish Date": "Saturday, January 18, 2025",
+      "Percentage Complete": "0%",
+      "Category": "Upcoming",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60001,
+      "Item": "Training of Operators",
+      "Start Date": "Monday, January 20, 2025",
+      "Finish Date": "Saturday, January 25, 2025",
+      "Percentage Complete": "0%",
+      "Category": "Upcoming",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60001,
+      "Item": "Documentation Handover",
+      "Start Date": "Sunday, January 26, 2025",
+      "Finish Date": "Tuesday, January 28, 2025",
+      "Percentage Complete": "0%",
+      "Category": "Upcoming",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60001,
+      "Item": "Final Acceptance Test",
+      "Start Date": "Wednesday, January 29, 2025",
+      "Finish Date": "Thursday, January 30, 2025",
+      "Percentage Complete": "0%",
+      "Category": "Upcoming",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60001,
+      "Item": "Network Integration",
+      "Start Date": "Sunday, December 8, 2024",
+      "Finish Date": "Sunday, December 15, 2024",
+      "Percentage Complete": "65%",
+      "Category": "Late",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60001,
+      "Item": "Factory Acceptance Test",
+      "Start Date": "Wednesday, November 20, 2024",
+      "Finish Date": "Monday, November 25, 2024",
+      "Percentage Complete": "0%",
+      "Category": "Late",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60001,
+      "Item": "SCADA Software Delivery",
+      "Start Date": "Tuesday, December 10, 2024",
+      "Finish Date": "Thursday, December 12, 2024",
+      "Percentage Complete": "0%",
+      "Category": "Late",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60002,
+      "Item": "Preliminaries",
+      "Start Date": "Thursday, August 15, 2024",
+      "Finish Date": "Saturday, August 31, 2024",
+      "Percentage Complete": "100%",
+      "Category": "Workstream",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60002,
+      "Item": "Procurement",
+      "Start Date": "Sunday, September 1, 2024",
+      "Finish Date": "Monday, September 30, 2024",
+      "Percentage Complete": "100%",
+      "Category": "Workstream",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60002,
+      "Item": "Construction",
+      "Start Date": "Tuesday, October 1, 2024",
+      "Finish Date": "Wednesday, January 15, 2025",
+      "Percentage Complete": "82%",
+      "Category": "Workstream",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60002,
+      "Item": "Commissioning",
+      "Start Date": "Thursday, January 16, 2025",
+      "Finish Date": "Thursday, January 30, 2025",
+      "Percentage Complete": "0%",
+      "Category": "Workstream",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60002,
+      "Item": "Testing of RTUs",
+      "Start Date": "Sunday, January 5, 2025",
+      "Finish Date": "Friday, January 10, 2025",
+      "Percentage Complete": "0%",
+      "Category": "Upcoming",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60002,
+      "Item": "Control Room Configuration",
+      "Start Date": "Sunday, January 12, 2025",
+      "Finish Date": "Saturday, January 18, 2025",
+      "Percentage Complete": "0%",
+      "Category": "Upcoming",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60002,
+      "Item": "Training of Operators",
+      "Start Date": "Monday, January 20, 2025",
+      "Finish Date": "Saturday, January 25, 2025",
+      "Percentage Complete": "0%",
+      "Category": "Upcoming",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60002,
+      "Item": "Documentation Handover",
+      "Start Date": "Sunday, January 26, 2025",
+      "Finish Date": "Tuesday, January 28, 2025",
+      "Percentage Complete": "0%",
+      "Category": "Upcoming",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60002,
+      "Item": "Final Acceptance Test",
+      "Start Date": "Wednesday, January 29, 2025",
+      "Finish Date": "Thursday, January 30, 2025",
+      "Percentage Complete": "0%",
+      "Category": "Upcoming",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60002,
+      "Item": "Network Integration",
+      "Start Date": "Sunday, December 8, 2024",
+      "Finish Date": "Sunday, December 15, 2024",
+      "Percentage Complete": "65%",
+      "Category": "Late",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60002,
+      "Item": "Factory Acceptance Test",
+      "Start Date": "Wednesday, November 20, 2024",
+      "Finish Date": "Monday, November 25, 2024",
+      "Percentage Complete": "0%",
+      "Category": "Late",
+      "Predecessor": null
+    },
+    {
+      "Project Code": 60002,
+      "Item": "SCADA Software Delivery",
+      "Start Date": "Tuesday, December 10, 2024",
+      "Finish Date": "Thursday, December 12, 2024",
+      "Percentage Complete": "0%",
+      "Category": "Late",
+      "Predecessor": null
+    }
+  ]
+}
