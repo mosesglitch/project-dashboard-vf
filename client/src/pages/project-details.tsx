@@ -1,5 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
 import { useParams, Link } from "wouter";
+import { useMemo } from "react";
 import { ArrowLeft, Handshake, HardHat } from "lucide-react";
 
 // UI5 Web Components
@@ -43,6 +43,7 @@ import "@ui5/webcomponents-icons/dist/calendar.js";
 import { AIInsights } from "@/components/ai-insights";
 import { ProjectAnalytics } from "@/components/project-analytics";
 import type { ExcelProject, ExcelActivity } from "@shared/excel-schema";
+import { dataService } from "@/lib/dataService";
 const formatDate = (dateString) => {
   return new Date(dateString).toLocaleDateString("en-US", {
     year: "numeric",
@@ -87,40 +88,21 @@ const getBgColor = (percentageComplete) => {
 export default function ProjectDetails() {
   const { id } = useParams();
 
-  // Fetch project data
-  const { data: project, isLoading: projectLoading } = useQuery<ExcelProject>({
-    queryKey: ["/api/projects", id],
-    queryFn: async () => {
-      const response = await fetch(`/api/projects/${id}`);
-      if (!response.ok) throw new Error("Failed to fetch project");
-      return response.json();
-    },
-  });
+  // Get project data from local service
+  const project = useMemo(() => {
+    return id ? dataService.getProjectById(id as string) : undefined;
+  }, [id]);
+  
+  const projectLoading = false;
 
-  // Fetch activities data
-  const { data: milestones } = useQuery<ExcelActivity[]>({
-    queryKey: ["/api/projects", project?.projectCode, "milestones"],
-    queryFn: async () => {
-      const response = await fetch(
-        `/api/projects/${project?.projectCode}/milestones`
-      );
-      if (!response.ok) throw new Error("Failed to fetch milestones");
-      return response.json();
-    },
-    enabled: !!project?.projectCode,
-  });
+  // Get activities data from local service
+  const milestones = useMemo(() => {
+    return project?.projectCode ? dataService.getMilestonesByProjectCode(project.projectCode.toString()) : [];
+  }, [project?.projectCode]);
 
-  const { data: risks } = useQuery<ExcelActivity[]>({
-    queryKey: ["/api/projects", project?.projectCode, "risks"],
-    queryFn: async () => {
-      const response = await fetch(
-        `/api/projects/${project?.projectCode}/risks`
-      );
-      if (!response.ok) throw new Error("Failed to fetch risks");
-      return response.json();
-    },
-    enabled: !!project?.projectCode,
-  });
+  const risks = useMemo(() => {
+    return project?.projectCode ? dataService.getRisksByProjectCode(project.projectCode.toString()) : [];
+  }, [project?.projectCode]);
 
   function getTimelineChartData(activities: ExcelActivity[]): any[] {
     // Find the earliest and latest dates among activities
@@ -287,29 +269,13 @@ export default function ProjectDetails() {
       />
     );
   }
-  const { data: upcomingActivities } = useQuery<ExcelActivity[]>({
-    queryKey: ["/api/projects", project?.projectCode, "upcoming"],
-    queryFn: async () => {
-      const response = await fetch(
-        `/api/projects/${project?.projectCode}/upcoming`
-      );
-      if (!response.ok) throw new Error("Failed to fetch upcoming activities");
-      return response.json();
-    },
-    enabled: !!project?.projectCode,
-  });
+  const upcomingActivities = useMemo(() => {
+    return project?.projectCode ? dataService.getUpcomingActivitiesByProjectCode(project.projectCode.toString()) : [];
+  }, [project?.projectCode]);
 
-  const { data: lateActivities } = useQuery<ExcelActivity[]>({
-    queryKey: ["/api/projects", project?.projectCode, "late"],
-    queryFn: async () => {
-      const response = await fetch(
-        `/api/projects/${project?.projectCode}/late`
-      );
-      if (!response.ok) throw new Error("Failed to fetch late activities");
-      return response.json();
-    },
-    enabled: !!project?.projectCode,
-  });
+  const lateActivities = useMemo(() => {
+    return project?.projectCode ? dataService.getLateActivitiesByProjectCode(project.projectCode.toString()) : [];
+  }, [project?.projectCode]);
 
   const formatCurrency = (amount: number | null | undefined) => {
     if (amount === undefined || amount === null) return "$0";

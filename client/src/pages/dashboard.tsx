@@ -1,5 +1,4 @@
-import React, { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import React, { useState, useMemo } from "react";
 import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -31,6 +30,7 @@ import { ProjectDetailsModal } from "@/components/project-details-modal";
 import { FilterModal } from "@/components/filter-modal";
 import type { ExcelProject } from "@shared/excel-schema";
 import type { DashboardFilters } from "@/lib/types";
+import { dataService } from "@/lib/dataService";
 import {
   DonutChart,
   BarChart,
@@ -58,40 +58,21 @@ export default function Dashboard() {
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
   const [selectedProjectId, setSelectedProjectId] = useState<string | number | null>(null);
 
-  // Fetch data using Excel data service
-  const { data: projects, isLoading: projectsLoading } = useQuery<
-    ExcelProject[]
-  >({
-    queryKey: ["/api/projects", filters],
-    queryFn: async () => {
-      const params = new URLSearchParams();
-      if (filters.status !== "all") params.append("status", filters.status);
-      if (filters.division !== "all")
-        params.append("division", filters.division);
-      if (filters.dateFrom) params.append("dateFrom", filters.dateFrom);
-      if (filters.dateTo) params.append("dateTo", filters.dateTo);
-
-      const response = await fetch(`/api/projects?${params.toString()}`);
-      if (!response.ok) throw new Error("Failed to fetch projects");
-      return response.json();
-    },
-  });
+  // Get data from local data service
+  const projects = useMemo(() => {
+    return dataService.getProjects({
+      division: filters.division,
+      dateFrom: filters.dateFrom,
+      dateTo: filters.dateTo
+    });
+  }, [filters]);
+  
+  const projectsLoading = false;
   console.log("projects", projects)
-  const { data: kpiData } = useQuery<any>({
-    queryKey: ["/api/projects/stats/overview"],
-  });
-
-  const { data: performanceStats } = useQuery<any>({
-    queryKey: ["/api/projects/stats/performance"],
-  });
-
-  const { data: spendingStats } = useQuery<any>({
-    queryKey: ["/api/projects/stats/spending"],
-  });
-
-  const { data: divisionStats } = useQuery<any>({
-    queryKey: ["/api/projects/stats/divisions"],
-  });
+  const kpiData = useMemo(() => dataService.getOverviewStats(), []);
+  const performanceStats = useMemo(() => dataService.getPerformanceCategoryStats(), []);
+  const spendingStats = useMemo(() => dataService.getSpendingCategoriesStats(), []);
+  const divisionStats = useMemo(() => dataService.getDivisionStats(), []);
   // Suppose `projects` is your array of project objects
   const topProjects = [...(projects || [])]
     .sort((a, b) => (b.coAmount || 0) - (a.coAmount || 0)) // sort descending

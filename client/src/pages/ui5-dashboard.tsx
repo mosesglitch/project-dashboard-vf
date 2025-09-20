@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useState, useMemo } from "react";
 import { useLocation } from "wouter";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
@@ -65,6 +64,7 @@ import "@ui5/webcomponents-icons/dist/download.js";
 import type { ExcelProject } from "@shared/excel-schema";
 import { parseLocation } from "@shared/excel-schema";
 import type { DashboardFilters } from "@/lib/types";
+import { dataService } from "@/lib/dataService";
 
 export default function UI5Dashboard() {
   const [filters, setFilters] = useState<DashboardFilters>({
@@ -75,44 +75,21 @@ export default function UI5Dashboard() {
   });
   const [, navigate] = useLocation();
 
-  // Fetch data using Excel data service
-  const { data: projects, isLoading: projectsLoading } = useQuery<
-    ExcelProject[]
-  >({
-    queryKey: ["/api/projects", filters],
-    queryFn: async () => {
-      const params = new URLSearchParams();
-      if (filters.status !== "all") params.append("status", filters.status);
-      if (filters.division !== "all")
-        params.append("division", filters.division);
-      if (filters.dateFrom) params.append("dateFrom", filters.dateFrom);
-      if (filters.dateTo) params.append("dateTo", filters.dateTo);
-
-      const response = await fetch(`/api/projects?${params.toString()}`);
-      if (!response.ok) throw new Error("Failed to fetch projects");
-      return response.json();
-    },
-  });
-
-  const { data: kpiData } = useQuery<any>({
-    queryKey: ["/api/projects/stats/overview"],
-  });
-
-  const { data: performanceStats } = useQuery<any>({
-    queryKey: ["/api/projects/stats/performance"],
-  });
-
-  const { data: spendingStats } = useQuery<any>({
-    queryKey: ["/api/projects/stats/spending"],
-  });
-
-  const { data: divisionStats } = useQuery<any>({
-    queryKey: ["/api/projects/stats/divisions"],
-  });
-
-  const { data: projectLocations } = useQuery<any[]>({
-    queryKey: ["/api/projects/locations"],
-  });
+  // Get data from local data service
+  const projects = useMemo(() => {
+    return dataService.getProjects({
+      division: filters.division,
+      dateFrom: filters.dateFrom,
+      dateTo: filters.dateTo
+    });
+  }, [filters]);
+  
+  const projectsLoading = false;
+  const kpiData = useMemo(() => dataService.getOverviewStats(), []);
+  const performanceStats = useMemo(() => dataService.getPerformanceCategoryStats(), []);
+  const spendingStats = useMemo(() => dataService.getSpendingCategoriesStats(), []);
+  const divisionStats = useMemo(() => dataService.getDivisionStats(), []);
+  const projectLocations = useMemo(() => dataService.getAllProjectLocations(), []);
 
   const formatCurrency = (amount: number) => {
     if (amount >= 1000000) {
@@ -123,10 +100,9 @@ export default function UI5Dashboard() {
     return `Ksh ${amount.toLocaleString()}`;
   };
 
-  // Function to reload Excel data
+  // Function to reload data (now just refreshes the page)
   const reloadData = async () => {
     try {
-      await fetch("/api/projects/reload", { method: "POST" });
       // Invalidate all queries to refetch data
       window.location.reload();
     } catch (error) {
