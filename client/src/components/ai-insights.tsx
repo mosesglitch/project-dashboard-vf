@@ -36,50 +36,22 @@ const priorityIcons = {
 };
 
 export function AIInsights({ type, projectCode }: AIInsightsProps) {
-  // Query for structured insights
-  const {
-    data: insights,
-    isLoading: isLoadingInsights,
-  } = useQuery<AIInsightsData>({
-    queryKey: ["ai-insights", type, projectCode],
-    queryFn: async () => {
-      const url =
-        type === "portfolio"
-          ? "/api/ai/insights/portfolio"
-          : `/api/ai/insights/project/${projectCode}`;
-
-      const response = await fetch(url);
-      if (!response.ok) throw new Error("Failed to fetch AI insights");
-      return response.json();
-    },
-    enabled: type === "portfolio" || (type === "project" && !!projectCode),
-    refetchInterval: 300000, // 5 minutes
-  });
-
-  // Query for raw HTML insights
-  const {
-    data: rawInsights,
-    isLoading: isLoadingRaw,
-  } = useQuery<string>({
-    queryKey: ["ai-insights-raw", projectCode],
-    queryFn: async () => {
-      const response = await fetch(`/api/ai/insights/raw/${projectCode}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({        }),
-      });
-      if (!response.ok) throw new Error("Failed to fetch raw insights");
-      const text = await response.text();
-
-      // Clean any ```html fences
-      return text.replace(/^```html\n?/, "").replace(/```$/, "").trim();
-    },
-    enabled: type === "project" && !!projectCode,
-    refetchInterval: 300000,
-  });
-
-  // Combined loading state
-  const isLoading = isLoadingInsights || isLoadingRaw;
+  // Mock data since we don't have AI backend endpoints
+  const insights = {
+    insights: [
+      {
+        title: "Project Progress Analysis",
+        description: "AI insights temporarily disabled in frontend-only mode. Previously analyzed project performance metrics and risk indicators.",
+        priority: "medium" as const,
+        category: "performance"
+      }
+    ],
+    summary: "AI insights are currently disabled as this application now runs without backend dependencies.",
+    lastUpdated: new Date().toISOString()
+  };
+  
+  const rawInsights = "<p>AI insights are temporarily disabled in frontend-only mode.</p>";
+  const isLoading = false;
 
   if (isLoading) {
     return (
